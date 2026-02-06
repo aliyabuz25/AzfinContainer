@@ -65,7 +65,26 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center md:text-left">
+            <h2 className="text-lg font-black text-primary uppercase italic mb-2 tracking-tighter">{hero.statsHeading}</h2>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{hero.statsSummary}</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+            {stats.map((stat, idx) => {
+              const StatIcon = resolveIcon(stat.icon);
+              return (
+                <div key={`${stat.label}-${idx}`} className="flex flex-col items-center text-center md:items-start md:text-left">
+                  <StatIcon className="text-accent mb-2 h-6 w-6" />
+                  <span className="text-4xl font-black text-primary tracking-tighter italic uppercase mb-1">{formatStatValue(stat.value)}</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 border-t border-accent pt-2">{stat.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
