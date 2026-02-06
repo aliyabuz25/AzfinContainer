@@ -26,6 +26,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_SUPABASE_URL=https://voiqybpnzxqlibpxhwve.supabase.co
+        - VITE_SUPABASE_ANON_KEY=sb_publishable_izbwW0kbIO8PaKrnb8mfdA_dUFSLjnh
     image: azfin-frontend:latest
     restart: unless-stopped
     networks:
