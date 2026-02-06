@@ -14,12 +14,6 @@ const Services: React.FC = () => {
     <div className="flex flex-col bg-white">
       {/* Header */}
       <div className="relative bg-slate-50 border-b border-slate-100 py-24 overflow-hidden">
-        {servicesData.heroImage && (
-          <div className="absolute inset-0 z-0">
-            <img src={servicesData.heroImage} className="w-full h-full object-cover opacity-10" alt="" />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-50 via-slate-50/80 to-transparent"></div>
-          </div>
-        )}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-end justify-between gap-10">
             <div className="max-w-2xl">

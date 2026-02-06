@@ -38,44 +38,28 @@ const Home: React.FC = () => {
       <CalculationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} serviceType="audit" />
       <section className="relative bg-slate-50 border-b border-slate-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px] items-center gap-16 py-16">
-            <div className="space-y-8 relative z-10">
-              <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
+          <div className="flex flex-col items-center text-center py-24 md:py-32">
+            <div className="space-y-8 relative z-10 max-w-3xl">
+              <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mx-auto">
                 <ShieldCheck className="h-3 w-3" />
                 {hero.heroBadge}
               </div>
-              <h1 className="text-4xl md:text-6xl font-black text-primary leading-[1.1] tracking-tighter">
+              <h1 className="text-4xl md:text-7xl font-black text-primary leading-[1.1] tracking-tighter">
                 {hero.heroTitlePrefix} <br />
                 <span className="text-accent italic">
                   {hero.heroTitleHighlight} {hero.heroTitleSuffix}
                 </span>
               </h1>
-              <p className="text-base text-slate-500 font-medium leading-relaxed max-w-lg">
+              <p className="text-base text-slate-500 font-medium leading-relaxed mx-auto max-w-2xl">
                 {hero.heroSummary}
               </p>
-              <div className="flex flex-wrap gap-4 pt-4">
+              <div className="flex flex-wrap justify-center gap-4 pt-4">
                 <Link to="/services" className="bg-accent text-white px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all flex items-center gap-3 shadow-xl">
                   {hero.heroPrimaryAction} <ArrowRight className="h-4 w-4" />
                 </Link>
                 <button onClick={() => setIsModalOpen(true)} className="bg-white border border-slate-200 text-primary px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 transition-all shadow-sm">
                   {hero.heroSecondaryAction}
                 </button>
-              </div>
-            </div>
-            <div className="relative hidden lg:block">
-              <div className="aspect-square rounded-full border-[40px] border-slate-100 absolute -top-20 -right-20 w-[120%] h-[120%] -z-0 animate-pulse"></div>
-              <div className="relative z-10 aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl grayscale hover:grayscale-0 transition-all duration-1000 border-[12px] border-white">
-                <img src={hero.heroImage || "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=1000"} alt="Work" className="w-full h-full object-cover" />
-              </div>
-              <div className="absolute -bottom-6 -left-12 bg-white p-10 shadow-2xl border border-slate-50 max-w-[280px] z-20 rounded-xl">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center shadow-lg shadow-accent/20">
-                    <Award className="h-6 w-6 text-white" />
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Təcrübəmiz</span>
-                </div>
-                <div className="text-3xl font-black text-primary tracking-tighter italic uppercase">15+ İl</div>
-                <div className="text-[10px] text-slate-500 font-bold mt-2 uppercase tracking-widest">Səriştəli Xidmət</div>
               </div>
             </div>
           </div>
