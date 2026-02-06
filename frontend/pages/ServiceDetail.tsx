@@ -43,13 +43,15 @@ const ServiceDetail: React.FC = () => {
           </div>
 
           <div className="text-center mt-8 md:mt-0">
-            <h1 className="text-3xl md:text-5xl font-black text-primary tracking-tighter leading-[1.1] mb-8 max-w-4xl mx-auto uppercase italic">
-              {service.title}
-            </h1>
+            <h1
+              className="text-3xl md:text-5xl font-black text-primary tracking-tighter leading-[1.1] mb-8 max-w-4xl mx-auto uppercase italic whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{ __html: parseBBCode(service.title || '') }}
+            />
 
-            <p className="text-lg text-slate-500 font-bold italic leading-relaxed max-w-2xl mx-auto whitespace-pre-wrap">
-              {service.description}
-            </p>
+            <p
+              className="text-lg text-slate-500 font-bold italic leading-relaxed max-w-2xl mx-auto whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{ __html: parseBBCode(service.description || '') }}
+            />
           </div>
         </div>
       </section>
@@ -63,15 +65,30 @@ const ServiceDetail: React.FC = () => {
             <div className="lg:col-span-4">
               <div className="sticky top-32 space-y-10">
                 <div className="p-10 bg-slate-50 border-l-4 border-primary">
-                  <h3 className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-6">{service.summaryTitle || 'XİDMƏT XÜLASƏSİ'}</h3>
+                  <h3
+                    className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-6 whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: parseBBCode(service.summaryTitle || 'XİDMƏT XÜLASƏSİ') }}
+                  />
                   <div className="space-y-6">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase mb-1 whitespace-pre-wrap">{service.standardLabel || 'STANDART'}</span>
-                      <span className="text-primary font-black uppercase tracking-tight italic whitespace-pre-wrap">{service.standardValue || 'IFRS / ISA COMPLİANT'}</span>
+                      <span
+                        className="text-[9px] font-bold text-slate-400 uppercase mb-1 whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: parseBBCode(service.standardLabel || 'STANDART') }}
+                      />
+                      <span
+                        className="text-primary font-black uppercase tracking-tight italic whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: parseBBCode(service.standardValue || 'IFRS / ISA COMPLİANT') }}
+                      />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase mb-1 whitespace-pre-wrap">{service.durationLabel || 'MÜDDƏT'}</span>
-                      <span className="text-primary font-black uppercase tracking-tight italic whitespace-pre-wrap">{service.durationValue || 'LAYİHƏYƏ GÖRƏ'}</span>
+                      <span
+                        className="text-[9px] font-bold text-slate-400 uppercase mb-1 whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: parseBBCode(service.durationLabel || 'MÜDDƏT') }}
+                      />
+                      <span
+                        className="text-primary font-black uppercase tracking-tight italic whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: parseBBCode(service.durationValue || 'LAYİHƏYƏ GÖRƏ') }}
+                      />
                     </div>
                   </div>
                   <button
@@ -93,13 +110,19 @@ const ServiceDetail: React.FC = () => {
             {/* Main Narrative */}
             <div className="lg:col-span-8 space-y-20">
               <div className="prose prose-slate max-w-none">
-                <h2 className="text-2xl font-black text-primary mb-10 tracking-tight uppercase italic border-b border-slate-50 pb-4 whitespace-pre-wrap">{service.scopeTitle || 'XİDMƏTİN ƏHATƏ DAİRƏSİ'}</h2>
+                <h2
+                  className="text-2xl font-black text-primary mb-10 tracking-tight uppercase italic border-b border-slate-50 pb-4 whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: parseBBCode(service.scopeTitle || 'XİDMƏTİN ƏHATƏ DAİRƏSİ') }}
+                />
                 <div className="text-slate-600 text-lg leading-relaxed mb-12 border-l-2 border-accent/20 pl-10 italic whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: parseBBCode(service.content || '') }} />
               </div>
 
               {/* Benefits */}
               <div>
-                <h3 className="text-xl font-black text-primary mb-12 tracking-tight uppercase italic">{service.benefitsTitle || 'XİDMƏTƏ DAXİL OLAN İSTİQAMƏTLƏR'}</h3>
+                <h3
+                  className="text-xl font-black text-primary mb-12 tracking-tight uppercase italic whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: parseBBCode(service.benefitsTitle || 'XİDMƏTƏ DAXİL OLAN İSTİQAMƏTLƏR') }}
+                />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {(Array.isArray(service.benefits) ? service.benefits : (typeof service.benefits === 'string' ? (service.benefits as string).split('\n').filter(Boolean) : [])).map((benefit, idx) => {
                     const isObj = typeof benefit === 'object' && benefit !== null;
@@ -132,7 +155,10 @@ const ServiceDetail: React.FC = () => {
       {/* CTA Section */}
       <section className="bg-primary py-32 relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-10 tracking-tighter uppercase italic whitespace-pre-wrap">{service.consultationTitle || 'MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN'}</h2>
+          <h2
+            className="text-3xl md:text-5xl font-black text-white mb-10 tracking-tighter uppercase italic whitespace-pre-wrap"
+            dangerouslySetInnerHTML={{ __html: parseBBCode(service.consultationTitle || 'MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN') }}
+          />
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-accent text-white px-16 py-6 rounded-sm font-black text-xs uppercase tracking-[0.2em] hover:bg-primary-medium transition-all shadow-2xl mb-16"

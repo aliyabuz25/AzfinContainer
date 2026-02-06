@@ -130,20 +130,26 @@ const TrainingDetail: React.FC = () => {
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Clock className="h-4 w-4 text-accent" /> Müddət
                   </span>
-                  <span className="font-black text-primary text-xs uppercase italic">{training.duration}</span>
+                  <span
+                    className="font-black text-primary text-xs uppercase italic whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: parseBBCode(training.duration || '') }}
+                  />
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-50 pb-4">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-accent" /> Başlayır
                   </span>
-                  <span className="font-black text-primary text-xs uppercase italic">{training.startDate}</span>
+                  <span
+                    className="font-black text-primary text-xs uppercase italic whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: parseBBCode(training.startDate || '') }}
+                  />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-accent" /> Status
                   </span>
                   <span className={`px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest ${training.status === 'completed' ? 'bg-slate-100 text-slate-400' :
-                      training.status === 'ongoing' ? 'bg-emerald-100 text-emerald-600' : 'bg-accent/10 text-accent'
+                    training.status === 'ongoing' ? 'bg-emerald-100 text-emerald-600' : 'bg-accent/10 text-accent'
                     }`}>
                     {training.status === 'upcoming' ? 'Qeydiyyat Aktivdir' :
                       training.status === 'ongoing' ? 'Davam Edir' : 'Başa Çatıb'}

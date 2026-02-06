@@ -223,7 +223,7 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                                                                         {isItemExpanded && (
                                                                             <div className="p-8 space-y-6 border-t border-slate-50">
                                                                                 {Object.entries(entry).map(([f, fv]) => {
-                                                                                    const isBB = f === 'content' || f === 'description';
+                                                                                    const isBB = f === 'content' || f === 'description' || f === 'scopeTitle' || f === 'summaryTitle' || f === 'benefitsTitle' || f === 'consultationTitle' || f === 'standardValue' || f === 'durationValue' || f === 'title';
                                                                                     return (
                                                                                         <div key={f} className={`space-y-2 ${isBB ? 'md:col-span-2 lg:col-span-3' : ''}`}>
                                                                                             <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">{formatFieldLabel(f)}</label>
