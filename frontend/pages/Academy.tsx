@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { TrainingItem } from '../types';
 import { fetchTrainings } from '../utils/fetchData';
+import { parseBBCode } from '../utils/bbcode';
 import ApplicationModal from '../components/ApplicationModal';
 import ImageWithFallback from '../components/ImageWithFallback';
 import { useContent } from '../lib/ContentContext';
@@ -89,66 +90,90 @@ const Academy: React.FC = () => {
                 {academyContent.emptyText}
               </div>
             ) : (
-              trainings.map((training) => (
-                <div
-                  key={training.id}
-                  onClick={() => handleCardClick(training.id)}
-                  className="bg-white rounded-xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.05)] border border-slate-100 group flex flex-col transition-all duration-500 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] cursor-pointer"
-                >
-                  {/* Card Image with Badge - Height reduced for smaller cards */}
-                  <div className="relative h-48 overflow-hidden">
-                    <ImageWithFallback
-                      src={training.image}
-                      alt={training.title}
-                      imgClassName="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      placeholderClassName="w-full h-full"
-                      placeholderText="no-image"
-                    />
-                    {training.status === 'upcoming' && (
-                      <div className="absolute top-3 right-3 bg-[#FBBF24] text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
-                        Aktivdir
-                      </div>
-                    )}
-                  </div>
+              trainings.map((training) => {
+                const isCompleted = training.status === 'completed';
 
-                  {/* Card Body - Padding reduced for a more compact look */}
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-lg font-black text-primary mb-4 group-hover:text-accent transition-colors leading-tight uppercase italic">
-                      {training.title}
-                    </h3>
-
-                    {/* Info Pills - Smaller gaps and size */}
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      <div className="flex items-center gap-1.5 bg-[#EFF6FF] text-[#3B82F6] px-3 py-1.5 rounded-lg">
-                        <Calendar className="h-3.5 w-3.5" />
-                        <span className="text-[10px] font-bold uppercase tracking-tight">{training.startDate}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 bg-[#EFF6FF] text-[#3B82F6] px-3 py-1.5 rounded-lg">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span className="text-[10px] font-bold uppercase tracking-tight">{training.duration}</span>
-                      </div>
+                return (
+                  <div
+                    key={training.id}
+                    onClick={() => !isCompleted && handleCardClick(training.id)}
+                    className={`bg-white rounded-xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.05)] border border-slate-100 group flex flex-col transition-all duration-500 ${isCompleted ? 'opacity-60 grayscale cursor-default' : 'hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] cursor-pointer'
+                      }`}
+                  >
+                    {/* Card Image with Badge */}
+                    <div className="relative h-48 overflow-hidden">
+                      <ImageWithFallback
+                        src={training.image}
+                        alt={training.title}
+                        imgClassName={`w-full h-full object-cover transition-transform duration-700 ${!isCompleted ? 'group-hover:scale-105' : ''}`}
+                        placeholderClassName="w-full h-full"
+                        placeholderText="no-image"
+                      />
+                      {training.status === 'upcoming' && (
+                        <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                          TEZLİKLƏ
+                        </div>
+                      )}
+                      {training.status === 'ongoing' && (
+                        <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                          DAVAM EDİR
+                        </div>
+                      )}
+                      {training.status === 'completed' && (
+                        <div className="absolute top-3 right-3 bg-slate-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg italic">
+                          BAŞA ÇATIB
+                        </div>
+                      )}
                     </div>
 
-                    <div
-                      className="text-slate-500 mb-8 flex-grow leading-relaxed font-medium text-xs line-clamp-3"
-                      dangerouslySetInnerHTML={{ __html: training.description }}
-                    />
+                    {/* Card Body */}
+                    <div className="p-6 flex flex-col flex-grow">
+                      <h3 className={`text-lg font-black mb-4 transition-colors leading-tight uppercase italic ${training.status === 'completed' ? 'text-slate-400' : 'text-primary group-hover:text-accent'
+                        }`}>
+                        {training.title}
+                      </h3>
 
-                    {/* Card Footer */}
-                    <div className="flex items-center justify-between pt-5 border-t border-slate-50">
-                      <div className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">
-                        <span className="text-primary">{training.level}</span>
+                      {/* Info Pills */}
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${training.status === 'completed' ? 'bg-slate-100 text-slate-400' : 'bg-[#EFF6FF] text-[#3B82F6]'
+                          }`}>
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span className="text-[10px] font-bold uppercase tracking-tight">{training.startDate}</span>
+                        </div>
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${training.status === 'completed' ? 'bg-slate-100 text-slate-400' : 'bg-[#EFF6FF] text-[#3B82F6]'
+                          }`}>
+                          <Clock className="h-3.5 w-3.5" />
+                          <span className="text-[10px] font-bold uppercase tracking-tight">{training.duration}</span>
+                        </div>
                       </div>
-                      <button
-                        onClick={(e) => handleApplyClick(e, training.title)}
-                        className="bg-primary text-white px-5 py-2.5 rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-primary-medium transition-all shadow-md flex items-center gap-2"
-                      >
-                        {academyContent.cardCTA} <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
+
+                      <div
+                        className="text-slate-500 mb-8 flex-grow leading-relaxed font-medium text-xs line-clamp-3"
+                        dangerouslySetInnerHTML={{ __html: parseBBCode(training.description || '') }}
+                      />
+
+                      {/* Card Footer */}
+                      <div className="flex items-center justify-between pt-5 border-t border-slate-50">
+                        <div className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">
+                          <span className={`${isCompleted ? 'text-slate-300' : 'text-primary'}`}>{training.level}</span>
+                        </div>
+                        {!isCompleted ? (
+                          <button
+                            onClick={(e) => handleApplyClick(e, training.title)}
+                            className="bg-primary text-white px-5 py-2.5 rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-primary-medium transition-all shadow-md flex items-center gap-2"
+                          >
+                            {academyContent.cardCTA} <ArrowRight className="h-3.5 w-3.5" />
+                          </button>
+                        ) : (
+                          <span className="text-slate-400 font-black text-[9px] uppercase tracking-widest italic">
+                            Qeydiyyat bitib
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

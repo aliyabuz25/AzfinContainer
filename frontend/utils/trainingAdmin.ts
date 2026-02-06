@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import { TrainingItem } from '../types';
+import { normalizeStatus } from './fetchData';
 
 export const fetchAdminTrainings = async (): Promise<TrainingItem[]> => {
     if (!supabase) {
@@ -28,7 +29,7 @@ export const fetchAdminTrainings = async (): Promise<TrainingItem[]> => {
         duration: row.duration,
         level: row.level,
         image: row.image,
-        status: row.status,
+        status: normalizeStatus(row.status),
         certLabel: row.certLabel,
         infoTitle: row.infoTitle,
         aboutTitle: row.aboutTitle,

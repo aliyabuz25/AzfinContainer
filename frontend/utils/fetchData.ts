@@ -14,10 +14,15 @@ const mapBlogRow = (row: any): BlogItem => ({
   status: row.status || 'published',
 });
 
-const normalizeStatus = (status?: string): TrainingItem['status'] => {
-  const s = String(status || '').toLowerCase();
-  if (s === 'ongoing' || s === 'davam edir') return 'ongoing';
-  if (s === 'completed' || s === 'başa çatıb') return 'completed';
+export const normalizeStatus = (status?: string): TrainingItem['status'] => {
+  const s = String(status || '').toLowerCase().trim();
+  // Ongoing variations
+  if (s === 'ongoing' || s === 'davam edir' || s.includes('davam') || s === 'aktiv') return 'ongoing';
+  // Completed variations
+  if (s === 'completed' || s === 'başa çatıb' || s === 'başa çatib' || s.includes('başa') || s === 'bitib' || s === 'yekun') return 'completed';
+  // Upcoming variations (default)
+  if (s === 'upcoming' || s === 'tezliklə' || s === 'tezlikle' || s === 'yaxında' || s.includes('tez') || s.includes('yaxın')) return 'upcoming';
+
   return 'upcoming';
 };
 

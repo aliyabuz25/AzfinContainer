@@ -28,6 +28,23 @@ const ScrollToTop = () => {
 import { ContentProvider } from './lib/ContentContext';
 
 const App: React.FC = () => {
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      const percentage = Math.round((scrollY / height) * 100);
+      console.log(`%c[SCROLL POSITION] %c${scrollY}px (%c${percentage}%%c)`,
+        'color: #45B3A2; font-weight: bold;',
+        'color: #0F172A; font-weight: 800;',
+        'color: #FBBF24; font-weight: 800;',
+        'color: #0F172A; font-weight: 400;'
+      );
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <ContentProvider>
       <Router>

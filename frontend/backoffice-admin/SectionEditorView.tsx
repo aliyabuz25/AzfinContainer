@@ -221,7 +221,7 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                                                                             </button>
                                                                         </div>
                                                                         {isItemExpanded && (
-                                                                            <div className="p-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3 border-t border-slate-50">
+                                                                            <div className="p-8 space-y-6 border-t border-slate-50">
                                                                                 {Object.entries(entry).map(([f, fv]) => {
                                                                                     const isBB = f === 'content' || f === 'description';
                                                                                     return (
@@ -230,13 +230,36 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                                                                                             {f === 'icon' ? (
                                                                                                 <IconPicker value={String(fv)} onChange={(v) => handleArrayObjectFieldChange(key, entryIdx, f, v)} />
                                                                                             ) : Array.isArray(fv) ? (
-                                                                                                <textarea
-                                                                                                    rows={3}
-                                                                                                    value={fv.join('\n')}
-                                                                                                    onChange={(e) => handleArrayObjectFieldChange(key, entryIdx, f, e.target.value)}
-                                                                                                    className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-xs font-bold text-primary focus:ring-4 focus:ring-accent/5 outline-none"
-                                                                                                    placeholder="Hər sətirə bir dənə..."
-                                                                                                />
+                                                                                                <div className="space-y-0 border border-slate-100 rounded-2xl overflow-hidden focus-within:ring-4 focus-within:ring-accent/5 transition-all">
+                                                                                                    <div className="bg-slate-50/50 p-2 border-b border-slate-100 flex gap-1">
+                                                                                                        <button
+                                                                                                            type="button"
+                                                                                                            onClick={() => {
+                                                                                                                const trid = `textarea-array-${key}-${entryIdx}-${f}`;
+                                                                                                                const tr = document.getElementById(trid) as HTMLTextAreaElement;
+                                                                                                                if (tr) {
+                                                                                                                    const s = tr.selectionStart;
+                                                                                                                    const e = tr.selectionEnd;
+                                                                                                                    const t = tr.value;
+                                                                                                                    const sel = t.substring(s, e);
+                                                                                                                    const nv = t.substring(0, s) + '[b]' + sel + '[/b]' + t.substring(e);
+                                                                                                                    handleArrayObjectFieldChange(key, entryIdx, f, nv.split('\n'));
+                                                                                                                }
+                                                                                                            }}
+                                                                                                            className="p-2 hover:bg-white rounded-lg transition-colors border border-slate-200 bg-white"
+                                                                                                        >
+                                                                                                            <Bold className="h-3.5 w-3.5" />
+                                                                                                        </button>
+                                                                                                    </div>
+                                                                                                    <textarea
+                                                                                                        id={`textarea-array-${key}-${entryIdx}-${f}`}
+                                                                                                        rows={4}
+                                                                                                        value={fv.join('\n')}
+                                                                                                        onChange={(e) => handleArrayObjectFieldChange(key, entryIdx, f, e.target.value.split('\n'))}
+                                                                                                        className="w-full p-6 text-sm font-medium text-slate-600 bg-white border-none focus:ring-0 leading-relaxed resize-none custom-scrollbar"
+                                                                                                        placeholder="Hər sətirə bir dənə..."
+                                                                                                    />
+                                                                                                </div>
                                                                                             ) : isBB ? (
                                                                                                 <div className="space-y-0 border border-slate-100 rounded-2xl overflow-hidden focus-within:ring-4 focus-within:ring-accent/5 transition-all">
                                                                                                     <div className="bg-slate-50/50 p-2 border-b border-slate-100 flex gap-1">
@@ -301,16 +324,70 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                                                                                                     </div>
                                                                                                 </div>
                                                                                             ) : (Array.isArray(fv) && fv.length > 0 && typeof fv[0] === 'object') ? (
-                                                                                                <div className="w-full bg-slate-100/50 rounded-2xl px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
-                                                                                                    <span>Sitemap-da idarə edin</span>
-                                                                                                    <span className="bg-white px-2 py-0.5 rounded-lg border border-slate-100">{fv.length} ALT MENYU</span>
+                                                                                                <div className="space-y-4 border-l-2 border-slate-100 pl-6 py-2">
+                                                                                                    {fv.map((subEntry: any, subIdx: number) => (
+                                                                                                        <div key={subIdx} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-4">
+                                                                                                            <div className="flex items-center justify-between">
+                                                                                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Element #{subIdx + 1}</span>
+                                                                                                                <button
+                                                                                                                    onClick={() => {
+                                                                                                                        const newFv = [...fv];
+                                                                                                                        newFv.splice(subIdx, 1);
+                                                                                                                        handleArrayObjectFieldChange(key, entryIdx, f, newFv);
+                                                                                                                    }}
+                                                                                                                    className="text-red-400 hover:text-red-500"
+                                                                                                                >
+                                                                                                                    <Trash2 className="h-3 w-3" />
+                                                                                                                </button>
+                                                                                                            </div>
+                                                                                                            <div className="space-y-4">
+                                                                                                                {Object.entries(subEntry).map(([sf, sfv]) => (
+                                                                                                                    <div key={sf} className="space-y-1">
+                                                                                                                        <label className="text-[8px] font-black uppercase tracking-widest text-slate-400">{formatFieldLabel(sf)}</label>
+                                                                                                                        {sf === 'icon' ? (
+                                                                                                                            <IconPicker
+                                                                                                                                value={String(sfv)}
+                                                                                                                                onChange={(v) => {
+                                                                                                                                    const newFv = [...fv];
+                                                                                                                                    newFv[subIdx] = { ...newFv[subIdx], [sf]: v };
+                                                                                                                                    handleArrayObjectFieldChange(key, entryIdx, f, newFv);
+                                                                                                                                }}
+                                                                                                                            />
+                                                                                                                        ) : (
+                                                                                                                            <input
+                                                                                                                                type="text"
+                                                                                                                                value={String(sfv)}
+                                                                                                                                onChange={(e) => {
+                                                                                                                                    const newFv = [...fv];
+                                                                                                                                    newFv[subIdx] = { ...newFv[subIdx], [sf]: e.target.value };
+                                                                                                                                    handleArrayObjectFieldChange(key, entryIdx, f, newFv);
+                                                                                                                                }}
+                                                                                                                                className="w-full bg-white border-none rounded-xl px-4 py-2 text-xs font-bold text-primary focus:ring-4 focus:ring-accent/5"
+                                                                                                                            />
+                                                                                                                        )}
+                                                                                                                    </div>
+                                                                                                                ))}
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    ))}
+                                                                                                    <button
+                                                                                                        onClick={() => {
+                                                                                                            const template = fv.length > 0 ? { ...fv[0] } : { icon: 'CheckCircle2', text: '' };
+                                                                                                            Object.keys(template).forEach(k => template[k] = (k === 'icon' ? 'CheckCircle2' : ''));
+                                                                                                            const newFv = [...fv, template];
+                                                                                                            handleArrayObjectFieldChange(key, entryIdx, f, newFv);
+                                                                                                        }}
+                                                                                                        className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-[10px] font-black text-slate-400 uppercase hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
+                                                                                                    >
+                                                                                                        <Plus className="h-3 w-3" /> Element Əlavə Et
+                                                                                                    </button>
                                                                                                 </div>
                                                                                             ) : (
-                                                                                                <input
-                                                                                                    type="text"
+                                                                                                <textarea
+                                                                                                    rows={String(fv).includes('\n') ? 4 : 1}
                                                                                                     value={String(fv)}
                                                                                                     onChange={(e) => handleArrayObjectFieldChange(key, entryIdx, f, e.target.value)}
-                                                                                                    className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-xs font-bold text-primary focus:ring-4 focus:ring-accent/5 outline-none"
+                                                                                                    className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-xs font-bold text-primary focus:ring-4 focus:ring-accent/5 outline-none resize-none custom-scrollbar"
                                                                                                 />
                                                                                             )}
                                                                                         </div>
@@ -352,18 +429,18 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                                                             OBYEKT
                                                         </span>
                                                     </div>
-                                                    <div className="p-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                                    <div className="p-8 space-y-6">
                                                         {Object.entries(entry).map(([f, fv]) => (
                                                             <div key={f} className="space-y-2">
                                                                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">{formatFieldLabel(f)}</label>
                                                                 {f === 'icon' ? (
                                                                     <IconPicker value={String(fv)} onChange={(v) => handleObjectFieldChange(key, f, v)} />
                                                                 ) : (
-                                                                    <input
-                                                                        type="text"
+                                                                    <textarea
+                                                                        rows={String(fv).includes('\n') ? 3 : 1}
                                                                         value={String(fv)}
                                                                         onChange={(e) => handleObjectFieldChange(key, f, e.target.value)}
-                                                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-xs font-bold text-primary focus:ring-4 focus:ring-accent/5 outline-none"
+                                                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-xs font-bold text-primary focus:ring-4 focus:ring-accent/5 outline-none resize-none custom-scrollbar"
                                                                     />
                                                                 )}
                                                             </div>

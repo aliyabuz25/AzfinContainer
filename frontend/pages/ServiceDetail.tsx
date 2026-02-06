@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { SERVICES } from '../constants';
-import { ArrowLeft, ArrowRight, CheckCircle2, Phone, Mail, FileText, ShieldCheck, Zap, Layers } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Phone, Mail, ShieldCheck, Zap, Layers } from 'lucide-react';
 import CalculationModal from '../components/CalculationModal';
 import { useContent } from '../lib/ContentContext';
+import { parseBBCode } from '../utils/bbcode';
 import { resolveIcon } from '../utils/iconRegistry';
 
 const ServiceDetail: React.FC = () => {
@@ -42,13 +43,11 @@ const ServiceDetail: React.FC = () => {
           </div>
 
           <div className="text-center mt-8 md:mt-0">
-            {/* Numbered header section removed as requested */}
-
             <h1 className="text-3xl md:text-5xl font-black text-primary tracking-tighter leading-[1.1] mb-8 max-w-4xl mx-auto uppercase italic">
               {service.title}
             </h1>
 
-            <p className="text-lg text-slate-500 font-bold italic leading-relaxed max-w-2xl mx-auto">
+            <p className="text-lg text-slate-500 font-bold italic leading-relaxed max-w-2xl mx-auto whitespace-pre-wrap">
               {service.description}
             </p>
           </div>
@@ -67,12 +66,12 @@ const ServiceDetail: React.FC = () => {
                   <h3 className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-6">{service.summaryTitle || 'XİDMƏT XÜLASƏSİ'}</h3>
                   <div className="space-y-6">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase mb-1">{service.standardLabel || 'STANDART'}</span>
-                      <span className="text-primary font-black uppercase tracking-tight italic">{service.standardValue || 'IFRS / ISA COMPLİANT'}</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase mb-1 whitespace-pre-wrap">{service.standardLabel || 'STANDART'}</span>
+                      <span className="text-primary font-black uppercase tracking-tight italic whitespace-pre-wrap">{service.standardValue || 'IFRS / ISA COMPLİANT'}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase mb-1">{service.durationLabel || 'MÜDDƏT'}</span>
-                      <span className="text-primary font-black uppercase tracking-tight italic">{service.durationValue || 'LAYİHƏYƏ GÖRƏ'}</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase mb-1 whitespace-pre-wrap">{service.durationLabel || 'MÜDDƏT'}</span>
+                      <span className="text-primary font-black uppercase tracking-tight italic whitespace-pre-wrap">{service.durationValue || 'LAYİHƏYƏ GÖRƏ'}</span>
                     </div>
                   </div>
                   <button
@@ -94,24 +93,34 @@ const ServiceDetail: React.FC = () => {
             {/* Main Narrative */}
             <div className="lg:col-span-8 space-y-20">
               <div className="prose prose-slate max-w-none">
-                <h2 className="text-2xl font-black text-primary mb-10 tracking-tight uppercase italic border-b border-slate-50 pb-4">{service.scopeTitle || 'XİDMƏTİN ƏHATƏ DAİRƏSİ'}</h2>
-                <p className="text-slate-600 text-lg leading-relaxed mb-12 border-l-2 border-accent/20 pl-10 italic">
-                  {service.content}
-                </p>
+                <h2 className="text-2xl font-black text-primary mb-10 tracking-tight uppercase italic border-b border-slate-50 pb-4 whitespace-pre-wrap">{service.scopeTitle || 'XİDMƏTİN ƏHATƏ DAİRƏSİ'}</h2>
+                <div className="text-slate-600 text-lg leading-relaxed mb-12 border-l-2 border-accent/20 pl-10 italic whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: parseBBCode(service.content || '') }} />
               </div>
 
               {/* Benefits */}
               <div>
                 <h3 className="text-xl font-black text-primary mb-12 tracking-tight uppercase italic">{service.benefitsTitle || 'XİDMƏTƏ DAXİL OLAN İSTİQAMƏTLƏR'}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {(Array.isArray(service.benefits) ? service.benefits : (typeof service.benefits === 'string' ? (service.benefits as string).split('\n').filter(Boolean) : [])).map((benefit, idx) => (
-                    <div key={idx} className="flex items-center gap-6 p-8 bg-slate-50 border border-slate-100 group hover:border-accent transition-colors">
-                      <div className="w-10 h-10 flex-shrink-0 bg-primary text-accent flex items-center justify-center rounded-sm group-hover:bg-accent group-hover:text-white transition-all shadow-md">
-                        <CheckCircle2 className="h-5 w-5" />
+                  {(Array.isArray(service.benefits) ? service.benefits : (typeof service.benefits === 'string' ? (service.benefits as string).split('\n').filter(Boolean) : [])).map((benefit, idx) => {
+                    const isObj = typeof benefit === 'object' && benefit !== null;
+                    const bText = isObj ? (benefit as any).text : (typeof benefit === 'string' && benefit.includes(':') ? benefit.split(':')[1].trim() : String(benefit));
+                    const bIconName = isObj ? (benefit as any).icon : (typeof benefit === 'string' && benefit.includes(':') ? benefit.split(':')[0].trim() : 'CheckCircle2');
+
+                    // Allow specific parsing for "IconName: Text" even in string format for flexibility
+                    const BenefitIcon = resolveIcon(bIconName);
+
+                    return (
+                      <div key={idx} className="flex items-center gap-6 p-8 bg-slate-50/80 border border-slate-100 group hover:border-accent/30 hover:bg-white transition-all duration-500 shadow-sm hover:shadow-xl">
+                        <div className="w-12 h-12 flex-shrink-0 bg-primary text-accent flex items-center justify-center rounded-sm group-hover:bg-[#45B3A2] group-hover:text-white transition-all duration-500 shadow-lg">
+                          <BenefitIcon className="h-5 w-5" />
+                        </div>
+                        <span
+                          className="text-primary font-black text-xs md:text-sm tracking-tight uppercase italic whitespace-pre-wrap leading-tight"
+                          dangerouslySetInnerHTML={{ __html: parseBBCode(bText) }}
+                        />
                       </div>
-                      <span className="text-primary font-bold text-sm tracking-tight uppercase italic">{benefit}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -123,7 +132,7 @@ const ServiceDetail: React.FC = () => {
       {/* CTA Section */}
       <section className="bg-primary py-32 relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-10 tracking-tighter uppercase italic">{service.consultationTitle || 'MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN'}</h2>
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-10 tracking-tighter uppercase italic whitespace-pre-wrap">{service.consultationTitle || 'MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN'}</h2>
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-accent text-white px-16 py-6 rounded-sm font-black text-xs uppercase tracking-[0.2em] hover:bg-primary-medium transition-all shadow-2xl mb-16"
