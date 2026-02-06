@@ -66,10 +66,7 @@ const Contact: React.FC = () => {
             {/* Form */}
             <div className="lg:col-span-7">
               <div className="bg-slate-50 p-10 md:p-16 rounded-sm border border-slate-100">
-                <div className="space-y-3 mb-8">
-                  <h3 className="text-lg font-black uppercase tracking-[0.4em] text-primary italic">{contact.formTitle}</h3>
-                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">{contact.formSubtitle}</p>
-                </div>
+
                 <form className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
