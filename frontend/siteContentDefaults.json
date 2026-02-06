@@ -1,0 +1,497 @@
+{
+  "settings": {
+    "siteTitle": "AZFİN GROUP MMC",
+    "siteDescription": "Professional Maliyyə, Muhasibatlıq və Audit Xidmətləri",
+    "siteLogo": "",
+    "seoKeywords": "audit, vergi, muhasibat, bakı, azerbaycan, konsaltinq",
+    "contactEmail": "office@azfin.az",
+    "contactPhone": "+994 50 200 00 00"
+  },
+  "home": {
+    "heroBadge": "Lisenziyalı Audit Xidmətləri",
+    "heroTitlePrefix": "Biznesiniz üçün",
+    "heroTitleHighlight": "Professional",
+    "heroTitleSuffix": "Audit",
+    "heroSummary": "Azfin Consulting olaraq şirkətlərin maliyyə hesabatlılığında şəffaflığı təmin edir, vergi risklərini minimuma endirir və strateji inkişaf yollarını müəyyən edirik.",
+    "heroImage": "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=1000",
+    "heroPrimaryAction": "Xidmətlər",
+    "heroSecondaryAction": "Təklif Alın",
+    "statsHeading": "Əsas rəqəmlərimiz",
+    "statsSummary": "850+ uğurlu audit, 320+ korporativ müştəri, 15+ illik təcrübə və 25+ peşəkar ekspert ilə əməliyyatları dəstəkləyirik.",
+    "servicesHeading": "Əsas Xidmətlərimiz",
+    "servicesSubtitle": "Professional Həllər",
+    "sectorsHeading": "Konsalting Sahəsində Bir Çox Sektor Üzrə Peşəkarıq",
+    "processHeading": "İş Prosesimiz",
+    "processSummary": "Hər bir layihəyə elmi əsaslarla və beynəlxalq audit metodologiyası ilə yanaşırıq.",
+    "clientsHeading": "BİZƏ GÜVƏNƏN MÜŞTƏRİLƏRİMİZ",
+    "ctaHeading": "AUDİT TƏKLİFİ AL",
+    "ctaButtonText": "MÜRACİƏT ET",
+    "stats": [
+      {
+        "label": "Uğurlu Audit",
+        "value": "850+",
+        "icon": "search-check"
+      },
+      {
+        "label": "Korporativ Müştəri",
+        "value": "320+",
+        "icon": "users"
+      },
+      {
+        "label": "İllik Təcrübə",
+        "value": "15+",
+        "icon": "award"
+      },
+      {
+        "label": "Peşəkar Ekspert",
+        "value": "25+",
+        "icon": "building-2"
+      }
+    ],
+    "sectors": [
+      {
+        "id": "logistics",
+        "icon": "plane",
+        "title": "Logistika və Nəqliyyat",
+        "description": "Beynəlxalq daşımalar və tədarük zənciri üzrə maliyyə auditi və strateji planlama."
+      },
+      {
+        "id": "food",
+        "icon": "utensils",
+        "title": "İaşə",
+        "description": "Restoran şəbəkələri və qida xidmətləri sektoru üçün xərclərin optimallaşdırılması və vergi uçotu."
+      },
+      {
+        "id": "education",
+        "icon": "graduation-cap",
+        "title": "Təhsil",
+        "description": "Özəl təhsil müəssisələri və təlim mərkəzlərinə üçün maliyyə idarəetməsi və audit xidmətləri."
+      },
+      {
+        "id": "manufacturing",
+        "icon": "factory",
+        "title": "İstehsalat və Sənaye",
+        "description": "Ağır sənaye müəssisələrinin istehsalat maliyyəsi və maya dəyəri analizi."
+      },
+      {
+        "id": "real-estate",
+        "icon": "building-2",
+        "title": "Daşınmaz Əmlak",
+        "description": "Tikinti layihələrinin maliyyə nəzarəti, audit və investisiya məsləhətləri."
+      },
+      {
+        "id": "technology",
+        "icon": "cpu",
+        "title": "Texnologiya və IT",
+        "description": "Yüksək texnologiya şirkətləri üçün vergi optimallaşdırılması və startap maliyyəsi."
+      }
+    ],
+    "process": [
+      {
+        "id": "01",
+        "icon": "search",
+        "title": "Diaqnostika",
+        "description": "Biznesin cari vəziyyətinin dərindən analizi."
+      },
+      {
+        "id": "02",
+        "icon": "lightbulb",
+        "title": "Strategiya",
+        "description": "Mümkün risklərin və həll yollarının planlanması."
+      },
+      {
+        "id": "03",
+        "icon": "rocket",
+        "title": "İcraat",
+        "description": "Müasir texnoloji alətlərlə auditin həyata keçirilməsi."
+      },
+      {
+        "id": "04",
+        "icon": "shield-check",
+        "title": "Təsdiqləmə",
+        "description": "Yekun rəy və gələcək inkişaf tövsiyələri."
+      }
+    ],
+    "clients": [
+      {
+        "id": "1",
+        "name": "Company A",
+        "logo": ""
+      },
+      {
+        "id": "2",
+        "name": "Group B",
+        "logo": ""
+      },
+      {
+        "id": "3",
+        "name": "Holding C",
+        "logo": ""
+      },
+      {
+        "id": "4",
+        "name": "LLC D",
+        "logo": ""
+      },
+      {
+        "id": "5",
+        "name": "Corp E",
+        "logo": ""
+      },
+      {
+        "id": "6",
+        "name": "A-Group",
+        "logo": ""
+      },
+      {
+        "id": "7",
+        "name": "B-Tech",
+        "logo": ""
+      },
+      {
+        "id": "8",
+        "name": "C-Logistics",
+        "logo": ""
+      },
+      {
+        "id": "9",
+        "name": "D-Invest",
+        "logo": ""
+      },
+      {
+        "id": "10",
+        "name": "E-Food",
+        "logo": ""
+      }
+    ],
+    "sections": [
+      {
+        "name": "hero",
+        "heading": "Biznesiniz üçün Professional Audit",
+        "summary": "Azfin Consulting olaraq şirkətlərin maliyyə hesabatlılığında şəffaflığı təmin edir, vergi risklərini minimuma endirir və strateji inkişaf yollarını müəyyən edirik."
+      },
+      {
+        "name": "stats",
+        "heading": "Əsas rəqəmlərimiz",
+        "summary": "850+ uğurlu audit, 320+ korporativ müştəri, 15+ illik təcrübə və 25+ peşəkar ekspert ilə əməliyyatları dəstəkləyirik."
+      },
+      {
+        "name": "services",
+        "heading": "Əsas xidmətdə nümunələr",
+        "summary": "Vergi xidmətləri, maliyyə xidmətləri, audit xidmətləri, hüquq xidmətləri və kadr uçotu istiqamətində peşəkar konsaltinq."
+      },
+      {
+        "name": "sectors",
+        "heading": "Hədəf sektorlar",
+        "summary": "Logistika, iaşə, təhsil, istehsalat, daşınmaz əmlak və texnologiya sahələrində maliyyə dəstəyi və audit."
+      },
+      {
+        "name": "process",
+        "heading": "İş prosesi",
+        "summary": "Diaqnostika → Strategiya → İcraat → Təsdiqləmə mərhələləri ilə hər layihəyə elmi yanaşma."
+      },
+      {
+        "name": "clients",
+        "heading": "Bizi seçənlər",
+        "summary": "Filter edilmiş şirkət siyahısında beynəlxalq və yerli korporasiyalar yer alır."
+      }
+    ]
+  },
+  "about": {
+    "overviewTitle": "Azfin Group MMC",
+    "overviewSummary": "2017-ci ildən sahibkarlara maliyyə, mühasibatlıq, vergi və konsaltinq dəstəyi verən təşkilat. Auditdən hüquqi xidmətlərə qədər tam spektr.",
+    "overviewImage": "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80",
+    "missionTitle": "Missiya",
+    "missionSummary": "Sahibkarların maliyyə və hüquqi məsələlərdə güvənli tərəfdaşı olmaq və onların inkişafı üçün doğru həlləri tətbiq etmək.",
+    "missionImage": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80",
+    "serviceTitle": "Xidmət sahələri",
+    "serviceSummary": "Mühasibatlıq, audit, vergi, tender sənədləşməsi və hüquqi dəstək üzrə geniş spektrli professional xidmətlər.",
+    "testimonialsTitle": "Müştəri rəyləri",
+    "team": [
+      {
+        "name": "Elvin Məmmədov",
+        "role": "DİREKTOR / EKSPERT AUDİTOR",
+        "img": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "name": "Leyla Qasımova",
+        "role": "BAŞ MÜHASİB",
+        "img": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "name": "Fuad Əliyev",
+        "role": "VERGİ DEPARTAMENTİNİN RƏHBƏRİ",
+        "img": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "name": "Nigar Sultanova",
+        "role": "HÜQUQŞÜNAS",
+        "img": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "name": "Anar Rzayev",
+        "role": "DAXİLİ AUDİTOR",
+        "img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "name": "Baxış Şirinov",
+        "role": "MALİYYƏ ANALİTİKİ",
+        "img": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400"
+      }
+    ],
+    "testimonials": [
+      {
+        "name": "Arzu Vəliyev",
+        "company": "Global Logistics LLC",
+        "text": "Azfin Consulting ilə 3 ildir əməkdaşlıq edirik. Onların peşəkar audit yanaşması biznesimizdəki maliyyə risklərini 40% azaltmağa kömək etdi."
+      },
+      {
+        "name": "Samirə Əliyeva",
+        "company": "TechNova Group",
+        "text": "Vergi yoxlamaları zamanı Azfin mütəxəssislərinin göstərdiyi dəstək əvəzsiz idi. Şəffaflıq və peşəkarlıq onların əsas xüsusiyyətidir."
+      },
+      {
+        "name": "Ramin İbrahimov",
+        "company": "Construct-X",
+        "text": "Mühasibat uçotunun rəqəmsallaşdırılması layihəsini birlikdə uğurla tamamladıq. İndi bütün maliyyə hesabatlarımıza real vaxtda nəzarət edə bilirik."
+      },
+      {
+        "name": "Günay Həsənova",
+        "company": "Education First",
+        "text": "Akademiya təlimlərindən sonra işçilərimizin peşəkarlıq səviyyəsi nəzərəçarpan dərəcədə artdı. Təşəkkür edirik!"
+      }
+    ],
+    "tabs": [
+      {
+        "name": "about",
+        "heading": "BİZİM HAQQIMIZDA",
+        "summary": "2017-ci ildən sahibkarlara maliyyə, mühasibatlıq, vergi və konsaltinq dəstəyi verən təşkilat. Auditdən hüquqi xidmətlərə qədər tam spektr.",
+        "icon": "building-2"
+      },
+      {
+        "name": "team",
+        "heading": "ƏMƏKDAŞLAR",
+        "summary": "Ekspert auditorlar, baş mühasib, vergi departamenti və hüquqşünaslardan ibarət multidisipliner komanda.",
+        "icon": "users"
+      },
+      {
+        "name": "testimonials",
+        "heading": "MÜŞTƏRİ RƏYLƏRİ",
+        "summary": "Qlobal logistika, texnologiya və təhsil sektorunda şirkətlər Azfinin peşəkarlığını vurğulayır.",
+        "icon": "message-square"
+      }
+    ]
+  },
+  "services": {
+    "heroBadge": "Xidmət Kataloqumuz",
+    "heroTitlePrefix": "Biznesiniz üçün",
+    "heroTitleHighlight": "İxtisaslaşmış",
+    "heroTitleSuffix": "Həllər",
+    "heroSummary": "Azfin Consulting hər bir müəssisəyə fərdi yanaşaraq, maliyyə dayanıqlığını təmin edən dəqiq strategiyalar hazırlayır.",
+    "heroImage": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80",
+    "list": [
+      {
+        "id": "1",
+        "title": "VERGİ XİDMƏTLƏRİ",
+        "description": "Vergi risklərinin minimuma endirilməsi və hesabatların dəqiq təqdimatı.",
+        "content": "Azfin mütəxəssisləri tərəfindən vergi qanunvericiliyinə tam uyğunluğun təmin edilməsi. Biz müştərilərimizə vergi yükünün optimallaşdırılması və dövlət orqanları ilə münasibətlərin peşəkar tənzimlənməsini təklif edirik.",
+        "benefits": [
+          "VERGİ HESABATLARININ HAZIRLANMASI",
+          "VERGİ YOXLAMALARINA HAZIRLIQ",
+          "VERGİ UÇOTU ÜZRƏ KONSULTASİYA",
+          "VERGİ PLANLAMASI VƏ OPTİMALLAŞDIRMA"
+        ],
+        "icon": "file-text",
+        "scopeTitle": "XİDMƏTİN ƏHATƏ DAİRƏSİ",
+        "summaryTitle": "XİDMƏT XÜLASƏSİ",
+        "benefitsTitle": "XİDMƏTƏ DAXİL OLAN İSTİQAMƏTLƏR",
+        "durationLabel": "MÜDDƏT",
+        "durationValue": "LAYİHƏYƏ GÖRƏ",
+        "standardLabel": "STANDART",
+        "standardValue": "IFRS / ISA COMPLİANT",
+        "consultationTitle": "MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN"
+      },
+      {
+        "id": "2",
+        "title": "MALİYYƏ XİDMƏTLƏRİ",
+        "description": "Biznesinizin maliyyə göstəricilərinin analizi və hesabatlılığın qurulması.",
+        "content": "Şirkətin maliyyə vəziyyətinin tam şəffaf şəkildə əks olunması üçün beynəlxalq standartlara uyğun uçot xidmətləri. Gündəlik əməliyyatlardan strateji maliyyə analizlərinə qədər tam dəstək.",
+        "benefits": [
+          "MALİYYƏ HESABATLARININ TƏRTİB EDİLMƏSİ",
+          "MƏNFƏƏT VƏ ZƏRƏRİN HAZIRLANMASI",
+          "GÜNDƏLİK ƏMƏLİYYATLARIN HƏYATA KEÇİRİLMƏSİ",
+          "MALİYYƏ FƏALİYYƏTİNİN ANALİTİKASI"
+        ],
+        "icon": "calculator",
+        "scopeTitle": "XİDMƏTİN ƏHATƏ DAİRƏSİ",
+        "summaryTitle": "XİDMƏT XÜLASƏSİ",
+        "benefitsTitle": "XİDMƏTƏ DAXİL OLAN İSTİQAMƏTLƏR",
+        "durationLabel": "MÜDDƏT",
+        "durationValue": "LAYİHƏYƏ GÖRƏ",
+        "standardLabel": "STANDART",
+        "standardValue": "NAS / IFRS STANDARD",
+        "consultationTitle": "MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN"
+      },
+      {
+        "id": "3",
+        "title": "AUDİT XİDMƏTLƏRİ",
+        "description": "Maliyyə hesabatlarının dürüstlüyünün və daxili nəzarətin təsdiqi.",
+        "content": "Beynəlxalq Audit Standartlarına (ISA) uyğun olaraq həyata keçirilən kənar və daxili audit yoxlamaları. Biz riskləri aşkarlayır və biznesin səmərəliliyini artırmaq üçün tövsiyələr veririk.",
+        "benefits": [
+          "MALİYYƏ HESABATLARININ AUDİTİ",
+          "DAXİLİ AUDİT XİDMƏTLƏRİ",
+          "XÜSUSİ MƏQSƏDLİ AUDİT YOXLAMALARI",
+          "RİSK MENECMENTİ QİYMƏTLƏNDİRİLMƏSİ"
+        ],
+        "icon": "search-check",
+        "scopeTitle": "XİDMƏTİN ƏHATƏ DAİRƏSİ",
+        "summaryTitle": "XİDMƏT XÜLASƏSİ",
+        "benefitsTitle": "XİDMƏTƏ DAXİL OLAN İSTİQAMƏTLƏR",
+        "durationLabel": "MÜDDƏT",
+        "durationValue": "LAYİHƏYƏ GÖRƏ",
+        "standardLabel": "STANDART",
+        "standardValue": "ISA COMPLİANT",
+        "consultationTitle": "MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN"
+      },
+      {
+        "id": "4",
+        "title": "HÜQUQ XİDMƏTLƏRİ",
+        "description": "Biznes fəaliyyətinin hüquqi cəhətdən tam qorunması və dəstəklənməsi.",
+        "content": "Müqavilə münasibətlərindən korporativ məsələlərə qədər peşəkar hüquqi yardım. Biznesinizin qanunvericilik qarşısında hər hansı bir boşluq qalmaması üçün çalışırıq.",
+        "benefits": [
+          "MÜQAVİLƏLƏRİN HÜQUİ EKSPERTİZASI",
+          "KORPORATİV HÜQUQ XİDMƏTLƏRİ",
+          "HÜQUQİ RƏYLƏRİN HAZIRLANMASI",
+          "BİZNESİN QEYDİYYATI VƏ LƏĞVİ"
+        ],
+        "icon": "scale",
+        "scopeTitle": "XİDMƏTİN ƏHATƏ DAİRƏSİ",
+        "summaryTitle": "XİDMƏT XÜLASƏSİ",
+        "benefitsTitle": "XİDMƏTƏ DAXİL OLAN İSTİQAMƏTLƏR",
+        "durationLabel": "MÜDDƏT",
+        "durationValue": "LAYİHƏYƏ GÖRƏ",
+        "standardLabel": "STANDART",
+        "standardValue": "LEGAL COMPLİANCE",
+        "consultationTitle": "MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN"
+      },
+      {
+        "id": "5",
+        "title": "KADR UÇOTU",
+        "description": "Əmək qanunvericiliyinə uyğun sənədləşmə və kadr işinin təşkili.",
+        "content": "Kadr kargüzarlığının Azərbaycan Respublikasının Əmək Məcəlləsinə uyğun qurulması və idarə edilməsi. İşçi və işəgötürən arasındakı hüquqi münasibətlərin düzgün rəsmiləşdirilməsi.",
+        "benefits": [
+          "KADR UÇOTUNUN TƏHLİLİ",
+          "KADR UÇOTUNUN APARILMASI",
+          "ƏMƏK MÜQAVİLƏLƏRİNİN TƏRTİBATİ",
+          "ƏMRLƏRİN VƏ DİGƏR NORMATİV SƏNƏDLƏRİN HAZIRLANMASI",
+          "MADDİ MƏSULİYYƏT VƏ XİDMƏT MÜQAVİLƏLƏRİNİN HAZIRLANMASI"
+        ],
+        "icon": "users",
+        "scopeTitle": "XİDMƏTİN ƏHATƏ DAİRƏSİ",
+        "summaryTitle": "XİDMƏT XÜLASƏSİ",
+        "benefitsTitle": "XİDMƏTƏ DAXİL OLAN İSTİQAMƏTLƏR",
+        "durationLabel": "MÜDDƏT",
+        "durationValue": "DAVAMLI / LAYİHƏ",
+        "standardLabel": "STANDART",
+        "standardValue": "LABOR CODE COMPLİANT",
+        "consultationTitle": "MƏSLƏHƏT ÜÇÜN MÜRACİƏT EDİN"
+      }
+    ]
+  },
+  "blog": {
+    "heroTitlePrefix": "Bloq və",
+    "heroTitleHighlight": "Xəbərlər",
+    "heroSummary": "Maliyyə və vergi dünyasındakı ən son yenilikləri bizim peşəkar komandamızın təhlili ilə izləyin.",
+    "heroImage": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80",
+    "loadingText": "Məzmun yüklənir...",
+    "emptyText": "Hazırda bloq yazısı mövcud deyil.",
+    "blogBadge": "Azfin Journal",
+    "readMoreText": "Davamını Oxu"
+  },
+  "academy": {
+    "heroBadge": "Azfin Akademiya",
+    "heroTitlePrefix": "Peşəkar",
+    "heroTitleHighlight": "Təlimlər",
+    "heroSummary": "Maliyyə və vergi sahəsində karyeranızı beynəlxalq standartlarla inkişaf etdirin.",
+    "heroImage": "https://images.unsplash.com/photo-1524178232363-1fb28f74b671?auto=format&fit=crop&q=80",
+    "cardCTA": "Müraciət",
+    "sidebarNote": "Yerlər məhduddur. Müraciət etməklə təlimdə iştirakınızı təsdiqləyin.",
+    "loadingText": "Təlimlər yüklənir...",
+    "emptyText": "Hazır təlim yoxdur."
+  },
+  "contact": {
+    "headerTitle": "Maliyyə gələcəyinizi",
+    "headerHighlight": "birlikdə",
+    "headerSummary": "Audit xidmətləri, vergi planlaması və təlimlərlə bağlı suallar üçün komandamız hər zaman dəstəyə hazırdır.",
+    "address": "Bakı şəhəri, Nizami küçəsi 123, Ofis 45",
+    "phone": "+994 50 200 00 00",
+    "email": "office@azfin.az",
+    "hours": "Bazar ertəsi - Cümə: 09:00 - 18:00",
+    "formTitle": "Əlaqə forması",
+    "formSubtitle": "Ad, e-poçt, sahə seçimi (Audit, Mühasibat, Vergi, Akademiya) və mesaj bölməsindən istifadə etməklə sorğu göndərin.",
+    "contactBadge": "Bizimlə Əlaqə",
+    "headerSuffix": "quraq",
+    "socialTitle": "Bizi izləyin",
+    "formNameLabel": "Ad və Soyadınız",
+    "formEmailLabel": "E-poçt ünvanınız",
+    "formServiceLabel": "Müraciət etdiyiniz sahə",
+    "formMessageLabel": "Mesajınız",
+    "formButtonText": "Mesajı göndərin"
+  },
+  "navigation": {
+    "primaryCTA": "Əlaqə",
+    "items": [
+      {
+        "label": "ANA SƏHİFƏ",
+        "path": "/"
+      },
+      {
+        "label": "HAQQIMIZDA",
+        "path": "/about"
+      },
+      {
+        "label": "XİDMƏTLƏR",
+        "path": "/services",
+        "children": [
+          {
+            "label": "Vergi xidmətləri",
+            "path": "/services/1"
+          },
+          {
+            "label": "Maliyyə xidmətləri",
+            "path": "/services/2"
+          },
+          {
+            "label": "Audit xidmətləri",
+            "path": "/services/3"
+          },
+          {
+            "label": "Hüquq xidmətləri",
+            "path": "/services/4"
+          },
+          {
+            "label": "Kadr uçotu",
+            "path": "/services/5"
+          }
+        ]
+      },
+      {
+        "label": "BLOQ VƏ XƏBƏRLƏR",
+        "path": "/blog"
+      },
+      {
+        "label": "AKADEMİYA",
+        "path": "/academy"
+      },
+      {
+        "label": "AUDİTTV",
+        "path": "https://audittv.az/",
+        "isExternal": true
+      }
+    ]
+  },
+  "footer": {
+    "description": "Azərbaycanın ən innovativ audit və konsalting mərkəzi. Biznesinizin maliyyə gələcəyini beynəlxalq güclə quraq.",
+    "socialHint": "Bizi izləyin"
+  }
+}

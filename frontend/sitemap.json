@@ -1,0 +1,525 @@
+{
+  "navigation": {
+    "items": [
+      {
+        "label": "ANA SƏHİFƏ",
+        "path": "/"
+      },
+      {
+        "label": "HAQQIMIZDA",
+        "path": "/about"
+      },
+      {
+        "label": "XİDMƏTLƏR",
+        "path": "/services",
+        "children": [
+          "Vergi xidmətləri",
+          "Maliyyə xidmətləri",
+          "Audit xidmətləri",
+          "Hüquq xidmətləri",
+          "Kadr uçotu"
+        ]
+      },
+      {
+        "label": "BLOQ VƏ XƏBƏRLƏR",
+        "path": "/blog"
+      },
+      {
+        "label": "AKADEMİYA",
+        "path": "/academy"
+      },
+      {
+        "label": "AUDİTTV",
+        "path": "https://audittv.az/"
+      }
+    ]
+  },
+  "pages": {
+    "home": {
+      "url": "/",
+      "hero": {
+        "title": "Biznesiniz üçün Professional Audit",
+        "summary": "Azfin Consulting olaraq şirkətlərin maliyyə hesabatlılığında şəffaflığı təmin edir, vergi risklərini minimuma endirir və strateji inkişaf yollarını müəyyən edirik."
+      },
+      "sections": [
+        {
+          "name": "stats",
+          "heading": "Əsas rəqəmlərimiz",
+          "summary": "850+ uğurlu audit, 320+ korporativ müştəri, 15+ illik təcrübə və 25+ peşəkar ekspert ilə əməliyyatları dəstəkləyirik."
+        },
+        {
+          "name": "services",
+          "heading": "Əsas xidmətdə nümunələr",
+          "summary": "Vergi xidmətləri, maliyyə xidmətləri, audit xidmətləri, hüquq xidmətləri və kadr uçotu istiqamətində peşəkar konsaltinq."
+        },
+        {
+          "name": "sectors",
+          "heading": "Hədəf sektorlar",
+          "summary": "Logistika, iaşə, təhsil, istehsalat, daşınmaz əmlak və texnologiya sahələrində maliyyə dəstəyi və audit."
+        },
+        {
+          "name": "process",
+          "heading": "İş prosesi",
+          "summary": "Diaqnostika → Strategiya → İcraat → Təsdiqləmə mərhələləri ilə hər layihəyə elmi yanaşma."
+        },
+        {
+          "name": "clients",
+          "heading": "Bizi seçənlər",
+          "summary": "Filter edilmiş şirkət siyahısında beynəlxalq və yerli korporasiyalar yer alır."
+        }
+      ]
+    },
+    "about": {
+      "url": "/about",
+      "tabs": [
+        {
+          "name": "overview",
+          "heading": "Azfin Group MMC",
+          "summary": "2017-ci ildən sahibkarlara maliyyə, mühasibatlıq, vergi və konsaltinq dəstəyi verən təşkilat. Auditdən hüquqi xidmətlərə qədər tam spektr."
+        },
+        {
+          "name": "mission",
+          "heading": "Missiya",
+          "summary": "Sahibkarların maliyyə və hüquqi məsələlərdə güvənli tərəfdaşı olmaq və onların inkişafı üçün doğru həlləri tətbiq etmək."
+        },
+        {
+          "name": "service-areas",
+          "heading": "Xidmət sahələri",
+          "summary": "Mühasibatlıq, audit, vergi, tender sənədləşməsi və hüquqi dəstək üzrə geniş xidmət portfeli."
+        },
+        {
+          "name": "team",
+          "heading": "Komanda və elanlar",
+          "summary": "Ekspert auditorlar, baş mühasib, vergi departamenti və hüquqşünaslardan ibarət multidisipliner komanda."
+        },
+        {
+          "name": "testimonials",
+          "heading": "Müştəri rəyləri",
+          "summary": "Qlobal logistika, texnologiya və təhsil sektorunda şirkətlər Azfinin peşəkarlığını vurğulayır."
+        }
+      ]
+    },
+    "services": {
+      "url": "/services",
+      "sections": [
+        {
+          "id": "1",
+          "title": "Vergi xidmətləri",
+          "description": "Vergi risklərinin minimuma endirilməsi və hesabatların dəqiq təqdimatı; vergi planlaması, yoxlamalara hazırlıq və uçot konsultasiyası."
+        },
+        {
+          "id": "2",
+          "title": "Maliyyə xidmətləri",
+          "description": "Maliyyə göstəricilərinin analizi, hesabatlılığın qurulması, mənfəət zərər hesabatları və analitik dəstək."
+        },
+        {
+          "id": "3",
+          "title": "Audit xidmətləri",
+          "description": "ISA uyğun kənar və daxili audit, daxili nəzarət sistemi qiymətləndirilməsi və risklərin idarə edilməsi."
+        },
+        {
+          "id": "4",
+          "title": "Hüquq xidmətləri",
+          "description": "Müqavilə ekspertizası, korporativ hüquq, hüquqi rəylər, qeydiyyat və ləğv prosesi."
+        },
+        {
+          "id": "5",
+          "title": "Kadr uçotu",
+          "description": "Əmək qanunvericiliyə uyğun sənədləşmə, kadr uçotunun təşkili və əmrlərin hazırlanması."
+        }
+      ]
+    },
+    "blog": {
+      "url": "/blog",
+      "posts": [
+        {
+          "title": "Test",
+          "summary": "dadaş",
+          "date": "2/6/2026",
+          "author": "Azfin Ekspert",
+          "category": "Vergi",
+          "link": "/blog/1770376500794"
+        }
+      ]
+    },
+    "academy": {
+      "url": "/academy",
+      "trainings": [
+        {
+          "title": "",
+          "summary": "asdasd",
+          "startDate": "12",
+          "duration": "1",
+          "level": "Başlanğıc",
+          "status": "upcoming",
+          "link": "/academy/1770375568599"
+        },
+        {
+          "title": "",
+          "summary": "deneme",
+          "startDate": "4",
+          "duration": "2",
+          "level": "Başlanğıc",
+          "status": "active",
+          "link": "/academy/1770374062843"
+        }
+      ]
+    },
+    "contact": {
+      "url": "/contact",
+      "sections": [
+        {
+          "name": "header",
+          "heading": "Maliyyə gələcəyinizi birlikdə quraq",
+          "summary": "Audit, vergi planlaması və təlimlərlə bağlı suallar üçün komandamız 09:00-18:00 arası cavab verir."
+        },
+        {
+          "name": "details",
+          "heading": "Əlaqə məlumatları",
+          "summary": "Bakı, Nizami küçəsi 123; +994 50 200 00 00; office@azfin.az; Bazar ertəsi - Cümə: 09:00 - 18:00."
+        },
+        {
+          "name": "form",
+          "heading": "Əlaqə forması",
+          "summary": "Ad, e-poçt, sahə seçimi (Audit, Mühasibat, Vergi, Akademiya) və mesaj bölməsindən istifadə etməklə sorğu göndərin."
+        }
+      ]
+    }
+  },
+  "text": {
+    "/": {
+      "source": "pages/Home.tsx",
+      "strings": [
+        "react",
+        "react-router-dom",
+        "lucide-react",
+        "../constants",
+        "../components/CalculationModal",
+        "../utils/siteContent",
+        "opacity-100",
+        "translate-y-0",
+        "opacity-0",
+        "translate-y-10",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "Logistika və Nəqliyyat",
+        "Beynəlxalq daşımalar və tədarük zənciri üzrə maliyyə auditi və strateji planlama.",
+        "İaşə",
+        "Restoran şəbəkələri və qida xidmətləri sektoru üçün xərclərin optimallaşdırılması və vergi uçotu.",
+        "Təhsil",
+        "Özəl təhsil müəssisələri və təlim mərkəzlərə üçün maliyyə idarəetməsi və audit xidmətləri.",
+        "İstehsalat və Sənaye",
+        "Ağır sənaye müəssisələrinin istehsalat maliyyəsi və maya dəyəri analizi.",
+        "Daşınmaz Əmlak",
+        "Tikinti layihələrinin maliyyə nəzarəti, audit və investisiya məsləhətləri.",
+        "Texnologiya və IT",
+        "Yüksək texnologiya şirkətləri üçün vergi optimallaşdırılması və startap maliyyəsi.",
+        "01",
+        "Diaqnostika",
+        "Biznesin cari vəziyyətinin dərindən analizi.",
+        "02",
+        "Strategiya",
+        "Mümkün risklərin və həll yollarının planlanması.",
+        "03",
+        "İcraat",
+        "Müasir texnoloji alətlərlə auditin həyata keçirilməsi.",
+        "04",
+        "Təsdiqləmə",
+        "Yekun rəy və gələcək inkişaf tövsiyələri.",
+        "Company A",
+        "Group B",
+        "Holding C",
+        "LLC D",
+        "Corp E",
+        "A-Group",
+        "B-Tech",
+        "C-Logistics",
+        "D-Invest",
+        "E-Food",
+        "audit",
+        "Təcrübəmiz",
+        "15+ İl",
+        "Səriştəli Xidmət",
+        "Əsas Xidmətlərimiz",
+        "Professional Həllər",
+        "Ətraflı",
+        "Konsalting Sahəsində Bir Çox Sektor Üzrə Peşəkarıq",
+        "İş",
+        "Prosesimiz",
+        "Hər bir layihəyə elmi əsaslarla və beynəlxalq audit metodologiyası ilə yanaşırıq.",
+        "BİZƏ GÜVƏNƏN MÜŞTƏRİLƏRİMİZ",
+        "@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } } .animate-marquee { animation: marquee 40s linear infinite; display: flex; width: max-content; } .animate-marquee:hover { animation-play-state: paused; }",
+        "AUDİT TƏKLİFİ AL",
+        "MÜRACİƏT ET"
+      ]
+    },
+    "/about": {
+      "source": "pages/About.tsx",
+      "strings": [
+        "react",
+        "lucide-react",
+        "../utils/siteContent",
+        "about",
+        "team",
+        "testimonials",
+        "Bizim haqqımızda",
+        "Əməkdaşlar",
+        "Müştəri rəyləri",
+        "Azfin Consulting",
+        "Azərbaycanın maliyyə sektorunda peşəkar və şəffaf xidmət mərkəzi.",
+        "Elvin Məmmədov",
+        "Direktor / Ekspert Auditor",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+        "Leyla Qasımova",
+        "Baş Mühasib",
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400",
+        "Fuad Əliyev",
+        "Vergi Departamentinin Rəhbəri",
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
+        "Nigar Sultanova",
+        "Hüquqşünas",
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400",
+        "Anar Rzayev",
+        "Daxili Auditor",
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400",
+        "Baxış Şirinov",
+        "Maliyyə Analitiki",
+        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400",
+        "Peşəkar komandamıza qoşulun",
+        "Karyeranızı Azfin ilə birlikdə inkişaf etdirin",
+        "Vakansiyalara Bax",
+        "Arzu Vəliyev",
+        "Global Logistics LLC",
+        "Azfin Consulting ilə 3 ildir əməkdaşlıq edirik. Onların peşəkar audit yanaşması biznesimizdəki maliyyə risklərini 40% azaltmağa kömək etdi.",
+        "Samirə Əliyeva",
+        "TechNova Group",
+        "Vergi yoxlamaları zamanı Azfin mütəxəssislərinin göstərdiyi dəstək əvəzsiz idi. Şəffaflıq və peşəkarlıq onların əsas xüsusiyyətidir.",
+        "Ramin İbrahimov",
+        "Construct-X",
+        "Mühasibat uçotunun rəqəmsallaşdırılması layihəsini birlikdə uğurla tamamladıq. İndi bütün maliyyə hesabatlarımıza real vaxtda nəzarət edə bilirik.",
+        "Günay Həsənova",
+        "Education First",
+        "Akademiya təlimlərindən sonra işçilərimizin peşəkarlıq səviyyəsi nəzərəçarpan dərəcədə artdı. Təşəkkür edirik!",
+        "\"",
+        "Bizimlə əməkdaşlıq edən 300-dən çox korporativ müştəri sırasına siz də qoşulun."
+      ]
+    },
+    "/services": {
+      "source": "pages/Services.tsx",
+      "strings": [
+        "react",
+        "../constants",
+        "react-router-dom",
+        "lucide-react",
+        "Xidmət Kataloqumuz",
+        "Biznesiniz üçün",
+        "İxtisaslaşmış",
+        "Həllər",
+        "Azfin Consulting hər bir müəssisəyə fərdi yanaşaraq, maliyyə dayanıqlığını təmin edən dəqiq strategiyalar hazırlayır.",
+        "0"
+      ]
+    },
+    "/services/:id": {
+      "source": "pages/ServiceDetail.tsx",
+      "strings": [
+        "react",
+        "react-router-dom",
+        "../constants",
+        "lucide-react",
+        "../components/CalculationModal",
+        "3",
+        "audit",
+        "general",
+        "Geri",
+        "Xidmət Xülasəsi",
+        "Standart",
+        "IFRS / ISA Compliant",
+        "Müddət",
+        "Layihəyə görə",
+        "Təklif Alın",
+        "Xidmətin Əhatə Dairəsi",
+        "Xidmətə daxil olan istiqamətlər",
+        "Məsləhət üçün müraciət edin",
+        "Zəng edin",
+        "+994 50 200 00 00",
+        "E-poçt",
+        "office@azfin.az"
+      ]
+    },
+    "/blog": {
+      "source": "pages/Blog.tsx",
+      "strings": [
+        "react",
+        "react-router-dom",
+        "lucide-react",
+        "../types",
+        "../utils/fetchData",
+        "../components/ImageWithFallback",
+        "Azfin Journal",
+        "Bloq və",
+        "Xəbərlər",
+        "Maliyyə və vergi dünyasındakı ən son yenilikləri bizim peşəkar komandamızın təhlili ilə izləyin.",
+        "Məzmun yüklənir...",
+        "Hazırda bloq yazısı mövcud deyil.",
+        "w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700",
+        "w-full h-full",
+        "no-image",
+        "Davamını Oxu"
+      ]
+    },
+    "/blog/:id": {
+      "source": "pages/BlogDetail.tsx",
+      "strings": [
+        "react",
+        "react-router-dom",
+        "lucide-react",
+        "../types",
+        "../utils/fetchData",
+        "../components/ImageWithFallback",
+        "Bloq məlumatları yüklənir...",
+        "Bloqa qayıt",
+        "|",
+        "Müəllif:",
+        "w-full h-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-1000",
+        "min-h-[320px] w-full",
+        "no-image",
+        "\"Azfin olaraq məqsədimiz maliyyə sahəsində ən son qanunvericilik dəyişikliklərini sizin üçün sadələşdirmək və tətbiqini təmin etməkdir.\"",
+        "Biznesin davamlılığı üçün daxili nəzarət sistemlərinin qurulması strateji əhəmiyyət kəsb edir. Bu məqalədə qeyd olunan məqamlar şirkətlərə vergi risklərini daha effektiv idarə etməyə kömək edəcəkdir. Peşəkar audit yanaşması ilə hər bir risk imkana çevrilə bilər.",
+        "Paylaş:",
+        "#Audit",
+        "#Vergi",
+        "#Azfin"
+      ]
+    },
+    "/academy": {
+      "source": "pages/Academy.tsx",
+      "strings": [
+        "react",
+        "react-router-dom",
+        "lucide-react",
+        "../types",
+        "../utils/fetchData",
+        "../components/ApplicationModal",
+        "../components/ImageWithFallback",
+        "Azfin Akademiya",
+        "Peşəkar",
+        "Təlimlər",
+        "Maliyyə və vergi sahəsində karyeranızı beynəlxalq standartlarla inkişaf etdirin.",
+        "Təlimlər yüklənir...",
+        "Hazır təlim yoxdur.",
+        "w-full h-full object-cover transition-transform duration-700 group-hover:scale-105",
+        "w-full h-full",
+        "no-image",
+        "upcoming",
+        "Aktivdir",
+        "Müraciət"
+      ]
+    },
+    "/academy/:id": {
+      "source": "pages/TrainingDetail.tsx",
+      "strings": [
+        "react",
+        "react-router-dom",
+        "lucide-react",
+        "../types",
+        "../utils/fetchData",
+        "../components/ApplicationModal",
+        "../components/ImageWithFallback",
+        "Təlim məlumatları yüklənir...",
+        "Akademiyaya qayıt",
+        "Peşəkar Sertifikat",
+        "w-full h-full object-cover",
+        "w-full h-full",
+        "no-image",
+        "Təlim Haqqında",
+        "Tədris Proqramı",
+        "Təlim Məlumatları",
+        "Müddət",
+        "Başlayır",
+        "Status",
+        "upcoming",
+        "Qeydiyyat Aktivdir",
+        "Davam Edir",
+        "Müraciət Et",
+        "Yerlər məhduddur. Müraciət etməklə təlimdə iştirakınızı təsdiqləyin."
+      ]
+    },
+    "/contact": {
+      "source": "pages/Contact.tsx",
+      "strings": [
+        "react",
+        "lucide-react",
+        "../utils/siteContent",
+        "Baş Ofis",
+        "Əlaqə nömrəsi",
+        "E-poçt ünvanı",
+        "İş rejimi",
+        "Bizimlə Əlaqə",
+        "quraq",
+        "Bizi izləyin",
+        "Ad və Soyadınız",
+        "E-poçt ünvanınız",
+        "Müraciət etdiyiniz sahə",
+        "Maliyyə Auditi",
+        "Mühasibat Autsorsinqi",
+        "Vergi Konsultasiyası",
+        "Akademiya Təlimləri",
+        "Mesajınız",
+        "Mesajı göndərin"
+      ]
+    },
+    "navbar": {
+      "source": "components/Navbar.tsx",
+      "strings": [
+        "react",
+        "react-router-dom",
+        "lucide-react",
+        "../constants",
+        "scroll",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "+994 50 200 00 00",
+        "office@azfin.az",
+        "B.e - Cümə: 09:00 - 18:00",
+        "AZFIN",
+        "Audit & Consulting",
+        "XİDMƏTLƏR",
+        "ƏLAQƏ"
+      ]
+    },
+    "footer": {
+      "source": "components/Footer.tsx",
+      "strings": [
+        "react",
+        "react-router-dom",
+        "../constants",
+        "../types",
+        "../utils/fetchData",
+        "AZFIN",
+        "Azərbaycanın ən innovativ audit və konsalting mərkəzi. Biznesinizin maliyyə gələcəyini beynəlxalq güclə quraq.",
+        "Naviqasiya",
+        "Ana Səhifə",
+        "Haqqımızda",
+        "Xidmətlər",
+        "Akademiya",
+        "Bloq və Xəbərlər",
+        "Əlaqə",
+        "AuditTV",
+        "Təlimlər yüklənir...",
+        "Hazır təlim yoxdur.",
+        "Bütün Təlimlər",
+        "©",
+        "Azfin Group. Bütün hüquqlar qorunur.",
+        "Linkedin",
+        "Instagram",
+        "Facebook"
+      ]
+    }
+  }
+}
