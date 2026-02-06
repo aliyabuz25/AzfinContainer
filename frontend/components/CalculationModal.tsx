@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, Send, ChevronDown } from 'lucide-react';
+import { submitForm } from '../utils/formSubmissions';
 
 interface CalculationModalProps {
   isOpen: boolean;
@@ -11,16 +12,44 @@ interface CalculationModalProps {
 
 const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, serviceType, serviceTitle }) => {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    businessType: '',
+    taxType: '',
+    clientStatus: '',
+    name: '',
+    phone: '',
+    email: ''
+  });
 
   useEffect(() => {
-    if (isOpen) setSubmitted(false);
+    if (isOpen) {
+      setSubmitted(false);
+      setFormData({
+        businessType: '',
+        taxType: '',
+        clientStatus: '',
+        name: '',
+        phone: '',
+        email: ''
+      });
+    }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    try {
+      await submitForm('audit', { ...formData, serviceTitle, serviceType });
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Calculation submission error:', error);
+      alert('Xəta baş verdi. Zəhmət olmasa yenidən yoxlayın.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,7 +84,12 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Fəaliyyət növü *</label>
                     <div className="relative">
-                      <select required className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm">
+                      <select
+                        required
+                        value={formData.businessType}
+                        onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
+                      >
                         <option value="">Seçin</option>
                         <option value="Ticarət">Ticarət</option>
                         <option value="İstehsal">İstehsal</option>
@@ -71,7 +105,12 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Vergi növü *</label>
                         <div className="relative">
-                          <select required className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm">
+                          <select
+                            required
+                            value={formData.taxType}
+                            onChange={(e) => setFormData({ ...formData, taxType: e.target.value })}
+                            className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
+                          >
                             <option value="">Seçin</option>
                             <option value="ƏDV">ƏDV Ödəyicisi</option>
                             <option value="Mənfəət">Mənfəət/Gəlir Vergisi</option>
@@ -83,7 +122,12 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Müştəri statusu *</label>
                         <div className="relative">
-                          <select required className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm">
+                          <select
+                            required
+                            value={formData.clientStatus}
+                            onChange={(e) => setFormData({ ...formData, clientStatus: e.target.value })}
+                            className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
+                          >
                             <option value="">Seçin</option>
                             <option value="Hüquqi">Hüquqi Şəxs</option>
                             <option value="Fiziki">Fiziki Şəxs (Sahibkar)</option>
@@ -96,20 +140,45 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ad Soyad *</label>
-                    <input required type="text" placeholder="Nümunə: Elvin Məmmədov" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm" />
+                    <input
+                      required
+                      type="text"
+                      placeholder="Nümunə: Elvin Məmmədov"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Telefon *</label>
-                    <input required type="tel" placeholder="+994 50 000 00 00" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm" />
+                    <input
+                      required
+                      type="tel"
+                      placeholder="+994 50 000 00 00"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Email *</label>
-                    <input required type="email" placeholder="email@shirkat.az" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm" />
+                    <input
+                      required
+                      type="email"
+                      placeholder="email@shirkat.az"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
+                    />
                   </div>
                 </div>
                 <div className="pt-4">
-                  <button type="submit" className="w-full bg-accent text-white py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all shadow-xl flex items-center justify-center gap-3">
-                    Sorğunu Göndər <Send className="h-4 w-4" />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-accent text-white py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {loading ? 'GÖNDƏRİLİR...' : 'Sorğunu Göndər'} <Send className="h-4 w-4" />
                   </button>
                 </div>
               </form>

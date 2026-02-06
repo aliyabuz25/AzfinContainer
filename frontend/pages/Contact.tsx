@@ -1,11 +1,36 @@
 
-import React from 'react';
-import { Mail, Phone, MapPin, Clock, Linkedin, Facebook, Send } from 'lucide-react';
+import React, { useState } from 'react';
+import { Mail, Phone, MapPin, Clock, Linkedin, Facebook, Send, CheckCircle2 } from 'lucide-react';
 import { useContent } from '../lib/ContentContext';
+import { submitForm } from '../utils/formSubmissions';
 
 const Contact: React.FC = () => {
   const { content } = useContent();
   const contact = content.contact;
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    service: 'Maliyyə Auditi',
+    message: ''
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await submitForm('contact', formData);
+      setSubmitted(true);
+      setFormData({ name: '', email: '', service: 'Maliyyə Auditi', message: '' });
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('Xəta baş verdi. Zəhmət olmasa yenidən yoxlayın.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const infoItems = [
     { icon: MapPin, title: 'Baş Ofis', detail: contact.address },
     { icon: Phone, title: 'Əlaqə nömrəsi', detail: contact.phone },
@@ -23,7 +48,7 @@ const Contact: React.FC = () => {
               {contact.contactBadge}
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-primary mb-6 tracking-tight uppercase italic">{contact.headerTitle} <br /><span className="text-accent">{contact.headerHighlight}</span> {contact.headerSuffix}</h1>
-            <p className="text-base text-slate-500 font-bold leading-relaxed max-w-xl italic">
+            <p className="text-base text-slate-500 font-bold leading-relaxed max-xl italic">
               {contact.headerSummary}
             </p>
           </div>
@@ -66,50 +91,83 @@ const Contact: React.FC = () => {
             {/* Form */}
             <div className="lg:col-span-7">
               <div className="bg-slate-50 p-10 md:p-16 rounded-sm border border-slate-100">
-
-                <form className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{contact.formNameLabel}</label>
-                      <input
-                        type="text"
-                        className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all rounded-sm"
-                        placeholder="..."
-                      />
+                {submitted ? (
+                  <div className="text-center py-10 animate-in fade-in zoom-in duration-500">
+                    <div className="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <CheckCircle2 className="h-8 w-8" />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{contact.formEmailLabel}</label>
-                      <input
-                        type="email"
-                        className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all rounded-sm"
-                        placeholder="..."
-                      />
+                    <h3 className="text-xl font-black text-primary uppercase italic tracking-tight mb-3">Mesajınız göndərildi!</h3>
+                    <p className="text-sm text-slate-500 font-bold mb-8 uppercase tracking-widest">Ən qısa zamanda sizinlə əlaqə saxlanılacaq.</p>
+                    <button
+                      onClick={() => setSubmitted(false)}
+                      className="bg-primary text-white px-10 py-3 rounded-sm font-bold text-[9px] uppercase tracking-[0.3em] hover:bg-primary-medium transition-all shadow-md"
+                    >
+                      Yeni mesaj
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{contact.formNameLabel}</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all rounded-sm"
+                          placeholder="..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{contact.formEmailLabel}</label>
+                        <input
+                          type="email"
+                          required
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all rounded-sm"
+                          placeholder="..."
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{contact.formServiceLabel}</label>
-                    <select className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all cursor-pointer rounded-sm">
-                      <option>Maliyyə Auditi</option>
-                      <option>Mühasibat Autsorsinqi</option>
-                      <option>Vergi Konsultasiyası</option>
-                      <option>Akademiya Təlimləri</option>
-                    </select>
-                  </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{contact.formServiceLabel}</label>
+                      <select
+                        required
+                        value={formData.service}
+                        onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                        className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all cursor-pointer rounded-sm"
+                      >
+                        <option>Maliyyə Auditi</option>
+                        <option>Mühasibat Autsorsinqi</option>
+                        <option>Vergi Konsultasiyası</option>
+                        <option>Akademiya Təlimləri</option>
+                      </select>
+                    </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{contact.formMessageLabel}</label>
-                    <textarea
-                      rows={4}
-                      className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all resize-none rounded-sm"
-                      placeholder="..."
-                    ></textarea>
-                  </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{contact.formMessageLabel}</label>
+                      <textarea
+                        rows={4}
+                        required
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all resize-none rounded-sm"
+                        placeholder="..."
+                      ></textarea>
+                    </div>
 
-                  <button className="w-full bg-accent text-white py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all shadow-xl flex items-center justify-center gap-3">
-                    {contact.formButtonText} <Send className="h-4 w-4" />
-                  </button>
-                </form>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-accent text-white py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
+                    >
+                      {loading ? 'GÖNDƏRİLİR...' : contact.formButtonText} <Send className="h-4 w-4" />
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
 

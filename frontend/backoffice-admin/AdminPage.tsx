@@ -41,6 +41,7 @@ import BlogManagementView from './BlogManagementView';
 import SitemapEditorView from './SitemapEditorView';
 import SectionEditorView from './SectionEditorView';
 import ClientManagementView from './ClientManagementView';
+import FormMessagesView from './FormMessagesView';
 
 const TEMP_DRAFT_KEY = 'azfin-site-content-draft';
 
@@ -189,7 +190,7 @@ const Admin: React.FC = () => {
   const { updateContent } = useContent();
 
 
-  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'clients'>('site');
+  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'clients' | 'messages'>('site');
   const [viewMode, setViewMode] = useState<'section' | 'full'>('section');
   const [blogMode, setBlogMode] = useState<'blog' | 'training'>('blog');
 
@@ -750,6 +751,8 @@ const Admin: React.FC = () => {
                 setStatus={setStatus}
                 CDNMonacoEditor={CDNMonacoEditor}
               />
+            ) : adminMode === 'messages' ? (
+              <FormMessagesView />
             ) : adminMode === 'clients' ? (
               <ClientManagementView
                 clients={draft.home?.clients || []}
