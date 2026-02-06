@@ -556,6 +556,9 @@ const Admin: React.FC = () => {
     setLoading(true);
 
     try {
+      if (!supabase) {
+        throw new Error('Supabase yapılandırılmamış. Lütfen çevre değişkenlerini kontrol edin.');
+      }
       const { data, error } = await supabase
         .from('admin_users')
         .select('*')
