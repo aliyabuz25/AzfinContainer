@@ -54,12 +54,25 @@ const Home: React.FC = () => {
                 {hero.heroSummary}
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
-                <Link to="/services" className="bg-accent text-white px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all flex items-center gap-3 shadow-xl">
-                  {hero.heroPrimaryAction} <ArrowRight className="h-4 w-4" />
-                </Link>
-                <button onClick={() => setIsModalOpen(true)} className="bg-white border border-slate-200 text-primary px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 transition-all shadow-sm">
-                  {hero.heroSecondaryAction}
-                </button>
+                {hero.heroPrimaryActionUrl === '#modal' ? (
+                  <button onClick={() => setIsModalOpen(true)} className="bg-accent text-white px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all flex items-center gap-3 shadow-xl">
+                    {hero.heroPrimaryAction} <ArrowRight className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <Link to={hero.heroPrimaryActionUrl || '/services'} className="bg-accent text-white px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all flex items-center gap-3 shadow-xl">
+                    {hero.heroPrimaryAction} <ArrowRight className="h-4 w-4" />
+                  </Link>
+                )}
+
+                {hero.heroSecondaryActionUrl === '#modal' ? (
+                  <button onClick={() => setIsModalOpen(true)} className="bg-white border border-slate-200 text-primary px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 transition-all shadow-sm">
+                    {hero.heroSecondaryAction}
+                  </button>
+                ) : (
+                  <Link to={hero.heroSecondaryActionUrl || '/about'} className="bg-white border border-slate-200 text-primary px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 transition-all shadow-sm">
+                    {hero.heroSecondaryAction}
+                  </Link>
+                )}
               </div>
             </div>
             <div className="relative hidden lg:block">
@@ -212,12 +225,21 @@ const Home: React.FC = () => {
           <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
             {hero.ctaHeading}
           </h2>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-accent text-white px-16 py-5 rounded-sm font-black text-[13px] uppercase tracking-[0.3em] hover:bg-[#2d8c73] transition-all shadow-2xl whitespace-nowrap"
-          >
-            {hero.ctaButtonText}
-          </button>
+          {hero.ctaButtonUrl === '#modal' ? (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-accent text-white px-16 py-5 rounded-sm font-black text-[13px] uppercase tracking-[0.3em] hover:bg-[#2d8c73] transition-all shadow-2xl whitespace-nowrap"
+            >
+              {hero.ctaButtonText}
+            </button>
+          ) : (
+            <Link
+              to={hero.ctaButtonUrl || '#'}
+              className="bg-accent text-white px-16 py-5 rounded-sm font-black text-[13px] uppercase tracking-[0.3em] hover:bg-[#2d8c73] transition-all shadow-2xl whitespace-nowrap"
+            >
+              {hero.ctaButtonText}
+            </Link>
+          )}
         </div>
       </section>
     </div>

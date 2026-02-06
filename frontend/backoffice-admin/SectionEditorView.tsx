@@ -152,7 +152,7 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                             </div>
                             <div className="grid gap-8">
                                 {configs
-                                    .filter((c) => (c.category || 'Ümumi') === category)
+                                    .filter((c) => (c.category || 'Ümumi') === category && !c.hideInMainLoop)
                                     .map((config) => {
                                         const key = config.field;
                                         // Hide image fields if they don't exist in the data (user request)
@@ -162,6 +162,8 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                                         const val = sectionFormValues[key] ?? '';
                                         const type = config.type || sectionValueTypes[key] || 'string';
                                         const fieldLabel = config.label || formatFieldLabel(key);
+                                        const urlFieldConfig = configs.find(c => c.field === `${key}Url`);
+                                        const urlVal = urlFieldConfig ? (sectionFormValues[urlFieldConfig.field] ?? '') : null;
 
                                         if (type === 'array-object') {
                                             const entries = safeParseArray(val) ?? [];
@@ -495,7 +497,18 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                                                         placeholder={type === 'array' ? "Hər sətirə bir element yazın..." : "Səliqəli şəkildə daxil edin..."}
                                                     />
                                                 ) : (
-                                                    <input type="text" value={val} onChange={(e) => handleSectionInputChange(key, e.target.value)} className="w-full bg-slate-50 border-none rounded-[20px] px-6 py-4 text-sm font-medium text-primary focus:ring-4 focus:ring-primary/5 outline-none" />
+                                                    <div className={urlFieldConfig ? "grid grid-cols-1 md:grid-cols-2 gap-6" : ""}>
+                                                        <div className="space-y-2">
+                                                            {urlFieldConfig && <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">MƏTN</label>}
+                                                            <input type="text" value={val} onChange={(e) => handleSectionInputChange(key, e.target.value)} className="w-full bg-slate-50 border-none rounded-[20px] px-6 py-4 text-sm font-medium text-primary focus:ring-4 focus:ring-primary/5 outline-none" />
+                                                        </div>
+                                                        {urlFieldConfig && (
+                                                            <div className="space-y-2">
+                                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">LİNK (URL)</label>
+                                                                <input type="text" value={String(urlVal)} onChange={(e) => handleSectionInputChange(urlFieldConfig.field, e.target.value)} className="w-full bg-slate-50/50 border border-slate-100 rounded-[20px] px-6 py-4 text-sm font-medium text-primary focus:ring-4 focus:ring-primary/5 outline-none" placeholder="URL və ya #modal..." />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         );

@@ -20,7 +20,9 @@ export const FIELD_CONFIG = [
     { section: 'home', category: 'Giriş (Hero)', field: 'heroTitleSuffix', label: 'Hero - Başlıq (Son hissə)' },
     { section: 'home', category: 'Giriş (Hero)', field: 'heroSummary', label: 'Hero - Qısa Məlumat', multiline: true },
     { section: 'home', category: 'Giriş (Hero)', field: 'heroPrimaryAction', label: 'Hero - Əsas Düymə' },
+    { section: 'home', category: 'Giriş (Hero)', field: 'heroPrimaryActionUrl', label: 'Hero - Əsas Düymə URL', hideInMainLoop: true },
     { section: 'home', category: 'Giriş (Hero)', field: 'heroSecondaryAction', label: 'Hero - İkinci Düymə' },
+    { section: 'home', category: 'Giriş (Hero)', field: 'heroSecondaryActionUrl', label: 'Hero - İkinci Düymə URL', hideInMainLoop: true },
     { section: 'home', category: 'Giriş (Hero)', field: 'heroImage', label: 'Hero - Arxa Fon Şəkli', type: 'image' },
     { section: 'home', category: 'Giriş (Hero)', field: 'heroExperienceLabel', label: 'Hero - Təcrübə Etiketi' },
     { section: 'home', category: 'Giriş (Hero)', field: 'heroExperienceValue', label: 'Hero - Təcrübə Dəyəri' },
@@ -45,6 +47,7 @@ export const FIELD_CONFIG = [
     { section: 'home', category: 'Digər', field: 'clients', label: 'Müştərilər / Tərəfdaşlar', type: 'array-object' },
     { section: 'home', category: 'Digər', field: 'ctaHeading', label: 'Alt CTA - Başlıq' },
     { section: 'home', category: 'Digər', field: 'ctaButtonText', label: 'Alt CTA - Düymə Mətni' },
+    { section: 'home', category: 'Digər', field: 'ctaButtonUrl', label: 'Alt CTA - Düymə URL', hideInMainLoop: true },
 
     // About
     { section: 'about', category: 'Giriş', field: 'introBadge', label: 'Haqqımızda - Nişan (Badge)' },

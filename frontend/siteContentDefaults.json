@@ -15,7 +15,9 @@
     "heroSummary": "Azfin Consulting olaraq şirkətlərin maliyyə hesabatlılığında şəffaflığı təmin edir, vergi risklərini minimuma endirir və strateji inkişaf yollarını müəyyən edirik.",
     "heroImage": "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=1000",
     "heroPrimaryAction": "Xidmətlər",
+    "heroPrimaryActionUrl": "/services",
     "heroSecondaryAction": "Təklif Alın",
+    "heroSecondaryActionUrl": "#modal",
     "heroExperienceLabel": "Təcrübəmiz",
     "heroExperienceValue": "15+ İl",
     "heroExperienceSublabel": "Səriştəli Xidmət",
@@ -29,6 +31,7 @@
     "clientsHeading": "BİZƏ GÜVƏNƏN MÜŞTƏRİLƏRİMİZ",
     "ctaHeading": "AUDİT TƏKLİFİ AL",
     "ctaButtonText": "MÜRACİƏT ET",
+    "ctaButtonUrl": "#modal",
     "stats": [
       {
         "label": "Uğurlu Audit",
