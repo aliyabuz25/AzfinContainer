@@ -6,10 +6,10 @@ const mapBlogRow = (row: any): BlogItem => ({
   id: row.id,
   title: row.title,
   excerpt: row.excerpt,
-  content: row.content,
-  date: row.date,
+  content: row.content || row.body,
+  date: row.date || row.published_at || row.created_at,
   author: row.author,
-  image: row.image,
+  image: row.image || row.image_url || row.cover_image,
   category: row.category,
   status: row.status,
 });
@@ -42,12 +42,16 @@ export const fetchBlogPosts = async (): Promise<BlogItem[]> => {
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
-    .eq('status', 'published')
+    .ilike('status', 'published')
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Failed to fetch blog posts', error);
+    console.error('Failed to fetch blog posts from Supabase:', error);
     return [];
+  }
+
+  if (!data || data.length === 0) {
+    console.warn('Supabase returned 0 published blog posts.');
   }
 
   return (data ?? []).map(mapBlogRow);
