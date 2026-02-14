@@ -78,18 +78,22 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
     const openEditor = (item?: BlogItem | TrainingItem) => {
         if (item) {
             isBlogSection ? handleBlogSelect(item as BlogItem) : handleTrainingSelect(item as TrainingItem);
+        } else {
+            isBlogSection ? resetBlogForm() : resetTrainingForm();
         }
         setIsModalOpen(true);
     };
 
     const closeEditor = () => {
         setIsModalOpen(false);
+        // Explicitly clear selection on close to avoid data persistence
         isBlogSection ? resetBlogForm() : resetTrainingForm();
     };
 
     const handleSaveAndClose = () => {
         isBlogSection ? handleBlogSave() : handleTrainingSave();
-        setTimeout(() => setIsModalOpen(false), 500);
+        // Give a short delay for the save animation/toast before closing
+        setTimeout(() => setIsModalOpen(false), 800);
     };
 
     return (
@@ -108,7 +112,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                     </div>
                     <button
                         onClick={() => openEditor()}
-                        className="bg-accent text-white px-8 py-4 rounded-[24px] flex items-center gap-3 font-black text-xs tracking-widest hover:bg-primary transition shadow-xl shadow-accent/20"
+                        className="bg-accent text-white px-8 py-4 rounded-[24px] flex items-center gap-3 font-black text-xs tracking-widest hover:bg-primary transition shadow-xl shadow-accent/20 active:scale-95"
                     >
                         <Plus className="h-5 w-5" />
                         YENİ {isBlogSection ? 'BLOG' : 'TƏLİM'}
@@ -119,40 +123,44 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                     {(isBlogSection ? blogPosts : trainings).map((item) => (
                         <div
                             key={item.id}
-                            className="bg-white rounded-[32px] border border-slate-100 overflow-hidden hover:shadow-xl transition-all group"
+                            onClick={() => openEditor(item)}
+                            className="bg-white rounded-[32px] border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all group cursor-pointer relative"
                         >
                             {(item as any).image && (
-                                <div className="aspect-video bg-slate-50 overflow-hidden">
-                                    <img src={(item as any).image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <div className="aspect-video bg-slate-50 overflow-hidden relative">
+                                    <img src={(item as any).image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors" />
                                 </div>
                             )}
-                            <div className="p-6 space-y-4">
-                                <div className="flex items-start justify-between gap-2">
-                                    <h3 className="text-lg font-black text-primary tracking-tight line-clamp-2">{item.title || 'Adsız'}</h3>
-                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${(item as any).status === 'published' || (item as any).status === 'completed'
-                                            ? 'bg-green-50 text-green-600'
-                                            : 'bg-amber-50 text-amber-600'
+                            <div className="p-8 space-y-4">
+                                <div className="flex items-start justify-between gap-4">
+                                    <h3 className="text-xl font-black text-primary tracking-tight line-clamp-2 leading-tight group-hover:text-accent transition-colors">{item.title || 'Adsız'}</h3>
+                                    <span className={`shrink-0 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${(item as any).status === 'published' || (item as any).status === 'completed'
+                                        ? 'bg-green-50 text-green-600'
+                                        : 'bg-amber-50 text-amber-600'
                                         }`}>
                                         {STATUS_LABELS[(item as any).status] || (item as any).status}
                                     </span>
                                 </div>
                                 {(item as any).excerpt && (
-                                    <p className="text-sm text-slate-600 line-clamp-3">{(item as any).excerpt}</p>
+                                    <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed">{(item as any).excerpt}</p>
                                 )}
                                 {(item as any).description && (
-                                    <p className="text-sm text-slate-600 line-clamp-3">{(item as any).description}</p>
+                                    <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed">{(item as any).description}</p>
                                 )}
-                                <div className="flex gap-2 pt-2">
-                                    <button
-                                        onClick={() => openEditor(item)}
-                                        className="flex-1 bg-primary text-white p-3 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] tracking-widest hover:bg-primary/90 transition"
+                                <div className="flex gap-3 pt-4 border-t border-slate-50">
+                                    <div
+                                        className="flex-1 bg-slate-50 text-primary py-4 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] tracking-widest group-hover:bg-primary group-hover:text-white transition-all"
                                     >
                                         <Edit className="h-4 w-4" />
-                                        DÜZƏLT
-                                    </button>
+                                        REDAKTƏ ET
+                                    </div>
                                     <button
-                                        onClick={() => isBlogSection ? handleBlogDelete(item.id) : handleTrainingDelete(item.id)}
-                                        className="bg-slate-50 text-slate-400 p-3 rounded-2xl hover:bg-red-50 hover:text-red-500 transition"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            isBlogSection ? handleBlogDelete(item.id) : handleTrainingDelete(item.id);
+                                        }}
+                                        className="bg-slate-50 text-slate-400 p-4 rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all active:scale-90"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </button>
