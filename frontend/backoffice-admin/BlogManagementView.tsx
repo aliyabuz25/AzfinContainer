@@ -4,6 +4,7 @@ import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { Settings, Upload, X, Check, RotateCcw, Bold, Italic, List, Quote, Link as LinkIcon, Image, Trash2, Plus, Edit, BookOpen, GraduationCap } from 'lucide-react';
 import { BlogItem, TrainingItem } from '../types';
+import { apiClient } from '../lib/apiClient';
 
 // Register custom sizes and fonts
 const Size = Quill.import('attributors/style/size') as any;
@@ -79,6 +80,35 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const isBlogSection = blogMode === 'blog';
+    const quillRef = React.useRef<any>(null);
+
+    const imageHandler = React.useCallback(() => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files?.[0];
+            if (!file) return;
+
+            const quill = quillRef.current?.getEditor();
+            if (!quill) return;
+
+            // Optional: Insert loading placeholder?
+            const range = quill.getSelection(true);
+
+            try {
+                const data = await apiClient.upload(file);
+                const url = data.url;
+
+                quill.insertEmbed(range.index, 'image', url);
+                quill.setSelection(range.index + 1);
+            } catch (err) {
+                console.error('Editor image upload failed:', err);
+            }
+        };
+    }, []);
 
     const modules = useMemo(() => ({
         toolbar: {
@@ -95,11 +125,14 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                 ['link', 'image', 'video'],
                 ['clean']
             ],
+            handlers: {
+                image: imageHandler
+            }
         },
         clipboard: {
             matchVisual: false,
         }
-    }), []);
+    }), [imageHandler]);
 
     const formats = [
         'font', 'size',
@@ -371,6 +404,8 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 block">TAM MƏZMUN</label>
                                             <div className="border border-slate-100 rounded-[32px] overflow-hidden shadow-sm group focus-within:border-accent/30 transition-all">
                                                 <ReactQuill
+                                                    // @ts-ignore
+                                                    ref={quillRef}
                                                     theme="snow"
                                                     value={isBlogSection ? blogForm.content : trainingForm.fullContent}
                                                     onChange={(val) => isBlogSection ? handleBlogChange('content', val) : handleTrainingChange('fullContent', val)}
