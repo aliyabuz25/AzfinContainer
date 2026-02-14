@@ -211,12 +211,6 @@ const Home: React.FC = () => {
               ))}
             </div>
           )}
-          <style dangerouslySetInnerHTML={{
-            __html: `
-            @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-            .animate-marquee { animation: marquee 40s linear infinite; display: flex; width: max-content; }
-            .animate-marquee:hover { animation-play-state: paused; }
-          `}} />
         </div>
       </section>
       <section className="bg-primary py-16 relative overflow-hidden">

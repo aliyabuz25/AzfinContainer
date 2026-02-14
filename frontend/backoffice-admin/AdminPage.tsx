@@ -727,8 +727,14 @@ const Admin: React.FC = () => {
             ) : adminMode === 'clients' ? (
               <ClientManagementView
                 clients={draft.home?.clients || []}
-                onChange={(newClients) => {
+                heading={draft.home?.clientsHeading || ''}
+                onClientsChange={(newClients) => {
                   const updated = mergeContent(draft, { home: { clients: newClients } });
+                  setDraft(updated);
+                  persistTempDraft(updated);
+                }}
+                onHeadingChange={(newHeading) => {
+                  const updated = mergeContent(draft, { home: { clientsHeading: newHeading } });
                   setDraft(updated);
                   persistTempDraft(updated);
                 }}
