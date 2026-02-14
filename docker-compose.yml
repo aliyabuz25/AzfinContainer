@@ -67,6 +67,7 @@ services:
       PMA_HOST: db
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
+      PMA_ABSOLUTE_URI: https://azfin.az/phpmyadmin/
       UPLOAD_LIMIT: 64M
     networks:
       - edge
