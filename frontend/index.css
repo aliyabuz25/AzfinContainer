@@ -44,3 +44,32 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Image Alignment for Content */
+img[style*="margin: auto"],
+img[style*="margin: 0px auto"] {
+  display: block !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+img[style*="float: left"] {
+  float: left !important;
+  margin-right: 1.5rem !important;
+  margin-bottom: 2rem !important;
+}
+
+img[style*="float: right"] {
+  float: right !important;
+  margin-left: 1.5rem !important;
+  margin-bottom: 2rem !important;
+}
+
+img[style*="display: block"] {
+  display: block !important;
+}
+
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+}

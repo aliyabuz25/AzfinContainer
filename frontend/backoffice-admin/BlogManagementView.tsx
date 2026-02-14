@@ -21,6 +21,38 @@ Quill.register('modules/blotFormatter', BlotFormatter);
 const Align = Quill.import('attributors/style/align') as any;
 Quill.register(Align, true);
 
+const Display = Quill.import('attributors/style/display') as any;
+Quill.register(Display, true);
+
+const Margin = Quill.import('attributors/style/margin') as any;
+Quill.register(Margin, true);
+
+const Float = Quill.import('attributors/style/float') as any;
+Quill.register(Float, true);
+
+const ImageBlot = Quill.import('formats/image') as any;
+class StyledImage extends ImageBlot {
+    static formats(domNode: any) {
+        const formats = super.formats(domNode);
+        if (domNode.style.display) formats.display = domNode.style.display;
+        if (domNode.style.margin) formats.margin = domNode.style.margin;
+        if (domNode.style.float) formats.float = domNode.style.float;
+        return formats;
+    }
+    format(name: any, value: any) {
+        if (['display', 'margin', 'float'].includes(name)) {
+            if (value) {
+                this.domNode.style[name] = value;
+            } else {
+                this.domNode.style.removeProperty(name);
+            }
+        } else {
+            super.format(name, value);
+        }
+    }
+}
+Quill.register(StyledImage, true);
+
 interface BlogManagementViewProps {
     blogMode: 'blog' | 'training';
     setBlogMode: (mode: 'blog' | 'training') => void;
@@ -264,6 +296,33 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                 .blot-formatter__resizer {
                     border: 2px solid #3b82f6 !important;
                     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+                }
+
+                /* Image Alignment within Editor */
+                .ql-editor img {
+                    max-width: 100%;
+                    height: auto;
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+                .ql-editor img[style*="display: block"] {
+                    display: block !important;
+                }
+                .ql-editor img[style*="margin: auto"],
+                .ql-editor img[style*="margin: 0px auto"] {
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    display: block !important;
+                }
+                .ql-editor img[style*="float: left"] {
+                    float: left !important;
+                    margin-right: 1.5rem !important;
+                    margin-bottom: 1rem !important;
+                }
+                .ql-editor img[style*="float: right"] {
+                    float: right !important;
+                    margin-left: 1.5rem !important;
+                    margin-bottom: 1rem !important;
                 }
             `}</style>
             {/* List View */}
