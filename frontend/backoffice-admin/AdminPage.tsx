@@ -190,7 +190,7 @@ const Admin: React.FC = () => {
   const { updateContent } = useContent();
 
 
-  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages'>('site');
+  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients'>('site');
   const [viewMode, setViewMode] = useState<'section' | 'full'>('section');
   const [blogMode, setBlogMode] = useState<'blog' | 'training'>('blog');
 
@@ -730,6 +730,16 @@ const Admin: React.FC = () => {
               />
             ) : adminMode === 'messages' ? (
               <FormMessagesView />
+            ) : adminMode === 'clients' ? (
+              <ClientManagementView
+                clients={draft.home?.clients || []}
+                onChange={(newClients) => {
+                  const updated = mergeContent(draft, { home: { clients: newClients } });
+                  setDraft(updated);
+                  persistTempDraft(updated);
+                }}
+                handleImageUpload={handleImageUpload}
+              />
             ) : (
               <SectionEditorView
                 selectedSection={selectedSection}
