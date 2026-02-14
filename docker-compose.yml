@@ -73,8 +73,11 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=edge'
-      - 'traefik.http.routers.pma.rule=Host(`pma.octotech.az`)'
+      - 'traefik.http.routers.pma.rule=(Host(`azfin.az`) || Host(`azfin.octotech.az`)) && PathPrefix(`/phpmyadmin`)'
       - 'traefik.http.routers.pma.entrypoints=web'
+      - 'traefik.http.routers.pma.priority=200'
+      - 'traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin'
+      - 'traefik.http.routers.pma.middlewares=pma-strip'
       - 'traefik.http.services.pma.loadbalancer.server.port=80'
 
 networks:
