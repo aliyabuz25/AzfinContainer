@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import BlotFormatter from '@enzedonline/quill-blot-formatter2';
 import { Settings, Upload, X, Check, RotateCcw, Bold, Italic, List, Quote, Link as LinkIcon, Image, Trash2, Plus, Edit, BookOpen, GraduationCap } from 'lucide-react';
 import { BlogItem, TrainingItem } from '../types';
 import { apiClient } from '../lib/apiClient';
@@ -14,6 +15,8 @@ Quill.register(Size, true);
 const Font = Quill.import('attributors/style/font') as any;
 Font.whitelist = ['inter', 'roboto', 'serif', 'monospace', 'arial', 'georgia'];
 Quill.register(Font, true);
+
+Quill.register('modules/blotFormatter', BlotFormatter);
 
 interface BlogManagementViewProps {
     blogMode: 'blog' | 'training';
@@ -129,6 +132,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                 image: imageHandler
             }
         },
+        blotFormatter: {},
         clipboard: {
             matchVisual: false,
         }
