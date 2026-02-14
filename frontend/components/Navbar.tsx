@@ -20,14 +20,20 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const currentScroll = window.scrollY;
+      // Use hysteresis to prevent jittering at the threshold
+      if (currentScroll > 120) {
+        setIsScrolled(true);
+      } else if (currentScroll < 20) {
+        setIsScrolled(false);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <div className="flex flex-col w-full sticky top-0 z-50 transition-all duration-300">
+    <div className="flex flex-col w-full sticky top-0 z-50">
       {/* Top Utility Bar */}
       <div className={`bg-primary text-slate-300 px-4 sm:px-6 lg:px-8 hidden md:block border-b border-white/5 transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 py-0 opacity-0' : 'h-10 py-2 opacity-100'}`}>
         <div className="max-w-7xl mx-auto flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.15em]">
