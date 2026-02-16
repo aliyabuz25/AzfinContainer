@@ -1,0 +1,37 @@
+Selam,
+Düzeltmeleri tamamladım. Kısaca özet geçiyorum:
+
+- Təlim redaktoru tarafında başlangıç tarihi artık doğru formatlanıyor.
+  0101 yazınca direkt 01.01 oluyor.
+
+- Təlim kaydederken çıkan hatayı çözdüm.
+  Syllabus boş gelince backend hata veriyordu, o kısmı güvene aldım.
+
+- Footer’daki “Bizi izleyin” boş linkti, onu gerçek linke bağladım.
+
+- Blog sayfasında arka plan resmi değişmiyordu.
+  Admin’de ne seçilirse artık sayfada o görünüyor.
+
+- AuditTV linkini düzelttim.
+  Hem masaüstü hem mobil menüde dış link düzgün açılıyor.
+
+- Müşteri yorumlarında uzun metin taşma yapıyordu.
+  Metin kırılımını düzelttim, kutudan taşmıyor.
+
+- Hizmetler sayfasında da hero görseli değişmiyordu.
+  Orada da admindeki görsel artık direkt yansıyor.
+
+Not:
+- Tasarımı değiştirmedim.
+- İçerik metinlerine dokunmadım.
+- Build aldım, sorun yok.
+- Push atmadım.
+
+Değişen dosyalar:
+backend/server.js
+frontend/backoffice-admin/AdminPage.tsx
+frontend/components/Footer.tsx
+frontend/components/Navbar.tsx
+frontend/pages/About.tsx
+frontend/pages/Blog.tsx
+frontend/pages/Services.tsx

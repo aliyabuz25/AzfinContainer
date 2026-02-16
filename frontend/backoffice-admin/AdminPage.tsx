@@ -82,6 +82,12 @@ const generateId = () => {
   });
 };
 
+const formatStartDate = (rawValue: string) => {
+  const digits = rawValue.replace(/\D/g, '').slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+};
+
 // Reusable IconPicker component
 const IconPicker: React.FC<{ value?: string; onChange: (value: string) => void }> = ({ value, onChange }) => {
   const [open, setOpen] = useState(false);
@@ -424,7 +430,10 @@ const Admin: React.FC = () => {
   };
 
   const handleBlogChange = (f: string, v: any) => setBlogForm(prev => ({ ...prev, [f]: v }));
-  const handleTrainingChange = (f: string, v: any) => setTrainingForm(prev => ({ ...prev, [f]: v }));
+  const handleTrainingChange = (f: string, v: any) => {
+    const nextValue = f === 'startDate' ? formatStartDate(String(v ?? '')) : v;
+    setTrainingForm(prev => ({ ...prev, [f]: nextValue }));
+  };
 
   const handleBlogSave = async () => {
     setBlogSaving(true);

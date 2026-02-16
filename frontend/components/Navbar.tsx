@@ -126,15 +126,26 @@ const Navbar: React.FC = () => {
                       )}
                     </div>
                   ) : (
-                    <Link
-                      to={item.path}
-                      target={item.isExternal ? "_blank" : "_self"}
-                      className={`${location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)) ? 'text-accent' : 'text-primary hover:text-accent'
-                        } px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center text-center leading-tight whitespace-pre-line group relative`}
-                    >
-                      {item.label}
-                      <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-                    </Link>
+                    item.isExternal ? (
+                      <a
+                        href={item.path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-accent px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center text-center leading-tight whitespace-pre-line group relative"
+                      >
+                        {item.label}
+                        <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+                      </a>
+                    ) : (
+                      <Link
+                        to={item.path}
+                        className={`${location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)) ? 'text-accent' : 'text-primary hover:text-accent'
+                          } px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center text-center leading-tight whitespace-pre-line group relative`}
+                      >
+                        {item.label}
+                        <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+                      </Link>
+                    )
                   )}
                 </div>
               ))}
@@ -161,13 +172,25 @@ const Navbar: React.FC = () => {
             <div className="flex flex-col gap-5">
               {dynamicNavItems.map((item) => (
                 <div key={item.label} className="border-b border-slate-50 pb-4">
-                  <Link
-                    to={item.path}
-                    onClick={() => setIsOpen(false)}
-                    className="text-base font-bold text-primary uppercase tracking-tight whitespace-pre-line block"
-                  >
-                    {item.label}
-                  </Link>
+                  {item.isExternal ? (
+                    <a
+                      href={item.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsOpen(false)}
+                      className="text-base font-bold text-primary uppercase tracking-tight whitespace-pre-line block"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      onClick={() => setIsOpen(false)}
+                      className="text-base font-bold text-primary uppercase tracking-tight whitespace-pre-line block"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
                 </div>
               ))}
               <Link

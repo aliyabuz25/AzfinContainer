@@ -132,16 +132,16 @@ const About: React.FC = () => {
                 <div className="space-y-12">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {(about.testimonials || []).map((review: any, idx: number) => (
-                      <div key={idx} className="bg-slate-50 p-10 border-l-4 border-accent hover:shadow-xl transition-all duration-500">
+                      <div key={idx} className="bg-slate-50 p-10 border-l-4 border-accent hover:shadow-xl transition-all duration-500 overflow-hidden">
                         <MessageSquare className="h-6 w-6 text-accent mb-6 opacity-20" />
-                        <p className="text-slate-600 font-bold italic leading-relaxed mb-8">"{review.text}"</p>
+                        <p className="text-slate-600 font-bold italic leading-relaxed mb-8 break-words whitespace-pre-wrap">"{review.text}"</p>
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-accent font-black text-xs">
                             {review.name.split(' ').map((n: string) => n[0]).join('')}
                           </div>
-                          <div>
-                            <h5 className="text-[11px] font-black text-primary uppercase tracking-widest">{review.name}</h5>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{review.company}</p>
+                          <div className="min-w-0">
+                            <h5 className="text-[11px] font-black text-primary uppercase tracking-widest break-words">{review.name}</h5>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest break-words">{review.company}</p>
                           </div>
                         </div>
                       </div>

@@ -9,11 +9,16 @@ const Services: React.FC = () => {
   const { content } = useContent();
   const servicesData = content.services || ({} as any);
   const dynamicServicesList = servicesData.list || SERVICES;
+  const heroHasImage = Boolean(servicesData.heroImage);
 
   return (
     <div className="flex flex-col bg-white">
       {/* Header */}
-      <div className="relative bg-slate-50 border-b border-slate-100 py-24 overflow-hidden">
+      <div
+        className={`relative border-b border-slate-100 py-24 overflow-hidden ${heroHasImage ? '' : 'bg-slate-50'}`}
+        style={heroHasImage ? { backgroundImage: `url(${servicesData.heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      >
+        {heroHasImage && <div className="absolute inset-0 bg-white/85" />}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-end justify-between gap-10">
             <div className="max-w-2xl">

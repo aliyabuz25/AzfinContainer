@@ -13,6 +13,12 @@ const Footer: React.FC = () => {
   const { content: siteContent, loading: contentLoading } = useContent();
   const footer = siteContent.footer;
   const nav = siteContent.navigation;
+  const auditTvLink = (nav.items || []).find(
+    (item: any) =>
+      item?.isExternal &&
+      typeof item?.path === 'string' &&
+      /audittv|audit\s*tv/i.test(`${item?.label || ''} ${item.path}`)
+  )?.path || 'https://www.instagram.com/audittv.az/';
 
   useEffect(() => {
     let isMounted = true;
@@ -73,7 +79,7 @@ const Footer: React.FC = () => {
               <li><Link to="/academy" className="text-slate-100 hover:text-white transition-colors text-[15px] font-medium">Akademiya</Link></li>
               <li><Link to="/blog" className="text-slate-100 hover:text-white transition-colors text-[15px] font-medium">Bloq və Xəbərlər</Link></li>
               <li><Link to="/contact" className="text-slate-100 hover:text-white transition-colors text-[15px] font-medium">Əlaqə</Link></li>
-              <li><a href="https://audittv.az/" target="_blank" rel="noopener noreferrer" className="text-slate-100 hover:text-white transition-colors text-[15px] font-medium">AuditTV</a></li>
+              <li><a href={auditTvLink} target="_blank" rel="noopener noreferrer" className="text-slate-100 hover:text-white transition-colors text-[15px] font-medium">AuditTV</a></li>
             </ul>
           </div>
 
@@ -131,7 +137,7 @@ const Footer: React.FC = () => {
           </p>
 
           <div className="flex items-center gap-8">
-            <a href="#" className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">{footer.socialHint}</a>
+            <a href={auditTvLink} target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">{footer.socialHint}</a>
             {/* Additional social links could be mapped here if needed */}
           </div>
         </div>

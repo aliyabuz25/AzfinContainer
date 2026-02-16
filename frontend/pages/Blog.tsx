@@ -33,11 +33,16 @@ const Blog: React.FC = () => {
 
   const { content } = useContent();
   const blogContent = content.blog;
+  const heroHasImage = Boolean(blogContent.heroImage);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
       {/* Redesigned Split Header to match the overall site design */}
-      <div className="relative bg-slate-50 border-b border-slate-100 py-20 overflow-hidden">
+      <div
+        className={`relative border-b border-slate-100 py-20 overflow-hidden ${heroHasImage ? '' : 'bg-slate-50'}`}
+        style={heroHasImage ? { backgroundImage: `url(${blogContent.heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      >
+        {heroHasImage && <div className="absolute inset-0 bg-white/85" />}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-end justify-between gap-10">
             <div className="max-w-2xl">
