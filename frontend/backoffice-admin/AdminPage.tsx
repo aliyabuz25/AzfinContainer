@@ -464,6 +464,11 @@ const Admin: React.FC = () => {
   };
 
   const handleTrainingSave = async () => {
+    if (!trainingForm.title?.trim()) {
+      toast.error('Təlim başlığı boş ola bilməz.');
+      return;
+    }
+
     setTrainingSaving(true);
     try {
       const isNew = !selectedTrainingId;
@@ -484,7 +489,8 @@ const Admin: React.FC = () => {
       }
     } catch (err) {
       console.error('Save error:', err);
-      toast.error('Xəta baş verdi.');
+      const message = err instanceof Error ? err.message : 'Xəta baş verdi.';
+      toast.error(message);
     } finally {
       setTrainingSaving(false);
     }
