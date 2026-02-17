@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const { randomUUID } = require('crypto');
 const mysql = require('mysql2/promise');
 
 const app = express();
@@ -59,6 +60,19 @@ function normalizeSyllabus(value) {
 
 function toSqlValue(value) {
     return value === undefined ? null : value;
+}
+
+function normalizeTrainingPayload(payload) {
+    const t = payload && typeof payload === 'object' ? payload : {};
+    const rawTitle = typeof t.title === 'string' ? t.title.trim() : '';
+    const rawId = typeof t.id === 'string' ? t.id.trim() : '';
+
+    return {
+        ...t,
+        id: rawId || randomUUID(),
+        title: rawTitle || 'Adsız Təlim',
+        status: typeof t.status === 'string' && t.status.trim() ? t.status : 'upcoming'
+    };
 }
 
 async function initDb() {
@@ -303,10 +317,7 @@ app.get('/api/trainings', async (req, res) => {
 
 app.post('/api/trainings', async (req, res) => {
     try {
-        const t = req.body;
-        if (!t || !t.id || !t.title) {
-            return res.status(400).json({ error: 'id və title mütləqdir.' });
-        }
+        const t = normalizeTrainingPayload(req.body);
 
         const syllabus = normalizeSyllabus(t.syllabus);
         const syllabusJson = JSON.stringify(syllabus);
