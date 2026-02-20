@@ -26,6 +26,12 @@ import { BlogItem, TrainingItem } from '../types';
 import CDNMonacoEditor from '../components/CDNMonacoEditor';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {
+  DEFAULT_SMTP_SETTINGS,
+  SMTPSettings,
+  fetchSmtpSettings,
+  saveSmtpSettings
+} from '../utils/smtpSettings';
 
 // Local Imports
 import {
@@ -42,6 +48,7 @@ import SitemapEditorView from './SitemapEditorView';
 import SectionEditorView from './SectionEditorView';
 import ClientManagementView from './ClientManagementView';
 import FormMessagesView from './FormMessagesView';
+import SmtpSettingsView from './SmtpSettingsView';
 
 const TEMP_DRAFT_KEY = 'azfin-site-content-draft';
 
@@ -174,12 +181,13 @@ const Admin: React.FC = () => {
   const { updateContent } = useContent();
 
 
-  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients'>('site');
+  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social'>('site');
   const [viewMode, setViewMode] = useState<'section' | 'full'>('section');
   const [blogMode, setBlogMode] = useState<'blog' | 'training'>('blog');
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autoSaving, setAutoSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
@@ -199,11 +207,25 @@ const Admin: React.FC = () => {
   const [blogSaving, setBlogSaving] = useState(false);
   const [trainingSaving, setTrainingSaving] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+  const [smtpSettings, setSmtpSettings] = useState<SMTPSettings>(DEFAULT_SMTP_SETTINGS);
+  const [smtpSaving, setSmtpSaving] = useState(false);
+  const [smtpDirty, setSmtpDirty] = useState(false);
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const trainingContentRef = useRef<HTMLTextAreaElement>(null);
+  const lastSavedDraftRef = useRef<string>('');
 
   const supabaseReady = true; // Renamed to keep compatibility with existing logic, but now it's always ready with the new API
+
+  const persistCurrentDraft = useCallback(
+    async (payload: SiteContent) => {
+      const { error } = await upsertSiteSettings(payload);
+      if (error) throw error;
+      updateContent?.(payload);
+      clearTempDraft();
+    },
+    [updateContent]
+  );
 
   // Load Initial Data
   useEffect(() => {
@@ -218,16 +240,19 @@ const Admin: React.FC = () => {
           const remoteContent = settings?.content || {};
           currentDraft = mergeSiteContent(remoteContent);
 
-          const [bp, tr] = await Promise.all([fetchAdminBlogPosts(), fetchAdminTrainings()]);
+          const [bp, tr, smtp] = await Promise.all([fetchAdminBlogPosts(), fetchAdminTrainings(), fetchSmtpSettings()]);
           setBlogPosts(bp);
           setTrainings(tr);
+          setSmtpSettings(smtp);
+          setSmtpDirty(false);
         }
 
+        const initialDraft = local ? mergeContent(currentDraft, local) : currentDraft;
+        setDraft(initialDraft);
+        lastSavedDraftRef.current = JSON.stringify(initialDraft);
+
         if (local) {
-          setDraft(mergeContent(currentDraft, local));
           toast.info('Saxlanılmamış dəyişikliklər bərpa edildi.');
-        } else {
-          setDraft(currentDraft);
         }
       } catch (err) {
         console.error('Initial load error:', err);
@@ -238,6 +263,17 @@ const Admin: React.FC = () => {
     };
     if (session) init();
   }, [supabaseReady, session]);
+
+  useEffect(() => {
+    if (adminMode === 'forms' && selectedSection !== 'forms') {
+      setSelectedSection('forms');
+      setViewMode('section');
+    }
+    if (adminMode === 'social' && selectedSection !== 'social') {
+      setSelectedSection('social');
+      setViewMode('section');
+    }
+  }, [adminMode, selectedSection]);
 
   // Sync editor with draft
   useEffect(() => {
@@ -256,9 +292,37 @@ const Admin: React.FC = () => {
     if (!loading) persistTempDraft(draft);
   }, [draft, loading]);
 
+  // Auto-save draft changes to backend/file storage with debounce.
+  useEffect(() => {
+    if (!session || loading || saving) return;
+
+    const serialized = JSON.stringify(draft);
+    if (!lastSavedDraftRef.current) {
+      lastSavedDraftRef.current = serialized;
+      return;
+    }
+    if (serialized === lastSavedDraftRef.current) return;
+
+    const timeout = window.setTimeout(async () => {
+      try {
+        setAutoSaving(true);
+        await persistCurrentDraft(draft);
+        lastSavedDraftRef.current = serialized;
+        setStatus('Avtomatik saxlanıldı.');
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        setStatus('Avtomatik saxlamada xəta var.');
+        toast.error('Avtomatik yadda saxlama uğursuz oldu.');
+      } finally {
+        setAutoSaving(false);
+      }
+    }, 1200);
+
+    return () => window.clearTimeout(timeout);
+  }, [draft, loading, persistCurrentDraft, saving, session]);
+
   const contentSections = useMemo(() => {
-    let keys = Object.keys(draft);
-    keys = keys.filter(k => k !== 'servicedetail');
+    let keys = Object.keys(draft).filter((key) => key !== 'forms' && key !== 'social');
     if (keys.includes('settings')) {
       const idx = keys.indexOf('settings');
       keys.splice(idx, 1);
@@ -385,14 +449,47 @@ const Admin: React.FC = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await upsertSiteSettings(draft);
-      updateContent?.(draft);
-      clearTempDraft();
-      toast.success('Bütün dəyişikliklər yadda saxlanıldı.');
+      await persistCurrentDraft(draft);
+      if (smtpDirty) {
+        const { data, error } = await saveSmtpSettings(smtpSettings);
+        if (error) throw error;
+        if (data) {
+          setSmtpSettings(data);
+        }
+        setSmtpDirty(false);
+      }
+      lastSavedDraftRef.current = JSON.stringify(draft);
+      setStatus(smtpDirty ? 'Dəyişikliklər və SMTP ayarları saxlanıldı.' : 'Bütün dəyişikliklər saxlanıldı.');
+      toast.success(smtpDirty ? 'Dəyişikliklər və SMTP ayarları yadda saxlanıldı.' : 'Bütün dəyişikliklər yadda saxlanıldı.');
     } catch (err) {
+      console.error('Manual save error:', err);
+      setStatus('Yadda saxlamada xəta var.');
       toast.error('Yadda saxlayarkən xəta baş verdi.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSmtpFieldChange = (field: keyof SMTPSettings, value: string | number | boolean) => {
+    setSmtpSettings((prev) => ({ ...prev, [field]: value }));
+    setSmtpDirty(true);
+  };
+
+  const handleSmtpSave = async () => {
+    setSmtpSaving(true);
+    try {
+      const { data, error } = await saveSmtpSettings(smtpSettings);
+      if (error) throw error;
+      if (data) {
+        setSmtpSettings(data);
+      }
+      setSmtpDirty(false);
+      toast.success('SMTP ayarları saxlanıldı.');
+    } catch (err) {
+      console.error('SMTP save error:', err);
+      toast.error('SMTP ayarları saxlanarkən xəta baş verdi.');
+    } finally {
+      setSmtpSaving(false);
     }
   };
 
@@ -408,9 +505,15 @@ const Admin: React.FC = () => {
   const handlePushSitemap = async () => {
     setSaving(true);
     try {
-      await upsertSiteSettings({ ...draft, navigation: JSON.parse(editorValue) });
+      const nextDraft = { ...draft, navigation: JSON.parse(editorValue) };
+      setDraft(nextDraft);
+      await persistCurrentDraft(nextDraft);
+      lastSavedDraftRef.current = JSON.stringify(nextDraft);
+      setStatus('Sitemap saxlanıldı.');
       toast.success('Sitemap Supabase-a uğurla göndərildi.');
     } catch (err) {
+      console.error('Sitemap push error:', err);
+      setStatus('Sitemap saxlanarkən xəta var.');
       toast.error('Sitemap göndərilərkən xəta!');
     } finally {
       setSaving(false);
@@ -667,8 +770,14 @@ const Admin: React.FC = () => {
           <div>
             <h1 className="text-3xl font-black uppercase tracking-[0.4em] text-primary">ADMIN PANEL</h1>
             <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">SAYT MƏZMUNU VƏ STRUKTUR İDARƏETMƏSİ</p>
+            {status && (
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">{status}</p>
+            )}
           </div>
           <div className="flex items-center gap-3">
+            {autoSaving && !saving && (
+              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">AUTO SAVE...</span>
+            )}
             <button
               onClick={handleLogout}
               className="px-6 py-4 rounded-2xl bg-red-50 text-red-500 font-black text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all"
@@ -739,6 +848,69 @@ const Admin: React.FC = () => {
               />
             ) : adminMode === 'messages' ? (
               <FormMessagesView />
+            ) : adminMode === 'forms' ? (
+              <div className="space-y-8">
+                <SmtpSettingsView
+                  settings={smtpSettings}
+                  dirty={smtpDirty}
+                  saving={smtpSaving}
+                  onChange={handleSmtpFieldChange}
+                  onSave={handleSmtpSave}
+                />
+                <SectionEditorView
+                  selectedSection={selectedSection}
+                  sectionFormValues={sectionFormValues}
+                  sectionValueTypes={sectionValueTypes}
+                  expandedItems={expandedItems}
+                  toggleItemExpansion={toggleItemExpansion}
+                  handleSectionInputChange={handleSectionInputChange}
+                  handleImageUpload={handleImageUpload}
+                  handleArrayObjectFieldChange={handleArrayObjectFieldChange}
+                  handleAddArrayObjectElement={handleAddArrayObjectElement}
+                  handleRemoveArrayObjectElement={handleRemoveArrayObjectElement}
+                  handleObjectFieldChange={handleObjectFieldChange}
+                  applySectionJson={applySectionJson}
+                  applyFullJson={applyFullJson}
+                  setEditorValue={setEditorValue}
+                  editorValue={editorValue}
+                  draft={draft}
+                  setViewMode={setViewMode}
+                  viewMode={viewMode}
+                  supabaseReady={supabaseReady}
+                  CDNMonacoEditor={CDNMonacoEditor}
+                  jsonError={jsonError}
+                  setJsonError={setJsonError}
+                  IconPickerComponent={IconPicker}
+                  searchQuery={sectionSearch}
+                />
+              </div>
+            ) : adminMode === 'social' ? (
+              <SectionEditorView
+                selectedSection={selectedSection}
+                sectionFormValues={sectionFormValues}
+                sectionValueTypes={sectionValueTypes}
+                expandedItems={expandedItems}
+                toggleItemExpansion={toggleItemExpansion}
+                handleSectionInputChange={handleSectionInputChange}
+                handleImageUpload={handleImageUpload}
+                handleArrayObjectFieldChange={handleArrayObjectFieldChange}
+                handleAddArrayObjectElement={handleAddArrayObjectElement}
+                handleRemoveArrayObjectElement={handleRemoveArrayObjectElement}
+                handleObjectFieldChange={handleObjectFieldChange}
+                applySectionJson={applySectionJson}
+                applyFullJson={applyFullJson}
+                setEditorValue={setEditorValue}
+                editorValue={editorValue}
+                draft={draft}
+                setViewMode={setViewMode}
+                viewMode={viewMode}
+                supabaseReady={supabaseReady}
+                CDNMonacoEditor={CDNMonacoEditor}
+                jsonError={jsonError}
+                setJsonError={setJsonError}
+                IconPickerComponent={IconPicker}
+                searchQuery={sectionSearch}
+              />
             ) : adminMode === 'clients' ? (
               <ClientManagementView
                 clients={draft.home?.clients || []}

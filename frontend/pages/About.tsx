@@ -25,6 +25,16 @@ const About: React.FC = () => {
     { id: 'testimonials', label: 'MÜŞTƏRİ RƏYLƏRİ', icon: MessageSquare },
   ];
 
+  const activeHeading = tabs.find(t => t.id === activeTab)?.label || 'BİZİM HAQQIMIZDA';
+  const [activeTitlePrefixFallback, ...activeTitleHighlightParts] = activeHeading.split(' ');
+  const activeTitleHighlightFallback = activeTitleHighlightParts.join(' ');
+  const headerTitlePrefix = activeTab === 'about'
+    ? (about.headerTitlePrefix || activeTitlePrefixFallback)
+    : activeTitlePrefixFallback;
+  const headerTitleHighlight = activeTab === 'about'
+    ? (about.headerTitleHighlight || activeTitleHighlightFallback)
+    : activeTitleHighlightFallback;
+
   return (
     <div className="flex flex-col bg-white min-h-screen">
       {/* Header - Consistent with Services/Academy */}
@@ -37,7 +47,7 @@ const About: React.FC = () => {
                 {about.introBadge || 'AZFİN GROUP MMC'}
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-primary tracking-tight leading-tight uppercase italic">
-                {tabs.find(t => t.id === activeTab)?.label.split(' ')[0]} <span className="text-accent">{tabs.find(t => t.id === activeTab)?.label.split(' ').slice(1).join(' ')}</span>
+                {headerTitlePrefix} <span className="text-accent">{headerTitleHighlight}</span>
               </h1>
             </div>
             <p className="text-slate-500 font-bold text-xs max-w-xs border-l-2 border-accent pl-6 pb-2 uppercase tracking-widest leading-relaxed">

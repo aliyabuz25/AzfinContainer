@@ -205,6 +205,10 @@
     ]
   },
   "about": {
+    "introBadge": "AZFİN GROUP MMC",
+    "introSummary": "Sahibkarlara maliyyə, vergi və hüquqi məsələlərdə güvənli tərəfdaşlıq təqdim edirik.",
+    "headerTitlePrefix": "BİZİM",
+    "headerTitleHighlight": "HAQQIMIZDA",
     "overviewTitle": "Azfin Group MMC",
     "overviewSummary": "2017-ci ildən sahibkarlara maliyyə, mühasibatlıq, vergi və konsaltinq dəstəyi verən təşkilat. Auditdən hüquqi xidmətlərə qədər tam spektr.",
     "overviewImage": "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80",
@@ -446,6 +450,93 @@
     "formMessageLabel": "Mesajınız",
     "formButtonText": "Mesajı göndərin"
   },
+  "social": {
+    "title": "Bizi izləyin",
+    "links": [
+      {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/",
+        "icon": "linkedin",
+        "enabled": true
+      },
+      {
+        "label": "Facebook",
+        "url": "https://www.facebook.com/",
+        "icon": "facebook",
+        "enabled": true
+      },
+      {
+        "label": "Instagram",
+        "url": "https://www.instagram.com/",
+        "icon": "instagram",
+        "enabled": false
+      }
+    ]
+  },
+  "forms": {
+    "auditFormName": "Audit Qiymət Təklifi",
+    "auditModalTitle": "Audit Qiymət Təklifi",
+    "generalModalTitle": "Xidmət Sorğusu",
+    "auditSelectedServiceLabel": "Seçilən xidmət",
+    "auditBusinessTypeLabel": "Fəaliyyət növü *",
+    "auditTaxTypeLabel": "Vergi növü *",
+    "auditClientStatusLabel": "Müştəri statusu *",
+    "auditNameLabel": "Ad Soyad *",
+    "auditPhoneLabel": "Telefon *",
+    "auditEmailLabel": "Email *",
+    "auditSelectPlaceholder": "Seçin",
+    "auditBusinessTypeOptions": [
+      "Ticarət",
+      "İstehsal",
+      "İaşə",
+      "Xidmət"
+    ],
+    "auditTaxTypeOptions": [
+      "ƏDV Ödəyicisi",
+      "Mənfəət/Gəlir Vergisi",
+      "Sadələşdirilmiş Vergi"
+    ],
+    "auditClientStatusOptions": [
+      "Hüquqi Şəxs",
+      "Fiziki Şəxs (Sahibkar)"
+    ],
+    "auditNamePlaceholder": "Nümunə: Elvin Məmmədov",
+    "auditPhonePlaceholder": "+994 50 000 00 00",
+    "auditEmailPlaceholder": "email@shirkat.az",
+    "auditSubmitButton": "Sorğunu Göndər",
+    "auditSubmitLoading": "GÖNDƏRİLİR...",
+    "auditSuccessTitle": "Təşəkkür edirik!",
+    "auditSuccessMessage": "Ən qısa zamanda sizinlə əlaqə saxlanılacaq.",
+    "auditSuccessButton": "Tamam",
+    "trainingFormName": "Təlimə Müraciət",
+    "trainingModalTitle": "Təlimə Müraciət",
+    "trainingIntroTemplate": "Siz {trainingTitle} üzrə qeydiyyat formunu doldurursunuz.",
+    "trainingNameLabel": "Ad və Soyad *",
+    "trainingPhoneLabel": "Telefon nömrəsi *",
+    "trainingEmailLabel": "E-poçt ünvanı *",
+    "trainingNoteLabel": "Qeyd",
+    "trainingNamePlaceholder": "Nümunə: Elvin Məmmədov",
+    "trainingPhonePlaceholder": "+994 50 000 00 00",
+    "trainingEmailPlaceholder": "email@shirkat.az",
+    "trainingNotePlaceholder": "Suallarınız varsa qeyd edə bilərsiniz...",
+    "trainingSubmitButton": "Müraciət Et",
+    "trainingSubmitLoading": "GÖNDƏRİLİR...",
+    "trainingSuccessTitle": "Müraciətiniz qəbul olundu!",
+    "trainingSuccessMessage": "Qısa zamanda sizinlə əlaqə saxlanılacaq.",
+    "trainingSuccessButton": "Bağla",
+    "contactFormName": "Əlaqə Forması",
+    "contactPhoneLabel": "Telefon nömrəsi *",
+    "contactServiceOptions": [
+      "Maliyyə Auditi",
+      "Mühasibat Autsorsinqi",
+      "Vergi Konsultasiyası",
+      "Akademiya Təlimləri"
+    ],
+    "contactSubmitLoading": "GÖNDƏRİLİR...",
+    "contactSuccessTitle": "Mesajınız göndərildi!",
+    "contactSuccessMessage": "Ən qısa zamanda sizinlə əlaqə saxlanılacaq.",
+    "contactSuccessButton": "Yeni mesaj"
+  },
   "navigation": {
     "primaryCTA": "Əlaqə",
     "items": [
@@ -499,7 +590,68 @@
     ]
   },
   "footer": {
+    "brandText": "AZFIN",
     "description": "Azərbaycanın ən innovativ audit və konsalting mərkəzi. Biznesinizin maliyyə gələcəyini beynəlxalq güclə quraq.",
+    "navTitle": "Naviqasiya",
+    "navLinks": [
+      {
+        "label": "Ana Səhifə",
+        "path": "/"
+      },
+      {
+        "label": "Haqqımızda",
+        "path": "/about"
+      },
+      {
+        "label": "Xidmətlər",
+        "path": "/services"
+      },
+      {
+        "label": "Akademiya",
+        "path": "/academy"
+      },
+      {
+        "label": "Bloq və Xəbərlər",
+        "path": "/blog"
+      },
+      {
+        "label": "Əlaqə",
+        "path": "/contact"
+      },
+      {
+        "label": "AuditTV",
+        "path": "https://audittv.az/",
+        "isExternal": true
+      }
+    ],
+    "servicesTitle": "Xidmətlər",
+    "serviceLinks": [
+      {
+        "label": "VERGİ XİDMƏTLƏRİ",
+        "path": "/services/1"
+      },
+      {
+        "label": "MALİYYƏ XİDMƏTLƏRİ",
+        "path": "/services/2"
+      },
+      {
+        "label": "AUDİT XİDMƏTLƏRİ",
+        "path": "/services/3"
+      },
+      {
+        "label": "HÜQUQ XİDMƏTLƏRİ",
+        "path": "/services/4"
+      },
+      {
+        "label": "KADR UÇOTU",
+        "path": "/services/5"
+      }
+    ],
+    "academyTitle": "Akademiya",
+    "academyLinks": [],
+    "academyAllLabel": "Bütün Təlimlər",
+    "academyLoadingText": "Təlimlər yüklənir...",
+    "academyEmptyText": "Hazır təlim yoxdur.",
     "socialHint": "Bizi izləyin"
   }
 }

@@ -3,9 +3,14 @@ import {
   Building2,
   Calculator,
   Cpu,
+  ExternalLink,
+  Facebook,
   FileText,
   Factory,
+  Globe,
   GraduationCap,
+  Instagram,
+  Linkedin,
   Lightbulb,
   Plane,
   Rocket,
@@ -16,6 +21,7 @@ import {
   Users,
   Users2,
   Utensils,
+  Youtube,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -24,9 +30,14 @@ export const ICON_REGISTRY: Record<string, LucideIcon> = {
   'building-2': Building2,
   'calculator': Calculator,
   'cpu': Cpu,
+  'external-link': ExternalLink,
+  'facebook': Facebook,
   'file-text': FileText,
   'factory': Factory,
+  'globe': Globe,
   'graduation-cap': GraduationCap,
+  'instagram': Instagram,
+  'linkedin': Linkedin,
   'lightbulb': Lightbulb,
   'plane': Plane,
   'rocket': Rocket,
@@ -37,6 +48,7 @@ export const ICON_REGISTRY: Record<string, LucideIcon> = {
   'users': Users,
   'users-2': Users2,
   'utensils': Utensils,
+  'youtube': Youtube,
 };
 
 export const ICON_OPTIONS = Object.entries(ICON_REGISTRY).map(([name, Icon]) => ({ name, Icon }));

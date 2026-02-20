@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Mail, Briefcase, GraduationCap, Calendar, Clock, Trash2 } from 'lucide-react';
-import { fetchSubmissions, FormSubmission, updateSubmissionStatus, deleteSubmission } from '../utils/formSubmissions';
+import { fetchSubmissions, FormSubmission, deleteSubmission } from '../utils/formSubmissions';
 import { toast } from 'react-toastify';
 
 const FormMessagesView: React.FC = () => {
@@ -101,7 +101,7 @@ const FormMessagesView: React.FC = () => {
                                 <div className="flex-grow space-y-6">
                                     <div className="flex items-center flex-wrap gap-4">
                                         <div className="bg-primary text-accent px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                                            {getIcon(item.type)} {getTypeLabel(item.type)}
+                                            {getIcon(item.type)} {item.form_data?.formName || getTypeLabel(item.type)}
                                         </div>
                                         <div className="flex items-center gap-2 text-slate-400 text-[9px] font-black uppercase tracking-widest">
                                             <Clock className="h-3.5 w-3.5 text-accent" /> {new Date(item.created_at || '').toLocaleString('az-AZ')}

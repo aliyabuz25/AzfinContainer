@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, Send, ChevronDown } from 'lucide-react';
 import { submitForm } from '../utils/formSubmissions';
+import { useContent } from '../lib/ContentContext';
 
 interface CalculationModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface CalculationModalProps {
 }
 
 const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, serviceType, serviceTitle }) => {
+  const { content } = useContent();
+  const forms = (content as any).forms || {};
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,9 +43,14 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+      setLoading(true);
     try {
-      const { error } = await submitForm('audit', { ...formData, serviceTitle, serviceType });
+      const { error } = await submitForm('audit', {
+        ...formData,
+        serviceTitle,
+        serviceType,
+        formName: forms.auditFormName || 'Audit Qiymət Təklifi'
+      });
       if (error) {
         console.error('Supabase error:', error);
         alert('Sorğu gönderilirkən xəta baş verdi: ' + (typeof error === 'string' ? error : (error as any).message || 'Bilinməyən xəta'));
@@ -57,6 +65,17 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
     }
   };
 
+  const pickOptions = (value: any, fallback: string[]) => (
+    Array.isArray(value) && value.filter((item) => typeof item === 'string' && item.trim()).length > 0
+      ? value.filter((item: any) => typeof item === 'string' && item.trim()).map((item: string) => item.trim())
+      : fallback
+  );
+
+  const businessTypeOptions = pickOptions(forms.auditBusinessTypeOptions, ['Ticarət', 'İstehsal', 'İaşə', 'Xidmət']);
+  const taxTypeOptions = pickOptions(forms.auditTaxTypeOptions, ['ƏDV Ödəyicisi', 'Mənfəət/Gəlir Vergisi', 'Sadələşdirilmiş Vergi']);
+  const clientStatusOptions = pickOptions(forms.auditClientStatusOptions, ['Hüquqi Şəxs', 'Fiziki Şəxs (Sahibkar)']);
+  const selectPlaceholder = forms.auditSelectPlaceholder || 'Seçin';
+
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-primary/60 backdrop-blur-md transition-opacity" onClick={onClose}></div>
@@ -64,8 +83,14 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
         {!submitted && (
           <div className="bg-primary p-6 flex justify-between items-center border-b border-accent/30">
             <div>
-              <h3 className="text-white font-black text-lg uppercase tracking-widest italic">{serviceType === 'audit' ? 'Audit Qiymət Təklifi' : 'Xidmət Sorğusu'}</h3>
-              {serviceTitle && <p className="text-accent text-[10px] font-bold uppercase tracking-widest mt-1">{serviceTitle}</p>}
+              <h3 className="text-white font-black text-lg uppercase tracking-widest italic">
+                {serviceType === 'audit' ? (forms.auditModalTitle || 'Audit Qiymət Təklifi') : (forms.generalModalTitle || 'Xidmət Sorğusu')}
+              </h3>
+              {serviceTitle && (
+                <p className="text-accent text-[10px] font-bold uppercase tracking-widest mt-1">
+                  {(forms.auditSelectedServiceLabel || 'Seçilən xidmət') + ': ' + serviceTitle}
+                </p>
+              )}
             </div>
             <button onClick={onClose} className="text-slate-400 hover:text-accent transition-colors"><X className="h-6 w-6" /></button>
           </div>
@@ -77,9 +102,9 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                 <div className="w-14 h-14 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                   <CheckCircle2 className="h-7 w-7" />
                 </div>
-                <h4 className="text-primary font-extrabold text-sm uppercase tracking-[0.2em] mb-3 italic">Təşəkkür edirik!</h4>
-                <p className="text-slate-500 font-bold text-[10px] leading-relaxed mb-10 uppercase tracking-widest">Ən qısa zamanda sizinlə əlaqə saxlanılacaq.</p>
-                <button onClick={onClose} className="bg-primary text-white px-10 py-3 rounded-full font-bold text-[9px] uppercase tracking-[0.3em] hover:bg-primary-medium transition-all shadow-md">Tamam</button>
+                <h4 className="text-primary font-extrabold text-sm uppercase tracking-[0.2em] mb-3 italic">{forms.auditSuccessTitle || 'Təşəkkür edirik!'}</h4>
+                <p className="text-slate-500 font-bold text-[10px] leading-relaxed mb-10 uppercase tracking-widest">{forms.auditSuccessMessage || 'Ən qısa zamanda sizinlə əlaqə saxlanılacaq.'}</p>
+                <button onClick={onClose} className="bg-primary text-white px-10 py-3 rounded-full font-bold text-[9px] uppercase tracking-[0.3em] hover:bg-primary-medium transition-all shadow-md">{forms.auditSuccessButton || 'Tamam'}</button>
               </div>
             </div>
           ) : (
@@ -87,7 +112,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Fəaliyyət növü *</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.auditBusinessTypeLabel || 'Fəaliyyət növü *'}</label>
                     <div className="relative">
                       <select
                         required
@@ -95,11 +120,10 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                         onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
                         className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
                       >
-                        <option value="">Seçin</option>
-                        <option value="Ticarət">Ticarət</option>
-                        <option value="İstehsal">İstehsal</option>
-                        <option value="İaşə">İaşə</option>
-                        <option value="Xidmət">Xidmət</option>
+                        <option value="">{selectPlaceholder}</option>
+                        {businessTypeOptions.map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
                       </select>
                       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                     </div>
@@ -108,7 +132,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                   {serviceType === 'audit' && (
                     <>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Vergi növü *</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.auditTaxTypeLabel || 'Vergi növü *'}</label>
                         <div className="relative">
                           <select
                             required
@@ -116,16 +140,16 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                             onChange={(e) => setFormData({ ...formData, taxType: e.target.value })}
                             className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
                           >
-                            <option value="">Seçin</option>
-                            <option value="ƏDV">ƏDV Ödəyicisi</option>
-                            <option value="Mənfəət">Mənfəət/Gəlir Vergisi</option>
-                            <option value="Sadələşdirilmiş">Sadələşdirilmiş Vergi</option>
+                            <option value="">{selectPlaceholder}</option>
+                            {taxTypeOptions.map((option) => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
                           </select>
                           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Müştəri statusu *</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.auditClientStatusLabel || 'Müştəri statusu *'}</label>
                         <div className="relative">
                           <select
                             required
@@ -133,9 +157,10 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                             onChange={(e) => setFormData({ ...formData, clientStatus: e.target.value })}
                             className="w-full bg-slate-50 border border-slate-200 p-4 appearance-none focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
                           >
-                            <option value="">Seçin</option>
-                            <option value="Hüquqi">Hüquqi Şəxs</option>
-                            <option value="Fiziki">Fiziki Şəxs (Sahibkar)</option>
+                            <option value="">{selectPlaceholder}</option>
+                            {clientStatusOptions.map((option) => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
                           </select>
                           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                         </div>
@@ -144,33 +169,33 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                   )}
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ad Soyad *</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.auditNameLabel || 'Ad Soyad *'}</label>
                     <input
                       required
                       type="text"
-                      placeholder="Nümunə: Elvin Məmmədov"
+                      placeholder={forms.auditNamePlaceholder || 'Nümunə: Elvin Məmmədov'}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Telefon *</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.auditPhoneLabel || 'Telefon *'}</label>
                     <input
                       required
                       type="tel"
-                      placeholder="+994 50 000 00 00"
+                      placeholder={forms.auditPhonePlaceholder || '+994 50 000 00 00'}
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Email *</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.auditEmailLabel || 'Email *'}</label>
                     <input
                       required
                       type="email"
-                      placeholder="email@shirkat.az"
+                      placeholder={forms.auditEmailPlaceholder || 'email@shirkat.az'}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
@@ -183,7 +208,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                     disabled={loading}
                     className="w-full bg-accent text-white py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    {loading ? 'GÖNDƏRİLİR...' : 'Sorğunu Göndər'} <Send className="h-4 w-4" />
+                    {loading ? (forms.auditSubmitLoading || 'GÖNDƏRİLİR...') : (forms.auditSubmitButton || 'Sorğunu Göndər')} <Send className="h-4 w-4" />
                   </button>
                 </div>
               </form>

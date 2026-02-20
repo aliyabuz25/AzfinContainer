@@ -5,6 +5,8 @@ import { Menu, X, BarChart3, ChevronDown, Phone, Mail, Clock, SearchCheck, Calcu
 import { NAV_ITEMS, SERVICES } from '../constants';
 import { useContent } from '../lib/ContentContext';
 import { resolveIcon } from '../utils/iconRegistry';
+import { resolveNavigationLink } from '../utils/navigationLink';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +17,14 @@ const Navbar: React.FC = () => {
   const contact = siteContent.contact;
   const nav = siteContent.navigation;
 
-  const dynamicNavItems = nav.items || NAV_ITEMS;
+  const dynamicNavItems = Array.isArray(nav.items) ? nav.items : NAV_ITEMS;
+  const navbarLogoSrc = resolveMediaUrl(siteContent.settings?.navbarLogo || '');
+  const resolvedNavItems = dynamicNavItems
+    .map((item: any) => {
+      const resolvedLink = resolveNavigationLink(item?.path, Boolean(item?.isExternal));
+      return resolvedLink ? { ...item, resolvedLink } : null;
+    })
+    .filter(Boolean) as Array<any>;
   const dynamicServices = siteContent.services?.list || SERVICES;
 
   useEffect(() => {
@@ -65,9 +74,9 @@ const Navbar: React.FC = () => {
                 <div className={`flex items-center justify-center transition-all ${isScrolled ? 'w-10 h-10' : 'w-12 h-12 md:w-16 md:h-16'}`}>
                   <Loader2 className="h-5 w-5 text-accent animate-spin" />
                 </div>
-              ) : siteContent.settings?.navbarLogo ? (
+              ) : navbarLogoSrc ? (
                 <img
-                  src={siteContent.settings.navbarLogo}
+                  src={navbarLogoSrc}
                   alt={siteContent.settings.siteTitle || 'AZFIN'}
                   className={`object-contain transition-all ${isScrolled ? 'h-10' : 'h-12 md:h-16'}`}
                 />
@@ -85,7 +94,7 @@ const Navbar: React.FC = () => {
             </Link>
 
             <div className="hidden md:flex items-center h-full flex-grow justify-center gap-2">
-              {dynamicNavItems.map((item) => (
+              {resolvedNavItems.map((item) => (
                 <div
                   key={item.label}
                   className="relative h-full flex items-center"
@@ -95,8 +104,8 @@ const Navbar: React.FC = () => {
                   {item.label === 'XİDMƏTLƏR' ? (
                     <div className="h-full flex items-center">
                       <Link
-                        to={item.path}
-                        className={`${location.pathname.startsWith(item.path) ? 'text-accent' : 'text-primary hover:text-accent'
+                        to={item.resolvedLink.path}
+                        className={`${location.pathname.startsWith(item.resolvedLink.path) ? 'text-accent' : 'text-primary hover:text-accent'
                           } px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 text-center leading-tight`}
                       >
                         {item.label}
@@ -126,9 +135,9 @@ const Navbar: React.FC = () => {
                       )}
                     </div>
                   ) : (
-                    item.isExternal ? (
+                    item.resolvedLink.isExternal ? (
                       <a
-                        href={item.path}
+                        href={item.resolvedLink.href}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:text-accent px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center text-center leading-tight whitespace-pre-line group relative"
@@ -138,8 +147,8 @@ const Navbar: React.FC = () => {
                       </a>
                     ) : (
                       <Link
-                        to={item.path}
-                        className={`${location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)) ? 'text-accent' : 'text-primary hover:text-accent'
+                        to={item.resolvedLink.path}
+                        className={`${location.pathname === item.resolvedLink.path || (item.resolvedLink.path !== '/' && location.pathname.startsWith(item.resolvedLink.path)) ? 'text-accent' : 'text-primary hover:text-accent'
                           } px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center text-center leading-tight whitespace-pre-line group relative`}
                       >
                         {item.label}
@@ -170,11 +179,11 @@ const Navbar: React.FC = () => {
         {isOpen && (
           <div className="md:hidden bg-white border-t border-slate-100 fixed inset-0 top-20 z-50 p-6 overflow-y-auto">
             <div className="flex flex-col gap-5">
-              {dynamicNavItems.map((item) => (
+              {resolvedNavItems.map((item) => (
                 <div key={item.label} className="border-b border-slate-50 pb-4">
-                  {item.isExternal ? (
+                  {item.resolvedLink.isExternal ? (
                     <a
-                      href={item.path}
+                      href={item.resolvedLink.href}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => setIsOpen(false)}
@@ -184,7 +193,7 @@ const Navbar: React.FC = () => {
                     </a>
                   ) : (
                     <Link
-                      to={item.path}
+                      to={item.resolvedLink.path}
                       onClick={() => setIsOpen(false)}
                       className="text-base font-bold text-primary uppercase tracking-tight whitespace-pre-line block"
                     >

@@ -1,6 +1,6 @@
 
 import {
-    Home, Info, Briefcase, Layers, BookOpen, GraduationCap, Phone, Menu, Layout, FileJson, Search, Settings
+    Home, Info, Briefcase, Layers, BookOpen, GraduationCap, Phone, Menu, Layout, FileJson, Search, Settings, MessageSquare, Share2
 } from 'lucide-react';
 import { BlogItem, TrainingItem } from '../types';
 
@@ -49,10 +49,13 @@ export const FIELD_CONFIG = [
     { section: 'home', category: 'Digər', field: 'ctaHeading', label: 'Alt CTA - Başlıq' },
     { section: 'home', category: 'Digər', field: 'ctaButtonText', label: 'Alt CTA - Düymə Mətni' },
     { section: 'home', category: 'Digər', field: 'ctaButtonUrl', label: 'Alt CTA - Düymə URL', hideInMainLoop: true },
+    { section: 'home', category: 'Digər', field: 'sections', label: 'Ana Səhifə Bölmə Meta Siyahısı', type: 'array-object' },
 
     // About
     { section: 'about', category: 'Giriş', field: 'introBadge', label: 'Haqqımızda - Nişan (Badge)' },
     { section: 'about', category: 'Giriş', field: 'introSummary', label: 'Haqqımızda - Ümumi Giriş', multiline: true },
+    { section: 'about', category: 'Giriş', field: 'headerTitlePrefix', label: 'Haqqımızda - Başlıq (Ön hissə)' },
+    { section: 'about', category: 'Giriş', field: 'headerTitleHighlight', label: 'Haqqımızda - Başlıq (Vurğulanan)' },
     { section: 'about', category: 'İcmal', field: 'overviewTitle', label: 'İcmal - Başlıq' },
     { section: 'about', category: 'İcmal', field: 'overviewSummary', label: 'İcmal - Təsvir', multiline: true },
     { section: 'about', category: 'İcmal', field: 'overviewImage', label: 'İcmal - Şəkil', type: 'image' },
@@ -133,12 +136,75 @@ export const FIELD_CONFIG = [
     { section: 'contact', category: 'Əlaqə Forması', field: 'formButtonText', label: 'Form Düymə Mətni' },
     { section: 'contact', category: 'Digər', field: 'socialTitle', label: 'Sosial Media Başlığı' },
 
+    // Social
+    { section: 'social', category: 'Sosial Media', field: 'title', label: 'Sosial Başlıq' },
+    { section: 'social', category: 'Sosial Media', field: 'links', label: 'Sosial Linklər', type: 'array-object' },
+
+    // Forms
+    { section: 'forms', category: 'Audit Formu', field: 'auditFormName', label: 'Audit Formu - Daxili Ad' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditModalTitle', label: 'Audit Formu - Başlıq' },
+    { section: 'forms', category: 'Audit Formu', field: 'generalModalTitle', label: 'Ümumi Xidmət Formu - Başlıq' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditSelectedServiceLabel', label: 'Audit Formu - Seçilən Xidmət Etiketi' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditBusinessTypeLabel', label: 'Audit Formu - Fəaliyyət Etiketi' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditTaxTypeLabel', label: 'Audit Formu - Vergi Etiketi' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditClientStatusLabel', label: 'Audit Formu - Status Etiketi' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditNameLabel', label: 'Audit Formu - Ad Soyad Etiketi' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditPhoneLabel', label: 'Audit Formu - Telefon Etiketi' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditEmailLabel', label: 'Audit Formu - Email Etiketi' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditSelectPlaceholder', label: 'Audit Formu - Seçim Placeholder' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditBusinessTypeOptions', label: 'Audit Formu - Fəaliyyət Seçimləri', type: 'array' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditTaxTypeOptions', label: 'Audit Formu - Vergi Seçimləri', type: 'array' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditClientStatusOptions', label: 'Audit Formu - Status Seçimləri', type: 'array' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditNamePlaceholder', label: 'Audit Formu - Ad Placeholder' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditPhonePlaceholder', label: 'Audit Formu - Telefon Placeholder' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditEmailPlaceholder', label: 'Audit Formu - Email Placeholder' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditSubmitButton', label: 'Audit Formu - Göndər Düyməsi' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditSubmitLoading', label: 'Audit Formu - Göndərilir Mətni' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditSuccessTitle', label: 'Audit Formu - Uğur Başlığı' },
+    { section: 'forms', category: 'Audit Formu', field: 'auditSuccessMessage', label: 'Audit Formu - Uğur Mesajı', multiline: true },
+    { section: 'forms', category: 'Audit Formu', field: 'auditSuccessButton', label: 'Audit Formu - Uğur Düyməsi' },
+
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingFormName', label: 'Təlim Formu - Daxili Ad' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingModalTitle', label: 'Təlim Formu - Başlıq' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingIntroTemplate', label: 'Təlim Formu - Giriş Mətni ({trainingTitle})', multiline: true },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingNameLabel', label: 'Təlim Formu - Ad Etiketi' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingPhoneLabel', label: 'Təlim Formu - Telefon Etiketi' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingEmailLabel', label: 'Təlim Formu - Email Etiketi' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingNoteLabel', label: 'Təlim Formu - Qeyd Etiketi' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingNamePlaceholder', label: 'Təlim Formu - Ad Placeholder' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingPhonePlaceholder', label: 'Təlim Formu - Telefon Placeholder' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingEmailPlaceholder', label: 'Təlim Formu - Email Placeholder' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingNotePlaceholder', label: 'Təlim Formu - Qeyd Placeholder' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingSubmitButton', label: 'Təlim Formu - Göndər Düyməsi' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingSubmitLoading', label: 'Təlim Formu - Göndərilir Mətni' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingSuccessTitle', label: 'Təlim Formu - Uğur Başlığı' },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingSuccessMessage', label: 'Təlim Formu - Uğur Mesajı', multiline: true },
+    { section: 'forms', category: 'Təlim Formu', field: 'trainingSuccessButton', label: 'Təlim Formu - Uğur Düyməsi' },
+
+    { section: 'forms', category: 'Əlaqə Formu', field: 'contactFormName', label: 'Əlaqə Formu - Daxili Ad' },
+    { section: 'forms', category: 'Əlaqə Formu', field: 'contactPhoneLabel', label: 'Əlaqə Formu - Telefon Etiketi' },
+    { section: 'forms', category: 'Əlaqə Formu', field: 'contactServiceOptions', label: 'Əlaqə Formu - Xidmət Seçimləri', type: 'array' },
+    { section: 'forms', category: 'Əlaqə Formu', field: 'contactSubmitLoading', label: 'Əlaqə Formu - Göndərilir Mətni' },
+    { section: 'forms', category: 'Əlaqə Formu', field: 'contactSuccessTitle', label: 'Əlaqə Formu - Uğur Başlığı' },
+    { section: 'forms', category: 'Əlaqə Formu', field: 'contactSuccessMessage', label: 'Əlaqə Formu - Uğur Mesajı', multiline: true },
+    { section: 'forms', category: 'Əlaqə Formu', field: 'contactSuccessButton', label: 'Əlaqə Formu - Uğur Düyməsi' },
+
     // Navigation
     { section: 'navigation', category: 'Parametrlər', field: 'primaryCTA', label: 'Əsas Menyu Düyməsi (Əlaqə)' },
     { section: 'navigation', category: 'Menyu', field: 'items', label: 'Menyu Maddələri', type: 'array-object' },
 
     // Footer
+    { section: 'footer', category: 'Brendinq', field: 'brandText', label: 'Logo mətni (logo yoxdursa)' },
     { section: 'footer', category: 'Məzmun', field: 'description', label: 'Footer Təsviri', multiline: true },
+    { section: 'footer', category: 'Naviqasiya', field: 'navTitle', label: 'Naviqasiya Sütunu Başlığı' },
+    { section: 'footer', category: 'Naviqasiya', field: 'navLinks', label: 'Naviqasiya Linkləri', type: 'array-object' },
+    { section: 'footer', category: 'Xidmətlər', field: 'servicesTitle', label: 'Xidmətlər Sütunu Başlığı' },
+    { section: 'footer', category: 'Xidmətlər', field: 'serviceLinks', label: 'Xidmət Linkləri', type: 'array-object' },
+    { section: 'footer', category: 'Akademiya', field: 'academyTitle', label: 'Akademiya Sütunu Başlığı' },
+    { section: 'footer', category: 'Akademiya', field: 'academyLinks', label: 'Akademiya Linkləri (Manual)', type: 'array-object' },
+    { section: 'footer', category: 'Akademiya', field: 'academyAllLabel', label: 'Bütün Təlimlər Mətni' },
+    { section: 'footer', category: 'Akademiya', field: 'academyLoadingText', label: 'Akademiya yüklənmə mətni' },
+    { section: 'footer', category: 'Akademiya', field: 'academyEmptyText', label: 'Akademiya boş mətni' },
     { section: 'footer', category: 'Digər', field: 'socialHint', label: 'Sosial Media İpucu (Bizi izləyin)' },
 ];
 
@@ -238,6 +304,8 @@ export const getSectionIcon = (key: string) => {
         case 'navigation': return Menu;
         case 'footer': return Layout;
         case 'settings': return Settings;
+        case 'forms': return MessageSquare;
+        case 'social': return Share2;
         case 'mode_site': return FileJson;
         case 'mode_blog': return BookOpen;
         case 'mode_sitemap': return Search;
@@ -257,6 +325,8 @@ export const getSectionLabel = (key: string) => {
         case 'navigation': return 'Naviqasiya';
         case 'footer': return 'Footer';
         case 'settings': return 'Site Tənzimləmələri';
+        case 'forms': return 'Formlar';
+        case 'social': return 'Sosial';
         default: return key.charAt(0).toUpperCase() + key.slice(1);
     }
 };

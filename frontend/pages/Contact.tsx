@@ -1,33 +1,51 @@
 
-import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Clock, Linkedin, Facebook, Send, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Mail, Phone, MapPin, Clock, Send, CheckCircle2 } from 'lucide-react';
 import { useContent } from '../lib/ContentContext';
 import { submitForm } from '../utils/formSubmissions';
+import { resolveIcon } from '../utils/iconRegistry';
+import { resolveNavigationLink } from '../utils/navigationLink';
 
 const Contact: React.FC = () => {
   const { content } = useContent();
   const contact = content.contact;
+  const forms = (content as any).forms || {};
+  const social = (content as any).social || {};
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     service: 'Maliyyə Auditi',
     message: ''
   });
+
+  const serviceOptions: string[] = Array.isArray(forms.contactServiceOptions) && forms.contactServiceOptions.length > 0
+    ? forms.contactServiceOptions.filter((option: any) => typeof option === 'string' && option.trim()).map((option: string) => option.trim())
+    : ['Maliyyə Auditi', 'Mühasibat Autsorsinqi', 'Vergi Konsultasiyası', 'Akademiya Təlimləri'];
+
+  useEffect(() => {
+    if (!serviceOptions.includes(formData.service)) {
+      setFormData((prev) => ({ ...prev, service: serviceOptions[0] || '' }));
+    }
+  }, [serviceOptions, formData.service]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await submitForm('contact', formData);
+      const { error } = await submitForm('contact', {
+        ...formData,
+        formName: forms.contactFormName || 'Əlaqə Forması'
+      });
       if (error) {
         console.error('Supabase error:', error);
         alert('Müraciət göndərilərkən xəta baş verdi: ' + (typeof error === 'string' ? error : (error as any).message || 'Bilinməyən xəta'));
         return;
       }
       setSubmitted(true);
-      setFormData({ name: '', email: '', phone: '', service: 'Maliyyə Auditi', message: '' } as any);
+      setFormData({ name: '', email: '', phone: '', service: serviceOptions[0] || 'Maliyyə Auditi', message: '' });
     } catch (error) {
       console.error('Submission error:', error);
       alert('Xəta baş verdi. Zəhmət olmasa internet bağlantınızı yoxlayın.');
@@ -42,6 +60,25 @@ const Contact: React.FC = () => {
     { icon: Mail, title: 'E-poçt ünvanı', detail: contact.email },
     { icon: Clock, title: 'İş rejimi', detail: contact.hours },
   ];
+  const socialLinks = Array.isArray(social.links)
+    ? social.links
+      .map((item: any) => {
+        const label = typeof item?.label === 'string' ? item.label.trim() : '';
+        const resolved = resolveNavigationLink(
+          typeof item?.url === 'string' ? item.url : '',
+          true
+        );
+        if (!label || !resolved) return null;
+        const Icon = resolveIcon(typeof item?.icon === 'string' ? item.icon : 'globe');
+        return {
+          label,
+          href: resolved.href,
+          Icon,
+          enabled: item?.enabled !== false,
+        };
+      })
+      .filter((item: any) => item && item.enabled)
+    : [];
   return (
     <div className="flex flex-col bg-white">
       {/* Header */}
@@ -81,14 +118,21 @@ const Contact: React.FC = () => {
               </div>
 
               <div className="pt-10 border-t border-slate-100">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-6 italic">Bizi izləyin</h4>
-                <div className="flex gap-4">
-                  <a href="#" className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-sm hover:bg-accent transition-colors shadow-lg shadow-primary/10">
-                    <Linkedin className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-sm hover:bg-accent transition-colors shadow-lg shadow-primary/10">
-                    <Facebook className="h-5 w-5" />
-                  </a>
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-6 italic">{social.title || contact.socialTitle || 'Bizi izləyin'}</h4>
+                <div className="flex gap-4 flex-wrap">
+                  {socialLinks.map((item: any, idx: number) => (
+                    <a
+                      key={`${item.label}-${idx}`}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={item.label}
+                      title={item.label}
+                      className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-sm hover:bg-accent transition-colors shadow-lg shadow-primary/10"
+                    >
+                      <item.Icon className="h-5 w-5" />
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>
@@ -101,13 +145,13 @@ const Contact: React.FC = () => {
                     <div className="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                       <CheckCircle2 className="h-8 w-8" />
                     </div>
-                    <h3 className="text-xl font-black text-primary uppercase italic tracking-tight mb-3">Mesajınız göndərildi!</h3>
-                    <p className="text-sm text-slate-500 font-bold mb-8 uppercase tracking-widest">Ən qısa zamanda sizinlə əlaqə saxlanılacaq.</p>
+                    <h3 className="text-xl font-black text-primary uppercase italic tracking-tight mb-3">{forms.contactSuccessTitle || 'Mesajınız göndərildi!'}</h3>
+                    <p className="text-sm text-slate-500 font-bold mb-8 uppercase tracking-widest">{forms.contactSuccessMessage || 'Ən qısa zamanda sizinlə əlaqə saxlanılacaq.'}</p>
                     <button
                       onClick={() => setSubmitted(false)}
                       className="bg-primary text-white px-10 py-3 rounded-sm font-bold text-[9px] uppercase tracking-[0.3em] hover:bg-primary-medium transition-all shadow-md"
                     >
-                      Yeni mesaj
+                      {forms.contactSuccessButton || 'Yeni mesaj'}
                     </button>
                   </div>
                 ) : (
@@ -136,12 +180,12 @@ const Contact: React.FC = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Telefon nömrəsi *</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.contactPhoneLabel || 'Telefon nömrəsi *'}</label>
                         <input
                           type="tel"
                           required
-                          value={(formData as any).phone || ''}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value } as any)}
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                           className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all rounded-sm"
                           placeholder="+994 ..."
                         />
@@ -156,10 +200,9 @@ const Contact: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                         className="w-full bg-white border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs transition-all cursor-pointer rounded-sm"
                       >
-                        <option>Maliyyə Auditi</option>
-                        <option>Mühasibat Autsorsinqi</option>
-                        <option>Vergi Konsultasiyası</option>
-                        <option>Akademiya Təlimləri</option>
+                        {serviceOptions.map((option) => (
+                          <option key={option}>{option}</option>
+                        ))}
                       </select>
                     </div>
 
@@ -180,7 +223,7 @@ const Contact: React.FC = () => {
                       disabled={loading}
                       className="w-full bg-accent text-white py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
                     >
-                      {loading ? 'GÖNDƏRİLİR...' : contact.formButtonText} <Send className="h-4 w-4" />
+                      {loading ? (forms.contactSubmitLoading || 'GÖNDƏRİLİR...') : contact.formButtonText} <Send className="h-4 w-4" />
                     </button>
                   </form>
                 )}
