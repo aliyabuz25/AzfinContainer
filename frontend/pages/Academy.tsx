@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, ShieldCheck } from 'lucide-react';
 import { TrainingItem } from '../types';
 import { fetchTrainings } from '../utils/fetchData';
 import { parseBBCode } from '../utils/bbcode';
@@ -11,8 +10,6 @@ import { useContent } from '../lib/ContentContext';
 
 const Academy: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTraining, setSelectedTraining] = useState('');
-  const navigate = useNavigate();
   const [trainings, setTrainings] = useState<TrainingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { content } = useContent();
@@ -38,23 +35,14 @@ const Academy: React.FC = () => {
     };
   }, []);
 
-  const handleApplyClick = (e: React.MouseEvent, title: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedTraining(title);
-    setIsModalOpen(true);
-  };
-
-  const handleCardClick = (id: string) => {
-    navigate(`/academy/${id}`);
-  };
+  const primaryTraining = trainings[0] ?? null;
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <ApplicationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        trainingTitle={selectedTraining}
+        trainingTitle={primaryTraining?.title || academyContent.heroTitleHighlight || 'Audit təlimi'}
       />
 
       {/* Hero Header */}
@@ -77,105 +65,113 @@ const Academy: React.FC = () => {
         </div>
       </div>
 
-      {/* Courses Grid - Adjusted for 3 items per row */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {loading ? (
-              <div className="col-span-full text-center text-slate-400 font-bold py-12">
-                {academyContent.loadingText}
-              </div>
-            ) : trainings.length === 0 ? (
-              <div className="col-span-full text-center text-slate-400 font-bold py-12">
-                {academyContent.emptyText}
-              </div>
-            ) : (
-              trainings.map((training) => {
-                const isCompleted = training.status === 'completed';
+          {loading ? (
+            <div className="text-center text-slate-400 font-bold py-12">
+              {academyContent.loadingText}
+            </div>
+          ) : !primaryTraining ? (
+            <div className="text-center text-slate-400 font-bold py-12">
+              {academyContent.emptyText}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              <div className="lg:col-span-2 space-y-12">
+                <div className="rounded-2xl overflow-hidden shadow-2xl h-80 lg:h-96">
+                  <ImageWithFallback
+                    src={primaryTraining.image}
+                    alt={primaryTraining.title}
+                    imgClassName="w-full h-full object-contain bg-slate-50"
+                    placeholderClassName="w-full h-full"
+                    placeholderText="no-image"
+                  />
+                </div>
 
-                return (
+                <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                  <h2 className="text-2xl font-black text-primary mb-6 tracking-tight uppercase italic">
+                    {primaryTraining.aboutTitle || 'Təlim Haqqında'}
+                  </h2>
                   <div
-                    key={training.id}
-                    onClick={() => !isCompleted && handleCardClick(training.id)}
-                    className={`bg-white rounded-xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.05)] border border-slate-100 group flex flex-col transition-all duration-500 ${isCompleted ? 'opacity-60 grayscale cursor-default' : 'hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] cursor-pointer'
-                      }`}
-                  >
-                    {/* Card Image with Badge */}
-                    <div className="relative h-48 overflow-hidden">
-                      <ImageWithFallback
-                        src={training.image}
-                        alt={training.title}
-                        imgClassName="w-full h-full object-contain bg-slate-50"
-                        placeholderClassName="w-full h-full"
-                        placeholderText="no-image"
-                      />
-                      {training.status === 'upcoming' && (
-                        <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                          TEZLİKLƏ
-                        </div>
-                      )}
-                      {training.status === 'ongoing' && (
-                        <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                          DAVAM EDİR
-                        </div>
-                      )}
-                      {training.status === 'completed' && (
-                        <div className="absolute top-3 right-3 bg-slate-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg italic">
-                          BAŞA ÇATIB
-                        </div>
-                      )}
-                    </div>
+                    className="text-slate-500 leading-relaxed text-lg font-medium"
+                    dangerouslySetInnerHTML={{ __html: parseBBCode(primaryTraining.fullContent || primaryTraining.description) }}
+                  />
+                </div>
 
-                    {/* Card Body */}
-                    <div className="p-6 flex flex-col flex-grow">
-                      <h3 className={`text-lg font-black mb-4 transition-colors leading-tight uppercase italic ${training.status === 'completed' ? 'text-slate-400' : 'text-primary group-hover:text-accent'
-                        }`}>
-                        {training.title}
-                      </h3>
-
-                      {/* Info Pills */}
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${training.status === 'completed' ? 'bg-slate-100 text-slate-400' : 'bg-[#EFF6FF] text-[#3B82F6]'
-                          }`}>
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span className="text-[10px] font-bold uppercase tracking-tight">{training.startDate}</span>
+                {primaryTraining.syllabus && primaryTraining.syllabus.length > 0 && (
+                  <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                    <h2 className="text-2xl font-black text-primary mb-8 tracking-tight uppercase italic">
+                      {primaryTraining.syllabusTitle || 'Tədris Proqramı'}
+                    </h2>
+                    <div className="space-y-4">
+                      {primaryTraining.syllabus.map((topic, index) => (
+                        <div key={index} className="flex items-center gap-6 p-4 rounded-xl hover:bg-slate-50 transition-colors group">
+                          <div className="bg-[#EFF6FF] text-[#3B82F6] font-black h-10 w-10 rounded-full flex items-center justify-center text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
+                            {index + 1}
+                          </div>
+                          <span className="text-primary font-black text-sm tracking-tight uppercase italic">{topic}</span>
                         </div>
-                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${training.status === 'completed' ? 'bg-slate-100 text-slate-400' : 'bg-[#EFF6FF] text-[#3B82F6]'
-                          }`}>
-                          <Clock className="h-3.5 w-3.5" />
-                          <span className="text-[10px] font-bold uppercase tracking-tight">{training.duration}</span>
-                        </div>
-                      </div>
-
-                      <div
-                        className="text-slate-500 mb-8 flex-grow leading-relaxed font-medium text-xs line-clamp-3"
-                        dangerouslySetInnerHTML={{ __html: parseBBCode(training.description || '') }}
-                      />
-
-                      {/* Card Footer */}
-                      <div className="flex items-center justify-between pt-5 border-t border-slate-50">
-                        <div className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">
-                          <span className={`${isCompleted ? 'text-slate-300' : 'text-primary'}`}>{training.level}</span>
-                        </div>
-                        {!isCompleted ? (
-                          <button
-                            onClick={(e) => handleApplyClick(e, training.title)}
-                            className="bg-primary text-white px-5 py-2.5 rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-primary-medium transition-all shadow-md flex items-center gap-2"
-                          >
-                            {academyContent.cardCTA} <ArrowRight className="h-3.5 w-3.5" />
-                          </button>
-                        ) : (
-                          <span className="text-slate-400 font-black text-[9px] uppercase tracking-widest italic">
-                            Qeydiyyat bitib
-                          </span>
-                        )}
-                      </div>
+                      ))}
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
+                )}
+              </div>
+
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-8 sticky top-32">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest w-fit mb-8">
+                    <ShieldCheck className="h-4 w-4" /> {primaryTraining.certLabel || 'Peşəkar Sertifikat'}
+                  </div>
+
+                  <h3 className="text-lg font-black text-primary mb-8 border-b border-slate-50 pb-4 uppercase tracking-widest italic">
+                    {primaryTraining.infoTitle || 'Təlim Məlumatları'}
+                  </h3>
+
+                  <div className="space-y-6 mb-10">
+                    <div className="flex justify-between items-center border-b border-slate-50 pb-4">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-accent" /> {primaryTraining.durationLabel || 'Müddət'}
+                      </span>
+                      <span
+                        className="font-black text-primary text-xs uppercase italic whitespace-pre-wrap text-right"
+                        dangerouslySetInnerHTML={{ __html: parseBBCode(primaryTraining.duration || '') }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center border-b border-slate-50 pb-4">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-accent" /> {primaryTraining.startLabel || 'Başlanğıc'}
+                      </span>
+                      <span
+                        className="font-black text-primary text-xs uppercase italic whitespace-pre-wrap text-right"
+                        dangerouslySetInnerHTML={{ __html: parseBBCode(primaryTraining.startDate || '') }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Səviyyə
+                      </span>
+                      <span className="font-black text-primary text-xs uppercase italic text-right">
+                        {primaryTraining.level}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="w-full bg-accent text-white font-black py-5 rounded-xl transition-all shadow-xl shadow-accent/20 text-xs uppercase tracking-widest hover:bg-primary-medium flex items-center justify-center gap-3"
+                  >
+                    {academyContent.cardCTA}
+                  </button>
+
+                  <div className="mt-8 p-6 bg-slate-50 rounded-xl">
+                    <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest leading-relaxed italic">
+                      {primaryTraining.sidebarNote || academyContent.sidebarNote}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </div>

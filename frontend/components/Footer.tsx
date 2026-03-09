@@ -90,7 +90,7 @@ const Footer: React.FC = () => {
     };
   }, []);
 
-  const featuredTrainings = trainings.slice(0, 4);
+  const primaryTraining = trainings[0] ?? null;
   const brandText = toText(footer.brandText, 'AZFIN');
   const fallbackDescription = 'Azərbaycanın ən innovativ audit və konsalting mərkəzi.';
   const footerDescription = toText(footer.description, fallbackDescription);
@@ -122,12 +122,12 @@ const Footer: React.FC = () => {
 
   const customAcademyLinks = normalizeLinkList(footer.academyLinks, []);
   const hasCustomAcademyLinks = customAcademyLinks.length > 0;
-  const dynamicAcademyLinks: FooterLinkItem[] = featuredTrainings.map((training) => ({
-    label: training.title,
-    path: `/academy/${training.id}`,
-    href: `/academy/${training.id}`,
+  const dynamicAcademyLinks: FooterLinkItem[] = primaryTraining ? [{
+    label: primaryTraining.title,
+    path: '/academy',
+    href: '/academy',
     isExternal: false,
-  }));
+  }] : [];
   const socialLinks = Array.isArray(social.links)
     ? social.links
       .map((item: any) => {

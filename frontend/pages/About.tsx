@@ -9,21 +9,31 @@ type TabType = 'about' | 'team' | 'testimonials';
 const About: React.FC = () => {
   const { content } = useContent();
   const about = content.about;
-  const [activeTab, setActiveTab] = useState<string>(about.tabs?.[0]?.name ?? 'about');
-
-  const dynamicTabs = (about.tabs || [])
-    .filter(tab => ['about', 'overview', 'team', 'testimonials'].includes(tab.name))
-    .map(tab => ({
-      id: tab.name === 'overview' ? 'about' : tab.name,
-      label: tab.heading,
-      icon: resolveIcon(tab.icon || 'building-2')
-    }));
-
-  const tabs = dynamicTabs.length > 0 ? dynamicTabs : [
+  const fallbackTabs = [
     { id: 'about', label: 'BİZİM HAQQIMIZDA', icon: Building2 },
     { id: 'team', label: 'ƏMƏKDAŞLAR', icon: Users },
     { id: 'testimonials', label: 'MÜŞTƏRİ RƏYLƏRİ', icon: MessageSquare },
   ];
+  const tabMap = new Map(
+    fallbackTabs.map((tab) => [tab.id, tab])
+  );
+
+  (about.tabs || [])
+    .filter((tab) => ['about', 'overview', 'team', 'testimonials'].includes(tab.name))
+    .forEach((tab) => {
+      const id = tab.name === 'overview' ? 'about' : tab.name;
+      tabMap.set(id, {
+        id,
+        label: tab.heading || tabMap.get(id)?.label || 'BİZİM HAQQIMIZDA',
+        icon: resolveIcon(tab.icon || 'building-2')
+      });
+    });
+
+  const tabs = fallbackTabs.map((tab) => tabMap.get(tab.id) || tab);
+  const defaultActiveTab = (about.tabs?.[0]?.name === 'overview' ? 'about' : about.tabs?.[0]?.name) ?? 'about';
+  const [activeTab, setActiveTab] = useState<string>(
+    tabs.some((tab) => tab.id === defaultActiveTab) ? defaultActiveTab : 'about'
+  );
 
   const activeHeading = tabs.find(t => t.id === activeTab)?.label || 'BİZİM HAQQIMIZDA';
   const [activeTitlePrefixFallback, ...activeTitleHighlightParts] = activeHeading.split(' ');

@@ -4,6 +4,7 @@ import { ArrowRight, ChevronRight, ShieldCheck, Award } from 'lucide-react';
 import CalculationModal from '../components/CalculationModal';
 import { useContent } from '../lib/ContentContext';
 import { resolveIcon } from '../utils/iconRegistry';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 import { SERVICES } from '../constants';
 
 const Home: React.FC = () => {
@@ -27,7 +28,7 @@ const Home: React.FC = () => {
       if (typeof client === 'string') return { name: client, logo: '' };
       if (client && typeof client === 'object') {
         const c = client as any;
-        return { name: c.name ?? c.title ?? '', logo: c.logo ?? c.image ?? '' };
+        return { name: c.name ?? c.title ?? '', logo: resolveMediaUrl(c.logo ?? c.image ?? '') };
       }
       return { name: '', logo: '' };
     })
@@ -101,7 +102,7 @@ const Home: React.FC = () => {
             {(Array.isArray(stats) ? stats : []).map((stat, idx) => {
               return (
                 <div key={`${stat.label}-${idx}`} className="flex flex-col items-start group">
-                  <span className="text-5xl font-black text-primary tracking-tighter italic uppercase mb-2 group-hover:text-accent transition-colors duration-500">
+                  <span className="text-4xl md:text-[2.75rem] font-black text-primary tracking-tighter italic uppercase mb-2 group-hover:text-accent transition-colors duration-500">
                     {formatStatValue(stat.value)}
                   </span>
                   <div className="w-full h-[2px] bg-accent/30 group-hover:bg-accent transition-colors duration-500 mb-3"></div>
@@ -201,12 +202,13 @@ const Home: React.FC = () => {
           {normalizedClients.length > 0 && (
             <div className="flex animate-marquee whitespace-nowrap gap-12 items-center">
               {[...normalizedClients, ...normalizedClients].map((client, idx) => (
-                <div key={idx} className="min-w-[150px] flex items-center justify-center bg-slate-50 px-8 py-6 rounded-sm text-primary/40 font-bold text-xl uppercase tracking-tighter grayscale hover:grayscale-0 transition-all cursor-default">
+                <div key={idx} className="min-w-[170px] min-h-[120px] flex flex-col items-center justify-center gap-3 bg-slate-50 px-6 py-5 rounded-sm text-primary/40 font-bold uppercase tracking-tighter grayscale hover:grayscale-0 transition-all cursor-default text-center">
                   {client.logo ? (
-                    <img src={client.logo} alt={client.name} className="h-12 w-auto object-contain mix-blend-multiply opacity-60 hover:opacity-100 transition-all" />
-                  ) : (
-                    <span>{client.name}</span>
-                  )}
+                    <img src={client.logo} alt={client.name} className="h-12 w-auto max-w-[120px] object-contain mix-blend-multiply opacity-60 hover:opacity-100 transition-all" />
+                  ) : null}
+                  <span className="text-xs leading-tight whitespace-normal break-words text-primary/60">
+                    {client.name}
+                  </span>
                 </div>
               ))}
             </div>

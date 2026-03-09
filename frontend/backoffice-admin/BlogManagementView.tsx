@@ -217,12 +217,12 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                 .ql-container.ql-snow {
                     border: none !important;
                     flex: 1;
-                    font-family: 'Inter', sans-serif !important;
+                    font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif !important;
                 }
                 .ql-editor {
                     min-height: 500px;
                     padding: 2.5rem !important;
-                    font-size: 1.125rem !important;
+                    font-size: 1.1875rem !important;
                     line-height: 1.8 !important;
                     color: #334155 !important;
                 }
@@ -248,10 +248,10 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                     text-transform: capitalize;
                 }
                 
-                .ql-font-inter { font-family: 'Inter', sans-serif; }
-                .ql-font-roboto { font-family: 'Roboto', sans-serif; }
-                .ql-font-arial { font-family: Arial, sans-serif; }
-                .ql-font-georgia { font-family: Georgia, serif; }
+                .ql-font-inter { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+                .ql-font-roboto { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+                .ql-font-arial { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+                .ql-font-georgia { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
                 
                 /* Blot Formatter UI */
                 .blot-formatter__toolbar {
