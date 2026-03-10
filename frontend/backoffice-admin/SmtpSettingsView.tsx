@@ -1,13 +1,15 @@
 import React from 'react';
-import { Mail, Save } from 'lucide-react';
+import { Mail, Save, Send } from 'lucide-react';
 import { SMTPSettings } from '../utils/smtpSettings';
 
 interface SmtpSettingsViewProps {
     settings: SMTPSettings;
     dirty: boolean;
     saving: boolean;
+    testing: boolean;
     onChange: (field: keyof SMTPSettings, value: string | number | boolean) => void;
     onSave: () => Promise<void> | void;
+    onTest: () => Promise<void> | void;
 }
 
 const fieldClassName = 'w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-xs font-bold text-primary focus:ring-4 focus:ring-accent/10 outline-none';
@@ -17,8 +19,10 @@ const SmtpSettingsView: React.FC<SmtpSettingsViewProps> = ({
     settings,
     dirty,
     saving,
+    testing,
     onChange,
-    onSave
+    onSave,
+    onTest
 }) => {
     return (
         <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden animate-in fade-in duration-300">
@@ -32,17 +36,33 @@ const SmtpSettingsView: React.FC<SmtpSettingsViewProps> = ({
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Müraciətlər adminə düşür, əlavə olaraq e-poçta da göndərilir</p>
                     </div>
                 </div>
-                <button
-                    onClick={onSave}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-all shadow-lg shadow-primary/20 disabled:opacity-60"
-                >
-                    {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="h-4 w-4" />}
-                    {saving ? 'SAXLANILIR...' : dirty ? 'SMTP SAXLA' : 'SMTP SAXLANIB'}
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <button
+                        onClick={onTest}
+                        disabled={testing || saving}
+                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-accent text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-lg shadow-accent/20 disabled:opacity-60"
+                    >
+                        {testing ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="h-4 w-4" />}
+                        {testing ? 'GÖNDƏRİLİR...' : 'TEST MAİLİ GÖNDƏR'}
+                    </button>
+                    <button
+                        onClick={onSave}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-all shadow-lg shadow-primary/20 disabled:opacity-60"
+                    >
+                        {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="h-4 w-4" />}
+                        {saving ? 'SAXLANILIR...' : dirty ? 'SMTP SAXLA' : 'SMTP SAXLANIB'}
+                    </button>
+                </div>
             </div>
 
             <div className="p-8 space-y-8">
+                <div className="rounded-3xl border border-accent/20 bg-accent/5 px-6 py-5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-accent">Mail Bildirişi</p>
+                    <p className="mt-2 text-sm font-medium text-slate-600 leading-relaxed">
+                        Saytdakı əlaqə, audit və təlim formaları doldurulduqda məktub burada yazılan alıcılara göndərilir. Məktublar AZFIN brendinə uyğun HTML formatında hazırlanır.
+                    </p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-slate-50 rounded-2xl px-5 py-4 border border-slate-100 flex items-center justify-between">
                         <div>

@@ -30,7 +30,8 @@ import {
   DEFAULT_SMTP_SETTINGS,
   SMTPSettings,
   fetchSmtpSettings,
-  saveSmtpSettings
+  saveSmtpSettings,
+  sendTestSmtpSettings
 } from '../utils/smtpSettings';
 
 // Local Imports
@@ -298,7 +299,7 @@ const Admin: React.FC = () => {
   const { updateContent } = useContent();
 
 
-  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts'>('site');
+  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts' | 'smtp'>('site');
   const [viewMode, setViewMode] = useState<'section' | 'full'>('section');
   const [blogMode, setBlogMode] = useState<'blog' | 'training'>('blog');
 
@@ -327,6 +328,7 @@ const Admin: React.FC = () => {
   const [smtpSettings, setSmtpSettings] = useState<SMTPSettings>(DEFAULT_SMTP_SETTINGS);
   const [smtpSaving, setSmtpSaving] = useState(false);
   const [smtpDirty, setSmtpDirty] = useState(false);
+  const [smtpTesting, setSmtpTesting] = useState(false);
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const trainingContentRef = useRef<HTMLTextAreaElement>(null);
@@ -615,6 +617,20 @@ const Admin: React.FC = () => {
       toast.error('SMTP ayarları saxlanarkən xəta baş verdi.');
     } finally {
       setSmtpSaving(false);
+    }
+  };
+
+  const handleSmtpTest = async () => {
+    setSmtpTesting(true);
+    try {
+      const { error } = await sendTestSmtpSettings(smtpSettings);
+      if (error) throw error;
+      toast.success('Test maili göndərildi.');
+    } catch (err) {
+      console.error('SMTP test error:', err);
+      toast.error(err instanceof Error ? err.message : 'Test maili göndərilərkən xəta baş verdi.');
+    } finally {
+      setSmtpTesting(false);
     }
   };
 
@@ -1065,15 +1081,18 @@ const Admin: React.FC = () => {
               />
             ) : adminMode === 'messages' ? (
               <FormMessagesView />
+            ) : adminMode === 'smtp' ? (
+              <SmtpSettingsView
+                settings={smtpSettings}
+                dirty={smtpDirty}
+                saving={smtpSaving}
+                testing={smtpTesting}
+                onChange={handleSmtpFieldChange}
+                onSave={handleSmtpSave}
+                onTest={handleSmtpTest}
+              />
             ) : adminMode === 'forms' ? (
               <div className="space-y-8">
-                <SmtpSettingsView
-                  settings={smtpSettings}
-                  dirty={smtpDirty}
-                  saving={smtpSaving}
-                  onChange={handleSmtpFieldChange}
-                  onSave={handleSmtpSave}
-                />
                 <SectionEditorView
                   selectedSection={selectedSection}
                   sectionFormValues={sectionFormValues}

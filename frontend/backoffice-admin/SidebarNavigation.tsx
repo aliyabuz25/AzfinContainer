@@ -1,15 +1,15 @@
 
 import React from 'react';
-import { Search, FileJson, BookOpen, Search as SearchIcon, Lock } from 'lucide-react';
+import { Search, FileJson, BookOpen, Search as SearchIcon, Lock, Mail } from 'lucide-react';
 import { getSectionIcon, getSectionLabel } from './AdminConstants';
 
 interface SidebarNavigationProps {
-    adminMode: 'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts';
+    adminMode: 'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts' | 'smtp';
     selectedSection: string;
     viewMode: 'section' | 'full';
     sectionSearch: string;
     setSectionSearch: (val: string) => void;
-    setAdminMode: (mode: 'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts') => void;
+    setAdminMode: (mode: 'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts' | 'smtp') => void;
     setSelectedSection: (section: string) => void;
     setViewMode: (mode: 'section' | 'full') => void;
     setBlogMode: (mode: 'blog' | 'training') => void;
@@ -75,6 +75,20 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                         FORMLAR
                     </div>
                     {adminMode === 'forms' && <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />}
+                </button>
+
+                <button
+                    onClick={() => setAdminMode('smtp')}
+                    className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all mb-1 ${adminMode === 'smtp'
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                        : 'text-slate-500 hover:bg-white hover:text-primary group'
+                        }`}
+                >
+                    <div className="flex items-center gap-4">
+                        <Mail className={`h-4 w-4 ${adminMode === 'smtp' ? 'text-accent' : 'text-slate-300 group-hover:text-primary'}`} />
+                        SMTP
+                    </div>
+                    {adminMode === 'smtp' && <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />}
                 </button>
 
                 <button

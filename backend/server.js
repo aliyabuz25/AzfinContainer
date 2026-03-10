@@ -303,13 +303,25 @@ function formatDateForEmail(dateValue) {
     }
 }
 
+function getEmailBranding() {
+    const siteContent = readCurrentSiteContent() || {};
+    const siteSettings = siteContent.settings || {};
+    return {
+        brandName: siteSettings.siteTitle || 'AZFIN GROUP MMC',
+        brandLogo: toPublicUrl(siteSettings.navbarLogo || siteSettings.footerLogo || '')
+    };
+}
+
+function buildEmailLogoBlock(brandName, brandLogo) {
+    return brandLogo
+        ? `<img src="${escapeHtml(brandLogo)}" alt="${escapeHtml(brandName)}" style="height:38px;max-width:180px;display:block;object-fit:contain;" />`
+        : `<span style="display:inline-block;color:#ffffff;font-size:26px;font-weight:900;letter-spacing:-0.02em;">AZFIN</span>`;
+}
+
 function buildSubmissionEmailBody({ type, submissionId, formData, createdAt }) {
     const typeLabel = getSubmissionTypeLabel(type);
     const entries = Object.entries(formData || {});
-    const siteContent = readCurrentSiteContent() || {};
-    const siteSettings = siteContent.settings || {};
-    const brandName = siteSettings.siteTitle || 'AZFIN GROUP MMC';
-    const brandLogo = toPublicUrl(siteSettings.navbarLogo || siteSettings.footerLogo || '');
+    const { brandName, brandLogo } = getEmailBranding();
     const accentColor = getSubmissionTypeAccent(type);
     const createdAtLabel = formatDateForEmail(createdAt);
     const formName = typeof formData?.formName === 'string' && formData.formName.trim()
@@ -321,131 +333,96 @@ function buildSubmissionEmailBody({ type, submissionId, formData, createdAt }) {
     const details = entries.filter(([key]) => key !== 'formName');
 
     const metaLines = [
-        `Brand: ${brandName}`,
-        `Form: ${formName}`,
-        `Submission ID: ${submissionId}`,
-        `Type: ${typeLabel}`,
-        `Created At: ${createdAtLabel}`,
-        `Name: ${summaryName}`,
-        `Email: ${summaryEmail}`,
-        `Phone: ${summaryPhone}`
+        `Brend: ${brandName}`,
+        `Forma: ${formName}`,
+        `Müraciət ID: ${submissionId}`,
+        `Növ: ${typeLabel}`,
+        `Tarix: ${createdAtLabel}`,
+        `Ad və soyad: ${summaryName}`,
+        `E-poçt: ${summaryEmail}`,
+        `Telefon: ${summaryPhone}`
     ];
     const dataLines = details.map(([key, value]) => `${prettifyFieldKey(key)}: ${formatSubmissionValue(value)}`);
 
     const text = [...metaLines, '', ...dataLines].join('\n');
     const htmlRows = details
         .map(([key, value], index) => `
-            <tr>
-              <td style="padding:12px 14px;border:1px solid #e2e8f0;font-weight:700;font-size:13px;color:#0f172a;background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};vertical-align:top;width:34%;">
+            <div style="margin-top:${index === 0 ? '0' : '12px'};padding:16px 18px;border:1px solid #e2e8f0;border-radius:14px;background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+              <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">
                 ${escapeHtml(prettifyFieldKey(key))}
-              </td>
-              <td style="padding:12px 14px;border:1px solid #e2e8f0;font-size:13px;color:#334155;background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};line-height:1.55;">
+              </div>
+              <div style="font-size:14px;color:#334155;line-height:1.65;font-weight:600;word-break:break-word;">
                 ${escapeHtml(formatSubmissionValue(value))}
-              </td>
-            </tr>`)
+              </div>
+            </div>`)
         .join('');
 
-    const logoBlock = brandLogo
-        ? `<img src="${escapeHtml(brandLogo)}" alt="${escapeHtml(brandName)}" style="height:38px;max-width:180px;display:block;object-fit:contain;" />`
-        : `<span style="display:inline-block;color:#ffffff;font-size:26px;font-weight:900;letter-spacing:-0.02em;">AZFIN</span>`;
+    const logoBlock = buildEmailLogoBlock(brandName, brandLogo);
 
     const html = `
       <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
         ${escapeHtml(formName)} üçün yeni müraciət daxil oldu.
       </div>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 12px;font-family:Arial,sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:20px 10px;font-family:Arial,sans-serif;">
         <tr>
           <td align="center">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:760px;background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;">
               <tr>
-                <td style="background:#0f172a;padding:22px 24px;border-bottom:3px solid ${accentColor};">
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td style="vertical-align:middle;">${logoBlock}</td>
-                      <td align="right" style="vertical-align:middle;">
-                        <span style="display:inline-block;padding:8px 12px;border-radius:999px;background:${accentColor};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;">
-                          ${escapeHtml(typeLabel)}
-                        </span>
-                      </td>
-                    </tr>
-                  </table>
-                  <h1 style="margin:16px 0 0;color:#ffffff;font-size:22px;line-height:1.25;font-weight:900;text-transform:uppercase;">
+                <td style="background:#0f172a;padding:22px 20px;border-bottom:3px solid ${accentColor};">
+                  <div style="text-align:left;">${logoBlock}</div>
+                  <div style="margin-top:16px;">
+                    <span style="display:inline-block;padding:8px 12px;border-radius:999px;background:${accentColor};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;">
+                      ${escapeHtml(typeLabel)}
+                    </span>
+                  </div>
+                  <h1 style="margin:16px 0 0;color:#ffffff;font-size:24px;line-height:1.25;font-weight:900;text-transform:uppercase;">
                     ${escapeHtml(formName)}
                   </h1>
-                  <p style="margin:8px 0 0;color:#93c5fd;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+                  <p style="margin:8px 0 0;color:#cbd5e1;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
                     ${escapeHtml(brandName)}
                   </p>
                 </td>
               </tr>
-
               <tr>
-                <td style="padding:22px 24px 8px;">
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 10px;">
-                    <tr>
-                      <td style="width:50%;padding-right:8px;">
-                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;">
-                          <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">Müraciət ID</div>
-                          <div style="margin-top:4px;font-size:14px;font-weight:800;color:#0f172a;">#${submissionId}</div>
-                        </div>
-                      </td>
-                      <td style="width:50%;padding-left:8px;">
-                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;">
-                          <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">Tarix</div>
-                          <div style="margin-top:4px;font-size:14px;font-weight:800;color:#0f172a;">${escapeHtml(createdAtLabel)}</div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="width:33.33%;padding-right:8px;">
-                        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:10px 12px;">
-                          <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Ad Soyad</div>
-                          <div style="margin-top:4px;font-size:13px;font-weight:700;color:#0f172a;line-height:1.4;">${escapeHtml(summaryName)}</div>
-                        </div>
-                      </td>
-                      <td style="width:33.33%;padding:0 4px;">
-                        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:10px 12px;">
-                          <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">E-poçt</div>
-                          <div style="margin-top:4px;font-size:13px;font-weight:700;color:#0f172a;line-height:1.4;">${escapeHtml(summaryEmail)}</div>
-                        </div>
-                      </td>
-                      <td style="width:33.33%;padding-left:8px;">
-                        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:10px 12px;">
-                          <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Telefon</div>
-                          <div style="margin-top:4px;font-size:13px;font-weight:700;color:#0f172a;line-height:1.4;">${escapeHtml(summaryPhone)}</div>
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-
-              <tr>
-                <td style="padding:6px 24px 24px;">
-                  <div style="font-size:11px;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:12px;">
-                    Form Məlumatları
+                <td style="padding:20px;">
+                  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:16px 18px;">
+                    <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">Müraciət ID</div>
+                    <div style="margin-top:6px;font-size:15px;font-weight:800;color:#0f172a;word-break:break-word;">#${submissionId}</div>
                   </div>
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-radius:12px;overflow:hidden;">
-                    <thead>
-                      <tr>
-                        <th style="padding:12px 14px;border:1px solid #dbe7ff;background:#eff6ff;text-align:left;font-size:12px;color:#0f172a;text-transform:uppercase;letter-spacing:0.08em;">Sahə</th>
-                        <th style="padding:12px 14px;border:1px solid #dbe7ff;background:#eff6ff;text-align:left;font-size:12px;color:#0f172a;text-transform:uppercase;letter-spacing:0.08em;">Dəyər</th>
-                      </tr>
-                    </thead>
-                    <tbody>${htmlRows || '<tr><td colspan="2" style="padding:12px 14px;border:1px solid #e2e8f0;color:#64748b;">Məlumat daxil edilməyib.</td></tr>'}</tbody>
-                  </table>
+                  <div style="margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:16px 18px;">
+                    <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">Tarix</div>
+                    <div style="margin-top:6px;font-size:15px;font-weight:800;color:#0f172a;line-height:1.5;">${escapeHtml(createdAtLabel)}</div>
+                  </div>
+
+                  <div style="margin-top:16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:16px 18px;">
+                    <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Ad və soyad</div>
+                    <div style="margin-top:6px;font-size:14px;font-weight:800;color:#0f172a;line-height:1.55;word-break:break-word;">${escapeHtml(summaryName)}</div>
+                  </div>
+                  <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:16px 18px;">
+                    <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">E-poçt</div>
+                    <div style="margin-top:6px;font-size:14px;font-weight:800;color:#0f172a;line-height:1.55;word-break:break-word;">${escapeHtml(summaryEmail)}</div>
+                  </div>
+                  <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:16px 18px;">
+                    <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:0.1em;">Telefon</div>
+                    <div style="margin-top:6px;font-size:14px;font-weight:800;color:#0f172a;line-height:1.55;word-break:break-word;">${escapeHtml(summaryPhone)}</div>
+                  </div>
+
+                  <div style="margin-top:24px;font-size:11px;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:0.15em;">
+                    Müraciət Məlumatları
+                  </div>
+                  <div style="margin-top:12px;">
+                    ${htmlRows || '<div style="padding:16px 18px;border:1px solid #e2e8f0;border-radius:14px;background:#ffffff;color:#64748b;font-size:14px;">Məlumat daxil edilməyib.</div>'}
+                  </div>
+
+                  <div style="margin-top:24px;">
+                    <a href="${escapeHtml(ADMIN_PANEL_URL)}" style="display:block;padding:14px 18px;border-radius:14px;background:${accentColor};color:#ffffff;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-align:center;">
+                      Admin Panelini Aç
+                    </a>
+                  </div>
                 </td>
               </tr>
-
               <tr>
-                <td style="padding:0 24px 24px;">
-                  <a href="${escapeHtml(ADMIN_PANEL_URL)}" style="display:inline-block;padding:12px 18px;border-radius:12px;background:${accentColor};color:#ffffff;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;">
-                    Admin Paneldə Aç
-                  </a>
-                </td>
-              </tr>
-
-              <tr>
-                <td style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;">
+                <td style="padding:16px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;">
                   <p style="margin:0;font-size:11px;color:#64748b;line-height:1.6;">
                     Bu e-poçt avtomatik olaraq Azfin saytındakı forma müraciətlərindən göndərilir.
                   </p>
@@ -458,6 +435,70 @@ function buildSubmissionEmailBody({ type, submissionId, formData, createdAt }) {
     `;
 
     return { text, html, typeLabel };
+}
+
+function buildSmtpTestEmailBody() {
+    const { brandName, brandLogo } = getEmailBranding();
+    const logoBlock = buildEmailLogoBlock(brandName, brandLogo);
+    const sentAt = formatDateForEmail(new Date());
+    const subject = `[${brandName}] SMTP Sınaq Məktubu`;
+    const text = [
+        `${brandName} SMTP sınaq məktubu`,
+        `Göndərilmə vaxtı: ${sentAt}`,
+        `Admin panel: ${ADMIN_PANEL_URL}`,
+        '',
+        'Bu məktub SMTP ayarlarının düzgün işlədiyini yoxlamaq üçün avtomatik yaradılıb.'
+    ].join('\n');
+
+    const html = `
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+        ${escapeHtml(brandName)} SMTP test məktubu
+      </div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:20px 10px;font-family:Arial,sans-serif;">
+        <tr>
+          <td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;">
+              <tr>
+                <td style="background:#0f172a;padding:22px 20px;border-bottom:3px solid #c6a153;">
+                  <div style="text-align:left;">${logoBlock}</div>
+                  <div style="margin-top:16px;">
+                    <span style="display:inline-block;padding:8px 12px;border-radius:999px;background:#c6a153;color:#ffffff;font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;">
+                      SMTP SINAQ
+                    </span>
+                  </div>
+                  <h1 style="margin:16px 0 0;color:#ffffff;font-size:24px;line-height:1.25;font-weight:900;text-transform:uppercase;">
+                    SMTP konfiqurasiyası işləyir
+                  </h1>
+                  <p style="margin:8px 0 0;color:#cbd5e1;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+                    ${escapeHtml(brandName)}
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:20px;">
+                  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:18px 20px;">
+                    <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">Göndərilmə vaxtı</div>
+                    <div style="margin-top:6px;font-size:15px;font-weight:800;color:#0f172a;line-height:1.55;word-break:break-word;">${escapeHtml(sentAt)}</div>
+                  </div>
+                  <div style="margin-top:16px;padding:18px 20px;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;">
+                    <p style="margin:0;font-size:14px;line-height:1.75;color:#475569;">
+                      Bu məktub AZFIN admin panelindəki SMTP ayarlarının düzgün qurulduğunu təsdiqləmək üçün göndərildi. Saytdakı əlaqə, audit və təlim formaları bundan sonra bu üslubda HTML məktub kimi çatdırılacaq.
+                    </p>
+                  </div>
+                  <div style="margin-top:24px;">
+                    <a href="${escapeHtml(ADMIN_PANEL_URL)}" style="display:block;padding:14px 18px;border-radius:14px;background:#0f172a;color:#ffffff;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-align:center;">
+                      Admin Panelinə Keç
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    `;
+
+    return { subject, text, html };
 }
 
 function normalizeTrainingPayload(payload) {
@@ -690,17 +731,7 @@ async function saveSmtpSettings(payload) {
     return normalized;
 }
 
-async function sendSubmissionNotification({ type, formData, submissionId, createdAt }) {
-    const smtp = await getSmtpSettings();
-    if (!smtp.enabled) {
-        return { sent: false, skipped: true, reason: 'SMTP disabled' };
-    }
-
-    const fromAddress = smtp.from || smtp.user;
-    if (!smtp.host || !smtp.port || !smtp.to || !fromAddress) {
-        return { sent: false, skipped: true, reason: 'SMTP config is incomplete' };
-    }
-
+function createSmtpTransporter(smtp) {
     const transporterConfig = {
         host: smtp.host,
         port: smtp.port,
@@ -714,7 +745,29 @@ async function sendSubmissionNotification({ type, formData, submissionId, create
         };
     }
 
-    const transporter = nodemailer.createTransport(transporterConfig);
+    return nodemailer.createTransport(transporterConfig);
+}
+
+function validateSmtpDeliverySettings(smtp) {
+    const fromAddress = smtp.from || smtp.user;
+    if (!smtp.host || !smtp.port || !smtp.to || !fromAddress) {
+        return { valid: false, fromAddress: '', reason: 'SMTP config is incomplete' };
+    }
+    return { valid: true, fromAddress, reason: null };
+}
+
+async function sendSubmissionNotification({ type, formData, submissionId, createdAt }) {
+    const smtp = await getSmtpSettings();
+    if (!smtp.enabled) {
+        return { sent: false, skipped: true, reason: 'SMTP disabled' };
+    }
+
+    const { valid, fromAddress, reason } = validateSmtpDeliverySettings(smtp);
+    if (!valid) {
+        return { sent: false, skipped: true, reason };
+    }
+
+    const transporter = createSmtpTransporter(smtp);
     const { text, html, typeLabel } = buildSubmissionEmailBody({ type, submissionId, formData, createdAt });
     const subjectPrefix = smtp.subjectPrefix || DEFAULT_SMTP_SETTINGS.subjectPrefix;
     const subject = `[${subjectPrefix}] ${typeLabel} #${submissionId}`;
@@ -729,6 +782,29 @@ async function sendSubmissionNotification({ type, formData, submissionId, create
         text,
         html,
         replyTo
+    });
+
+    return { sent: true };
+}
+
+async function sendSmtpTestEmail(payload) {
+    const smtp = normalizeSmtpSettings(payload);
+    const { valid, fromAddress, reason } = validateSmtpDeliverySettings(smtp);
+    if (!valid) {
+        return { sent: false, reason };
+    }
+
+    const transporter = createSmtpTransporter(smtp);
+    const { subject, text, html } = buildSmtpTestEmailBody();
+
+    await transporter.sendMail({
+        from: fromAddress,
+        to: smtp.to,
+        cc: smtp.cc || undefined,
+        bcc: smtp.bcc || undefined,
+        subject,
+        text,
+        html
     });
 
     return { sent: true };
@@ -1158,6 +1234,19 @@ app.post('/api/admin/smtp-settings', async (req, res) => {
         const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
         const settings = await saveSmtpSettings(payload);
         res.json({ success: true, settings });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/smtp-settings/test', async (req, res) => {
+    try {
+        const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
+        const result = await sendSmtpTestEmail(payload);
+        if (!result.sent) {
+            return res.status(400).json({ error: result.reason || 'SMTP test failed' });
+        }
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -67,3 +67,16 @@ export const saveSmtpSettings = async (settings: SMTPSettings) => {
         return { data: null, error };
     }
 };
+
+export const sendTestSmtpSettings = async (settings: SMTPSettings) => {
+    try {
+        const response = await apiClient.post('/admin/smtp-settings/test', settings);
+        return {
+            data: response,
+            error: null
+        };
+    } catch (error) {
+        console.error('Error sending SMTP test email:', error);
+        return { data: null, error };
+    }
+};
