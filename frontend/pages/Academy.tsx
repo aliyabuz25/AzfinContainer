@@ -107,7 +107,7 @@ const Academy: React.FC = () => {
                     {primaryTraining.aboutTitle || 'Təlim Haqqında'}
                   </h2>
                   <div
-                    className="text-slate-500 leading-relaxed text-lg font-medium"
+                    className="prose prose-slate prose-lg max-w-none font-medium prose-headings:text-primary prose-strong:text-primary prose-p:text-slate-600 prose-li:text-slate-600 prose-ol:my-6 prose-ul:my-6 prose-blockquote:border-accent prose-blockquote:text-slate-600 [&_p]:min-h-[1.75rem] [&_p]:leading-relaxed [&_p]:mb-4 [&_p:last-child]:mb-0 [&_ol]:pl-6 [&_ul]:pl-6 [&_li]:my-2 [&_img]:rounded-2xl [&_img]:shadow-lg"
                     dangerouslySetInnerHTML={{ __html: parseBBCode(primaryTraining.fullContent || primaryTraining.description) }}
                   />
                 </div>

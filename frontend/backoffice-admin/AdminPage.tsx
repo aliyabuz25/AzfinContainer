@@ -101,16 +101,17 @@ const formatStartDate = (rawValue: string) => {
   return `${digits.slice(0, 2)}.${digits.slice(2)}`;
 };
 
-const normalizeTrainingList = (value: unknown): string[] => {
+const normalizeTrainingList = (value: unknown, preserveEmpty = false): string[] => {
   if (Array.isArray(value)) {
-    return value.map((item) => String(item ?? '').trim()).filter(Boolean);
+    const normalized = value.map((item) => String(item ?? '').trim());
+    return preserveEmpty ? normalized : normalized.filter(Boolean);
   }
 
   if (typeof value === 'string') {
     try {
       const parsed = JSON.parse(value);
       return Array.isArray(parsed)
-        ? parsed.map((item) => String(item ?? '').trim()).filter(Boolean)
+        ? normalizeTrainingList(parsed, preserveEmpty)
         : [];
     } catch (_) {
       return [];
@@ -126,8 +127,8 @@ const normalizeTrainingForm = (value?: Partial<TrainingItem> | null): Omit<Train
   title: typeof value?.title === 'string' ? value.title : DEFAULT_TRAINING_FORM.title,
   description: typeof value?.description === 'string' ? value.description : DEFAULT_TRAINING_FORM.description,
   fullContent: typeof value?.fullContent === 'string' ? value.fullContent : DEFAULT_TRAINING_FORM.fullContent,
-  syllabus: normalizeTrainingList(value?.syllabus),
-  targetAudience: normalizeTrainingList(value?.targetAudience),
+  syllabus: normalizeTrainingList(value?.syllabus, true),
+  targetAudience: normalizeTrainingList(value?.targetAudience, true),
   startDate: typeof value?.startDate === 'string' ? value.startDate : DEFAULT_TRAINING_FORM.startDate,
   duration: typeof value?.duration === 'string' ? value.duration : DEFAULT_TRAINING_FORM.duration,
   level: typeof value?.level === 'string' ? value.level : DEFAULT_TRAINING_FORM.level,
