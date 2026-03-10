@@ -79,9 +79,6 @@ const Academy: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               <div className="lg:col-span-2 space-y-12">
                 <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 space-y-6">
-                  <div className="inline-flex items-center gap-3 px-4 py-2 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest">
-                    <ShieldCheck className="h-4 w-4" /> Təlim Şablonu
-                  </div>
                   <h2 className="text-3xl md:text-4xl font-black text-primary tracking-tight uppercase italic leading-tight">
                     {primaryTraining.title || academyContent.heroTitleHighlight || 'Audit Təlimi'}
                   </h2>
