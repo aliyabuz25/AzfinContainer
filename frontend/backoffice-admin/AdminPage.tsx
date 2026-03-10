@@ -78,6 +78,11 @@ const clearTempDraft = () => {
   window.localStorage.removeItem(TEMP_DRAFT_KEY);
 };
 
+const hasContent = (value: unknown) => {
+  if (!value || typeof value !== 'object') return false;
+  return Object.keys(value as Record<string, unknown>).length > 0;
+};
+
 const generateId = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -234,11 +239,13 @@ const Admin: React.FC = () => {
       try {
         const local = readTempDraft();
         let currentDraft = DEFAULT_SITE_CONTENT;
+        let canRestoreLocalDraft = false;
 
         if (supabaseReady) {
           const settings = await fetchSiteSettings();
           const remoteContent = settings?.content || {};
           currentDraft = mergeSiteContent(remoteContent);
+          canRestoreLocalDraft = !hasContent(remoteContent);
 
           const [bp, tr, smtp] = await Promise.all([fetchAdminBlogPosts(), fetchAdminTrainings(), fetchSmtpSettings()]);
           setBlogPosts(bp);
@@ -247,12 +254,14 @@ const Admin: React.FC = () => {
           setSmtpDirty(false);
         }
 
-        const initialDraft = local ? mergeContent(currentDraft, local) : currentDraft;
+        const initialDraft = local && canRestoreLocalDraft ? mergeContent(currentDraft, local) : currentDraft;
         setDraft(initialDraft);
         lastSavedDraftRef.current = JSON.stringify(initialDraft);
 
-        if (local) {
+        if (local && canRestoreLocalDraft) {
           toast.info('Saxlanılmamış dəyişikliklər bərpa edildi.');
+        } else if (local && !canRestoreLocalDraft) {
+          clearTempDraft();
         }
       } catch (err) {
         console.error('Initial load error:', err);
@@ -382,8 +391,7 @@ const Admin: React.FC = () => {
 
   // Handlers
   const handleSectionInputChange = (field: string, value: any) => {
-    const updated = mergeContent(draft, { [selectedSection]: { [field]: value } });
-    setDraft(updated);
+    setDraft((prev) => mergeContent(prev, { [selectedSection]: { [field]: value } }));
   };
 
   const handleArrayObjectFieldChange = (parentField: string, idx: number, field: string, value: any) => {
@@ -419,8 +427,7 @@ const Admin: React.FC = () => {
   const applySectionJson = () => {
     try {
       const parsed = JSON.parse(editorValue);
-      const updated = mergeContent(draft, { [selectedSection]: parsed });
-      setDraft(updated);
+      setDraft((prev) => mergeContent(prev, { [selectedSection]: parsed }));
       setJsonError(null);
       toast.success(`${getSectionLabel(selectedSection)} bölməsi yeniləndi.`);
     } catch (err) {
@@ -436,7 +443,7 @@ const Admin: React.FC = () => {
         setDraft((prev) => ({ ...prev, navigation: parsed }));
         toast.success('Naviqasiya strukturu tətbiq edildi.');
       } else {
-        setDraft(mergeSiteContent(parsed));
+        setDraft(() => mergeSiteContent(parsed));
         toast.success('Bütün sayt strukturu yeniləndi.');
       }
       setJsonError(null);
@@ -496,8 +503,7 @@ const Admin: React.FC = () => {
   const handleRestoreSectionDefaults = () => {
     const defaults = DEFAULT_SITE_CONTENT[selectedSection as keyof SiteContent];
     if (defaults) {
-      const updated = mergeContent(draft, { [selectedSection]: defaults });
-      setDraft(updated);
+      setDraft((prev) => mergeContent(prev, { [selectedSection]: defaults }));
       toast.warning(`${getSectionLabel(selectedSection)} bölməsi ilkin vəziyyətinə qaytarıldı.`);
     }
   };
@@ -916,14 +922,10 @@ const Admin: React.FC = () => {
                 clients={draft.home?.clients || []}
                 heading={draft.home?.clientsHeading || ''}
                 onClientsChange={(newClients) => {
-                  const updated = mergeContent(draft, { home: { clients: newClients } });
-                  setDraft(updated);
-                  persistTempDraft(updated);
+                  setDraft((prev) => mergeContent(prev, { home: { clients: newClients } }));
                 }}
                 onHeadingChange={(newHeading) => {
-                  const updated = mergeContent(draft, { home: { clientsHeading: newHeading } });
-                  setDraft(updated);
-                  persistTempDraft(updated);
+                  setDraft((prev) => mergeContent(prev, { home: { clientsHeading: newHeading } }));
                 }}
                 handleImageUpload={handleImageUpload}
               />
