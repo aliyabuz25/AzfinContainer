@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Clock, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Clock, ShieldCheck } from 'lucide-react';
 import { TrainingItem } from '../types';
 import { fetchTrainings } from '../utils/fetchData';
 import { parseBBCode } from '../utils/bbcode';
@@ -84,8 +84,7 @@ const Academy: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-10">
-              {trainings.length > 1 && (
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {trainings.map((training, index) => {
                     const isActive = training.id === primaryTraining.id;
 
@@ -94,53 +93,76 @@ const Academy: React.FC = () => {
                         key={training.id}
                         type="button"
                         onClick={() => setSelectedTrainingId(training.id)}
-                        className={`rounded-2xl border p-6 text-left transition-all ${isActive
-                          ? 'border-accent bg-accent/5 shadow-lg shadow-accent/10'
-                          : 'border-slate-100 bg-white hover:border-accent/30 hover:shadow-md'
+                        className={`group overflow-hidden rounded-lg border text-left transition-all duration-500 ${isActive
+                          ? 'border-accent bg-white shadow-xl shadow-accent/10'
+                          : 'border-slate-100 bg-white hover:shadow-xl'
                           }`}
                       >
-                        <div className="flex items-center justify-between gap-4">
-                          <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-accent' : 'text-slate-400'}`}>
-                            Təlim {index + 1}
-                          </span>
-                          <span className={`h-3 w-3 rounded-full ${isActive ? 'bg-accent' : 'bg-slate-200'}`} />
+                        <div className="relative h-56 overflow-hidden bg-slate-100">
+                          <ImageWithFallback
+                            src={training.image}
+                            alt={training.title || `Təlim ${index + 1}`}
+                            imgClassName={`w-full h-full object-cover transition-all duration-700 ${isActive ? '' : 'group-hover:scale-105'}`}
+                            placeholderClassName="w-full h-full"
+                            placeholderText="no-image"
+                          />
+                          <div className="absolute top-4 left-4 flex flex-col gap-2">
+                            <span className="bg-accent text-white px-3 py-1 rounded-sm text-[9px] font-black uppercase tracking-widest shadow-lg">
+                              {training.level || `Təlim ${index + 1}`}
+                            </span>
+                            {training.duration && (
+                              <span className="bg-white/90 text-primary px-3 py-1 rounded-sm text-[9px] font-black uppercase tracking-widest shadow-lg">
+                                {training.duration}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <h3 className="mt-4 text-lg font-black uppercase italic tracking-tight text-primary">
-                          {training.title || `Təlim ${index + 1}`}
-                        </h3>
+                        <div className="p-8">
+                          <div className="flex items-center gap-4 mb-4 text-slate-400 font-bold text-[9px] uppercase tracking-widest">
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-3 w-3 text-accent" />
+                              {training.durationLabel || 'Müddət'}
+                            </div>
+                          </div>
+                          <h3 className={`text-xl font-black mb-4 leading-tight transition-colors italic uppercase tracking-tight ${isActive ? 'text-accent' : 'text-primary group-hover:text-accent'}`}>
+                            {training.title || `Təlim ${index + 1}`}
+                          </h3>
                         {training.description && (
-                          <p className="mt-3 line-clamp-2 text-sm font-medium leading-relaxed text-slate-500">
+                          <p className="text-sm text-slate-500 mb-6 leading-relaxed line-clamp-2 font-medium">
                             {training.description}
                           </p>
                         )}
+                          <div className={`inline-flex items-center gap-2 font-black text-[10px] uppercase tracking-widest transition-colors ${isActive ? 'text-accent' : 'text-primary group-hover:text-accent'}`}>
+                            Ətraflı bax <ArrowRight className="h-3 w-3 text-accent" />
+                          </div>
+                        </div>
                       </button>
                     );
                   })}
-                </div>
-              )}
+              </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              <div className="lg:col-span-2 space-y-12">
-                <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 space-y-6">
-                  <h2 className="text-3xl md:text-4xl font-black text-primary tracking-tight uppercase italic leading-tight">
-                    {primaryTraining.title || academyContent.heroTitleHighlight || 'Audit Təlimi'}
-                  </h2>
-                  {primaryTraining.description && (
-                    <p className="text-slate-500 leading-relaxed text-base md:text-lg font-medium">
-                      {primaryTraining.description}
-                    </p>
-                  )}
-                </div>
+                <div className="lg:col-span-2 space-y-12">
+                  <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 space-y-6">
+                    <h2 className="text-3xl md:text-4xl font-black text-primary tracking-tight uppercase italic leading-tight">
+                      {primaryTraining.title || academyContent.heroTitleHighlight || 'Audit Təlimi'}
+                    </h2>
+                    {primaryTraining.description && (
+                      <p className="text-slate-500 leading-relaxed text-base md:text-lg font-medium">
+                        {primaryTraining.description}
+                      </p>
+                    )}
+                  </div>
 
-                <div className="rounded-2xl overflow-hidden shadow-2xl h-80 lg:h-96">
-                  <ImageWithFallback
-                    src={primaryTraining.image}
-                    alt={primaryTraining.title}
-                    imgClassName="w-full h-full object-contain bg-slate-50"
-                    placeholderClassName="w-full h-full"
-                    placeholderText="no-image"
-                  />
-                </div>
+                  <div className="rounded-2xl overflow-hidden shadow-2xl h-80 lg:h-96">
+                    <ImageWithFallback
+                      src={primaryTraining.image}
+                      alt={primaryTraining.title}
+                      imgClassName="w-full h-full object-contain bg-slate-50"
+                      placeholderClassName="w-full h-full"
+                      placeholderText="no-image"
+                    />
+                  </div>
 
                 <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
                   <h2 className="text-2xl font-black text-primary mb-6 tracking-tight uppercase italic">
@@ -189,11 +211,11 @@ const Academy: React.FC = () => {
                 )}
               </div>
 
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-8 sticky top-32">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest w-fit mb-8">
-                    <ShieldCheck className="h-4 w-4" /> {primaryTraining.certLabel || 'Peşəkar Sertifikat'}
-                  </div>
+                <div className="lg:col-span-1">
+                  <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-8 sticky top-32">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest w-fit mb-8">
+                      <ShieldCheck className="h-4 w-4" /> {primaryTraining.certLabel || 'Peşəkar Sertifikat'}
+                    </div>
 
                   <h3 className="text-lg font-black text-primary mb-8 border-b border-slate-50 pb-4 uppercase tracking-widest italic">
                     {primaryTraining.infoTitle || 'Təlim Məlumatları'}
@@ -226,14 +248,14 @@ const Academy: React.FC = () => {
                     {academyContent.cardCTA}
                   </button>
 
-                  <div className="mt-8 p-6 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest leading-relaxed italic">
-                      {primaryTraining.sidebarNote || academyContent.sidebarNote}
-                    </p>
+                    <div className="mt-8 p-6 bg-slate-50 rounded-xl">
+                      <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest leading-relaxed italic">
+                        {primaryTraining.sidebarNote || academyContent.sidebarNote}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             </div>
           )}
         </div>
