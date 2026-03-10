@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Target, Award, Building2, Globe, Users, MessageSquare, ShieldCheck, ChevronRight, UserPlus } from 'lucide-react';
 import { useContent } from '../lib/ContentContext';
 import { resolveIcon } from '../utils/iconRegistry';
@@ -34,6 +34,10 @@ const About: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>(
     tabs.some((tab) => tab.id === defaultActiveTab) ? defaultActiveTab : 'about'
   );
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
 
   const activeHeading = tabs.find(t => t.id === activeTab)?.label || 'BİZİM HAQQIMIZDA';
   const [activeTitlePrefixFallback, ...activeTitleHighlightParts] = activeHeading.split(' ');
