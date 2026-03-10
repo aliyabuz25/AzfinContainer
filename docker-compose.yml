@@ -83,6 +83,9 @@ services:
       UPLOAD_LIMIT: 64M
     tmpfs:
       - /sessions:uid=33,gid=33,mode=1733
+    volumes:
+      - ./phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
+      - ./phpmyadmin/apache-subpath.conf:/etc/apache2/conf-enabled/phpmyadmin-subpath.conf:ro
     networks:
       - edge
     labels:
@@ -91,9 +94,10 @@ services:
       - 'traefik.http.routers.pma.rule=(Host(`azfin.az`) || Host(`azfin.octotech.az`)) && PathPrefix(`/phpmyadmin`)'
       - 'traefik.http.routers.pma.entrypoints=web'
       - 'traefik.http.routers.pma.priority=200'
-      - 'traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin'
-      - 'traefik.http.middlewares.pma-prefix.headers.customrequestheaders.X-Forwarded-Prefix=/phpmyadmin'
-      - 'traefik.http.routers.pma.middlewares=pma-strip,pma-prefix'
+      - 'traefik.http.middlewares.pma-slash.redirectregex.regex=^https?://([^/]+)/phpmyadmin$$'
+      - 'traefik.http.middlewares.pma-slash.redirectregex.replacement=https://$${1}/phpmyadmin/'
+      - 'traefik.http.middlewares.pma-slash.redirectregex.permanent=true'
+      - 'traefik.http.routers.pma.middlewares=pma-slash'
       - 'traefik.http.services.pma.loadbalancer.server.port=80'
 
 networks:
