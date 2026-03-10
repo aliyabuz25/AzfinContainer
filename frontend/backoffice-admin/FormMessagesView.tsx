@@ -55,6 +55,18 @@ const FormMessagesView: React.FC = () => {
         }
     };
 
+    const getTrainingLabel = (formData: Record<string, any>) => {
+        const candidates = [
+            formData?.trainingTitle,
+            formData?.trainingName,
+            formData?.courseTitle,
+            formData?.courseName
+        ];
+
+        const match = candidates.find((value) => typeof value === 'string' && value.trim());
+        return match ? String(match).trim() : 'Təlim göstərilməyib';
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="bg-white rounded-[40px] border border-slate-100 p-2 shadow-sm flex flex-wrap gap-2">
@@ -99,6 +111,12 @@ const FormMessagesView: React.FC = () => {
                         <div key={item.id} className="bg-white rounded-[32px] border border-slate-100 p-8 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
                             <div className="flex flex-col md:flex-row justify-between gap-6">
                                 <div className="flex-grow space-y-6">
+                                    {item.type === 'training' && (
+                                        <div className="inline-flex items-center gap-2 rounded-xl bg-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-accent">
+                                            <GraduationCap className="h-4 w-4" />
+                                            {getTrainingLabel(item.form_data || {})}
+                                        </div>
+                                    )}
                                     <div className="flex items-center flex-wrap gap-4">
                                         <div className="bg-primary text-accent px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
                                             {getIcon(item.type)} {item.form_data?.formName || getTypeLabel(item.type)}
@@ -150,7 +168,7 @@ const FormMessagesView: React.FC = () => {
                                         {item.type === 'training' && (
                                             <div className="space-y-1 lg:col-span-2">
                                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Təlim</span>
-                                                <p className="text-sm font-black text-accent uppercase italic">{item.form_data.trainingTitle}</p>
+                                                <p className="text-sm font-black text-accent uppercase italic">{getTrainingLabel(item.form_data || {})}</p>
                                             </div>
                                         )}
 

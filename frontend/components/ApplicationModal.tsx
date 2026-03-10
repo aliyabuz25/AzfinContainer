@@ -10,11 +10,25 @@ interface ApplicationModalProps {
     trainingTitle: string;
 }
 
+const PHONE_COUNTRY_CODES = ['+994', '+90', '+7', '+380', '+998', '+995', '+971', '+49', '+44', '+1'];
+
+const combinePhoneNumber = (countryCode: string, localNumber: string) => {
+    const trimmedLocalNumber = localNumber.trim();
+    if (!trimmedLocalNumber) return countryCode;
+
+    const normalizedLocalNumber = trimmedLocalNumber.startsWith(countryCode)
+        ? trimmedLocalNumber.slice(countryCode.length).trim()
+        : trimmedLocalNumber.replace(/^\+/, '').trim();
+
+    return `${countryCode} ${normalizedLocalNumber}`.trim();
+};
+
 const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, trainingTitle }) => {
     const { content } = useContent();
     const forms = (content as any).forms || {};
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [phoneCountryCode, setPhoneCountryCode] = useState('+994');
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -25,6 +39,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, tr
     useEffect(() => {
         if (!isOpen) return;
         setSubmitted(false);
+        setPhoneCountryCode('+994');
         setFormData({
             name: '',
             phone: '',
@@ -41,6 +56,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, tr
         try {
             const { error } = await submitForm('training', {
                 ...formData,
+                phone: combinePhoneNumber(phoneCountryCode, formData.phone),
                 trainingTitle,
                 formName: forms.trainingFormName || 'Təlimə Müraciət'
             });
@@ -60,6 +76,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, tr
 
     const handleClose = () => {
         setSubmitted(false);
+        setPhoneCountryCode('+994');
         setFormData({ name: '', phone: '', email: '', note: '' });
         onClose();
     };
@@ -132,14 +149,25 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, tr
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.trainingPhoneLabel || 'Telefon nömrəsi *'}</label>
-                                    <input
-                                        type="tel"
-                                        required
-                                        value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
-                                        placeholder={forms.trainingPhonePlaceholder || '+994 50 000 00 00'}
-                                    />
+                                    <div className="flex gap-3">
+                                        <select
+                                            value={phoneCountryCode}
+                                            onChange={(e) => setPhoneCountryCode(e.target.value)}
+                                            className="bg-slate-50 border border-slate-200 px-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm min-w-[110px]"
+                                        >
+                                            {PHONE_COUNTRY_CODES.map((code) => (
+                                                <option key={code} value={code}>{code}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="tel"
+                                            required
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            className="flex-1 bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
+                                            placeholder={forms.trainingPhonePlaceholder || '50 000 00 00'}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{forms.trainingEmailLabel || 'E-poçt ünvanı *'}</label>
