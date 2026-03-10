@@ -49,6 +49,7 @@ export interface TrainingItem {
   description: string;
   fullContent?: string;
   syllabus?: string[];
+  targetAudience?: string[];
   startDate: string;
   duration: string;
   level: string;
@@ -58,6 +59,7 @@ export interface TrainingItem {
   infoTitle?: string;
   aboutTitle?: string;
   syllabusTitle?: string;
+  targetAudienceTitle?: string;
   durationLabel?: string;
   startLabel?: string;
   statusLabel?: string;

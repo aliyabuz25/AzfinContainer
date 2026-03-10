@@ -78,6 +78,20 @@ const Academy: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               <div className="lg:col-span-2 space-y-12">
+                <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 space-y-6">
+                  <div className="inline-flex items-center gap-3 px-4 py-2 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest">
+                    <ShieldCheck className="h-4 w-4" /> Təlim Şablonu
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-black text-primary tracking-tight uppercase italic leading-tight">
+                    {primaryTraining.title || academyContent.heroTitleHighlight || 'Audit Təlimi'}
+                  </h2>
+                  {primaryTraining.description && (
+                    <p className="text-slate-500 leading-relaxed text-base md:text-lg font-medium">
+                      {primaryTraining.description}
+                    </p>
+                  )}
+                </div>
+
                 <div className="rounded-2xl overflow-hidden shadow-2xl h-80 lg:h-96">
                   <ImageWithFallback
                     src={primaryTraining.image}
@@ -101,7 +115,7 @@ const Academy: React.FC = () => {
                 {primaryTraining.syllabus && primaryTraining.syllabus.length > 0 && (
                   <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
                     <h2 className="text-2xl font-black text-primary mb-8 tracking-tight uppercase italic">
-                      {primaryTraining.syllabusTitle || 'Tədris Proqramı'}
+                      {primaryTraining.syllabusTitle || 'Təlim proqramı'}
                     </h2>
                     <div className="space-y-4">
                       {primaryTraining.syllabus.map((topic, index) => (
@@ -109,7 +123,25 @@ const Academy: React.FC = () => {
                           <div className="bg-[#EFF6FF] text-[#3B82F6] font-black h-10 w-10 rounded-full flex items-center justify-center text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
                             {index + 1}
                           </div>
-                          <span className="text-primary font-black text-sm tracking-tight uppercase italic">{topic}</span>
+                          <span className="min-w-0 flex-1 truncate text-primary font-black text-sm tracking-tight uppercase italic leading-none" title={topic}>{topic}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {primaryTraining.targetAudience && primaryTraining.targetAudience.length > 0 && (
+                  <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                    <h2 className="text-2xl font-black text-primary mb-8 tracking-tight uppercase italic">
+                      {primaryTraining.targetAudienceTitle || 'Bu kurs kimlər üçündür?'}
+                    </h2>
+                    <div className="space-y-4">
+                      {primaryTraining.targetAudience.map((item, index) => (
+                        <div key={index} className="flex items-center gap-6 p-4 rounded-xl hover:bg-slate-50 transition-colors group">
+                          <div className="bg-emerald-50 text-emerald-600 font-black h-10 w-10 rounded-full flex items-center justify-center text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
+                            {index + 1}
+                          </div>
+                          <span className="min-w-0 flex-1 truncate text-primary font-black text-sm tracking-tight uppercase italic leading-none" title={item}>{item}</span>
                         </div>
                       ))}
                     </div>

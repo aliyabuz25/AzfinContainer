@@ -27,11 +27,22 @@ const mapTrainingRow = (row: any): TrainingItem => ({
   description: row.description || row.summary || '',
   fullContent: row.fullContent || row.full_content || row.content || '',
   syllabus: typeof row.syllabus === 'string' ? JSON.parse(row.syllabus) : (Array.isArray(row.syllabus) ? row.syllabus : []),
+  targetAudience: typeof row.targetAudience === 'string' ? JSON.parse(row.targetAudience) : (Array.isArray(row.targetAudience) ? row.targetAudience : []),
   startDate: row.startDate || row.start_date || row.date || '',
   duration: row.duration || '',
   level: row.level || 'Bütün səviyyələr',
   image: row.image || row.image_url || '',
   status: normalizeStatus(row.status),
+  certLabel: row.certLabel,
+  infoTitle: row.infoTitle,
+  aboutTitle: row.aboutTitle,
+  syllabusTitle: row.syllabusTitle,
+  targetAudienceTitle: row.targetAudienceTitle,
+  durationLabel: row.durationLabel,
+  startLabel: row.startLabel,
+  statusLabel: row.statusLabel,
+  sidebarNote: row.sidebarNote,
+  highlightWord: row.highlightWord,
 });
 
 export const fetchBlogPosts = async (): Promise<BlogItem[]> => {

@@ -121,6 +121,12 @@ function normalizeSyllabus(value) {
     return [];
 }
 
+function normalizeStringList(value) {
+    return normalizeSyllabus(value)
+        .map((item) => String(item || '').trim())
+        .filter(Boolean);
+}
+
 function toSqlValue(value) {
     return value === undefined ? null : value;
 }
@@ -731,6 +737,7 @@ async function initDb() {
                 description TEXT,
                 fullContent LONGTEXT,
                 syllabus JSON,
+                targetAudience JSON,
                 startDate TEXT,
                 duration TEXT,
                 level TEXT,
@@ -740,6 +747,7 @@ async function initDb() {
                 infoTitle TEXT,
                 aboutTitle TEXT,
                 syllabusTitle TEXT,
+                targetAudienceTitle TEXT,
                 durationLabel TEXT,
                 startLabel TEXT,
                 statusLabel TEXT,
@@ -752,10 +760,12 @@ async function initDb() {
         // Keep old production schemas in sync with the fields used by INSERT/UPDATE queries.
         await ensureColumn('trainings', 'fullContent', 'LONGTEXT');
         await ensureColumn('trainings', 'syllabus', 'JSON');
+        await ensureColumn('trainings', 'targetAudience', 'JSON');
         await ensureColumn('trainings', 'certLabel', 'TEXT');
         await ensureColumn('trainings', 'infoTitle', 'TEXT');
         await ensureColumn('trainings', 'aboutTitle', 'TEXT');
         await ensureColumn('trainings', 'syllabusTitle', 'TEXT');
+        await ensureColumn('trainings', 'targetAudienceTitle', 'TEXT');
         await ensureColumn('trainings', 'durationLabel', 'TEXT');
         await ensureColumn('trainings', 'startLabel', 'TEXT');
         await ensureColumn('trainings', 'statusLabel', 'TEXT');
@@ -1163,19 +1173,21 @@ app.post('/api/trainings', async (req, res) => {
     try {
         const t = normalizeTrainingPayload(req.body);
 
-        const syllabus = normalizeSyllabus(t.syllabus);
+        const syllabus = normalizeStringList(t.syllabus);
         const syllabusJson = JSON.stringify(syllabus);
+        const targetAudience = normalizeStringList(t.targetAudience);
+        const targetAudienceJson = JSON.stringify(targetAudience);
         const insertValues = [
-            t.id, t.title, t.description, t.fullContent, syllabusJson, t.startDate, t.duration, t.level, t.image, t.status, t.certLabel, t.infoTitle, t.aboutTitle, t.syllabusTitle, t.durationLabel, t.startLabel, t.statusLabel, t.sidebarNote, t.highlightWord
+            t.id, t.title, t.description, t.fullContent, syllabusJson, targetAudienceJson, t.startDate, t.duration, t.level, t.image, t.status, t.certLabel, t.infoTitle, t.aboutTitle, t.syllabusTitle, t.targetAudienceTitle, t.durationLabel, t.startLabel, t.statusLabel, t.sidebarNote, t.highlightWord
         ].map(toSqlValue);
         const updateValues = [
-            t.title, t.description, t.fullContent, syllabusJson, t.startDate, t.duration, t.level, t.image, t.status, t.certLabel, t.infoTitle, t.aboutTitle, t.syllabusTitle, t.durationLabel, t.startLabel, t.statusLabel, t.sidebarNote, t.highlightWord
+            t.title, t.description, t.fullContent, syllabusJson, targetAudienceJson, t.startDate, t.duration, t.level, t.image, t.status, t.certLabel, t.infoTitle, t.aboutTitle, t.syllabusTitle, t.targetAudienceTitle, t.durationLabel, t.startLabel, t.statusLabel, t.sidebarNote, t.highlightWord
         ].map(toSqlValue);
         const query = `
-            INSERT INTO trainings (id, title, description, fullContent, syllabus, startDate, duration, level, image, status, certLabel, infoTitle, aboutTitle, syllabusTitle, durationLabel, startLabel, statusLabel, sidebarNote, highlightWord)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO trainings (id, title, description, fullContent, syllabus, targetAudience, startDate, duration, level, image, status, certLabel, infoTitle, aboutTitle, syllabusTitle, targetAudienceTitle, durationLabel, startLabel, statusLabel, sidebarNote, highlightWord)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE 
-                title=?, description=?, fullContent=?, syllabus=?, startDate=?, duration=?, level=?, image=?, status=?, certLabel=?, infoTitle=?, aboutTitle=?, syllabusTitle=?, durationLabel=?, startLabel=?, statusLabel=?, sidebarNote=?, highlightWord=?
+                title=?, description=?, fullContent=?, syllabus=?, targetAudience=?, startDate=?, duration=?, level=?, image=?, status=?, certLabel=?, infoTitle=?, aboutTitle=?, syllabusTitle=?, targetAudienceTitle=?, durationLabel=?, startLabel=?, statusLabel=?, sidebarNote=?, highlightWord=?
         `;
         const params = [...insertValues, ...updateValues];
         await pool.execute(query, params);

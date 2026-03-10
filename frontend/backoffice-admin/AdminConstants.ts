@@ -223,11 +223,16 @@ export const DEFAULT_TRAINING_FORM: Omit<TrainingItem, 'id'> = {
     title: '',
     description: '',
     fullContent: '',
+    syllabus: [],
+    targetAudience: [],
     startDate: '',
     duration: '',
     level: '',
     image: '',
     status: 'upcoming',
+    aboutTitle: 'Təlim haqqında',
+    syllabusTitle: 'Təlim proqramı',
+    targetAudienceTitle: 'Bu kurs kimlər üçündür?',
 };
 
 export const FIELD_LABEL_OVERRIDES: Record<string, string> = {

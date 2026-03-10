@@ -71,7 +71,6 @@ interface BlogManagementViewProps {
 }
 
 const STATUS_OPTIONS = ['draft', 'published', 'upcoming', 'archived'];
-const TRAINING_STATUS_OPTIONS = ['upcoming', 'ongoing', 'completed'];
 
 const STATUS_LABELS: Record<string, string> = {
     'draft': 'QARALAMA',
@@ -197,6 +196,23 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
         isBlogSection ? handleBlogSave() : handleTrainingSave();
         // Give a short delay for the save animation/toast before closing
         setTimeout(() => setIsModalOpen(false), 800);
+    };
+
+    const updateTrainingList = (field: 'syllabus' | 'targetAudience', index: number, value: string) => {
+        const current = Array.isArray(trainingForm[field]) ? [...trainingForm[field]] : [];
+        current[index] = value;
+        handleTrainingChange(field, current);
+    };
+
+    const addTrainingListItem = (field: 'syllabus' | 'targetAudience') => {
+        const current = Array.isArray(trainingForm[field]) ? [...trainingForm[field]] : [];
+        handleTrainingChange(field, [...current, '']);
+    };
+
+    const removeTrainingListItem = (field: 'syllabus' | 'targetAudience', index: number) => {
+        const current = Array.isArray(trainingForm[field]) ? [...trainingForm[field]] : [];
+        current.splice(index, 1);
+        handleTrainingChange(field, current);
     };
 
     return (
@@ -325,7 +341,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                             {isBlogSection ? 'BLOG YAZILARI' : 'TƏLİMLƏR'}
                         </div>
                         <h2 className="text-4xl font-black text-primary tracking-tighter uppercase italic leading-none">
-                            {isBlogSection ? 'Blog Məqalələri' : 'Təlim Proqramları'}
+                            {isBlogSection ? 'Blog Məqalələri' : 'Təlim Şablonları'}
                         </h2>
                     </div>
                     <button
@@ -353,12 +369,18 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                             <div className="p-8 space-y-4">
                                 <div className="flex items-start justify-between gap-4">
                                     <h3 className="text-xl font-black text-primary tracking-tight line-clamp-2 leading-tight group-hover:text-accent transition-colors">{item.title || 'Adsız'}</h3>
-                                    <span className={`shrink-0 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${(item as any).status === 'published' || (item as any).status === 'completed'
-                                        ? 'bg-green-50 text-green-600'
-                                        : 'bg-amber-50 text-amber-600'
-                                        }`}>
-                                        {STATUS_LABELS[(item as any).status] || (item as any).status}
-                                    </span>
+                                    {isBlogSection ? (
+                                        <span className={`shrink-0 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${(item as any).status === 'published' || (item as any).status === 'completed'
+                                            ? 'bg-green-50 text-green-600'
+                                            : 'bg-amber-50 text-amber-600'
+                                            }`}>
+                                            {STATUS_LABELS[(item as any).status] || (item as any).status}
+                                        </span>
+                                    ) : (
+                                        <span className="shrink-0 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-50 text-blue-600">
+                                            ŞABLON
+                                        </span>
+                                    )}
                                 </div>
                                 {(item as any).excerpt && (
                                     <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed">{(item as any).excerpt}</p>
@@ -427,18 +449,20 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                                                 <Settings className="h-4 w-4" /> {isBlogSection ? 'BLOG AYARLARI' : 'TƏLİM AYARLARI'}
                                             </div>
 
-                                            <div className="space-y-3">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">STATUS</label>
-                                                <select
-                                                    value={isBlogSection ? blogForm.status : trainingForm.status}
-                                                    onChange={(e) => isBlogSection ? handleBlogChange('status', e.target.value) : handleTrainingChange('status', e.target.value)}
-                                                    className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-primary appearance-none focus:ring-2 focus:ring-accent/20 transition"
-                                                >
-                                                    {(isBlogSection ? STATUS_OPTIONS : TRAINING_STATUS_OPTIONS).map(opt => (
-                                                        <option key={opt} value={opt}>{STATUS_LABELS[opt] || opt.toUpperCase()}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
+                                            {isBlogSection && (
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">STATUS</label>
+                                                    <select
+                                                        value={blogForm.status}
+                                                        onChange={(e) => handleBlogChange('status', e.target.value)}
+                                                        className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-primary appearance-none focus:ring-2 focus:ring-accent/20 transition"
+                                                    >
+                                                        {STATUS_OPTIONS.map(opt => (
+                                                            <option key={opt} value={opt}>{STATUS_LABELS[opt] || opt.toUpperCase()}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
 
                                             <div className="space-y-4">
                                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block">
@@ -510,6 +534,103 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                                                 />
                                             </div>
                                         </div>
+
+                                        {!isBlogSection && (
+                                            <div className="grid gap-8">
+                                                <div className="bg-slate-50 rounded-[32px] p-8 space-y-6 border border-slate-100">
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">TƏLİM HAQQINDA BAŞLIĞI</label>
+                                                        <input
+                                                            type="text"
+                                                            value={trainingForm.aboutTitle || ''}
+                                                            onChange={(e) => handleTrainingChange('aboutTitle', e.target.value)}
+                                                            className="w-full bg-white border-none rounded-2xl p-4 text-sm font-black text-primary"
+                                                            placeholder="Təlim haqqında"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-4">
+                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">TƏLİM PROQRAMI BAŞLIĞI</label>
+                                                        <input
+                                                            type="text"
+                                                            value={trainingForm.syllabusTitle || ''}
+                                                            onChange={(e) => handleTrainingChange('syllabusTitle', e.target.value)}
+                                                            className="w-full bg-white border-none rounded-2xl p-4 text-sm font-black text-primary"
+                                                            placeholder="Təlim proqramı"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        {(Array.isArray(trainingForm.syllabus) ? trainingForm.syllabus : []).map((item: string, index: number) => (
+                                                            <div key={`syllabus-${index}`} className="flex items-center gap-3">
+                                                                <input
+                                                                    type="text"
+                                                                    value={item}
+                                                                    onChange={(e) => updateTrainingList('syllabus', index, e.target.value)}
+                                                                    className="w-full bg-white border-none rounded-2xl p-4 text-sm font-bold text-primary"
+                                                                    placeholder={`Maddə ${index + 1}`}
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeTrainingListItem('syllabus', index)}
+                                                                    className="w-12 h-12 rounded-2xl bg-white text-slate-400 hover:text-red-500 transition-all flex items-center justify-center"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addTrainingListItem('syllabus')}
+                                                            className="w-full bg-white border-2 border-dashed border-slate-200 rounded-2xl p-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-accent hover:text-accent transition-all flex items-center justify-center gap-2"
+                                                        >
+                                                            <Plus className="h-4 w-4" /> Maddə Əlavə Et
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-slate-50 rounded-[32px] p-8 space-y-6 border border-slate-100">
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">AUDİENSİYA BAŞLIĞI</label>
+                                                        <input
+                                                            type="text"
+                                                            value={trainingForm.targetAudienceTitle || ''}
+                                                            onChange={(e) => handleTrainingChange('targetAudienceTitle', e.target.value)}
+                                                            className="w-full bg-white border-none rounded-2xl p-4 text-sm font-black text-primary"
+                                                            placeholder="Bu kurs kimlər üçündür?"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        {(Array.isArray(trainingForm.targetAudience) ? trainingForm.targetAudience : []).map((item: string, index: number) => (
+                                                            <div key={`target-audience-${index}`} className="flex items-center gap-3">
+                                                                <input
+                                                                    type="text"
+                                                                    value={item}
+                                                                    onChange={(e) => updateTrainingList('targetAudience', index, e.target.value)}
+                                                                    className="w-full bg-white border-none rounded-2xl p-4 text-sm font-bold text-primary"
+                                                                    placeholder={`Kimlər üçün ${index + 1}`}
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeTrainingListItem('targetAudience', index)}
+                                                                    className="w-12 h-12 rounded-2xl bg-white text-slate-400 hover:text-red-500 transition-all flex items-center justify-center"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addTrainingListItem('targetAudience')}
+                                                            className="w-full bg-white border-2 border-dashed border-slate-200 rounded-2xl p-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-accent hover:text-accent transition-all flex items-center justify-center gap-2"
+                                                        >
+                                                            <Plus className="h-4 w-4" /> Maddə Əlavə Et
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
