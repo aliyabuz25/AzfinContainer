@@ -75,3 +75,9 @@ export interface AuditBenefitItem {
   title: string;
   description: string;
 }
+
+export interface AdminUserItem {
+  id: number;
+  username: string;
+  created_at: string;
+}

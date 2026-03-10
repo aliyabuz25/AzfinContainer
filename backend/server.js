@@ -5,6 +5,7 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const { randomUUID } = require('crypto');
+const crypto = require('crypto');
 const mysql = require('mysql2/promise');
 const nodemailer = require('nodemailer');
 
@@ -50,6 +51,45 @@ const dbConfig = {
 let pool;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const PASSWORD_HASH_PREFIX = 'scrypt';
+
+function hashPassword(password) {
+    const salt = crypto.randomBytes(16).toString('hex');
+    const derivedKey = crypto.scryptSync(password, salt, 64).toString('hex');
+    return `${PASSWORD_HASH_PREFIX}$${salt}$${derivedKey}`;
+}
+
+function verifyPassword(password, storedPassword) {
+    if (typeof storedPassword !== 'string' || !storedPassword) return false;
+    const [scheme, salt, hash] = storedPassword.split('$');
+    if (scheme !== PASSWORD_HASH_PREFIX || !salt || !hash) {
+        return password === storedPassword;
+    }
+
+    const derivedKey = crypto.scryptSync(password, salt, 64);
+    const storedBuffer = Buffer.from(hash, 'hex');
+    if (storedBuffer.length !== derivedKey.length) return false;
+    return crypto.timingSafeEqual(storedBuffer, derivedKey);
+}
+
+function validateAdminCredentials(username, password) {
+    const normalizedUsername = typeof username === 'string' ? username.trim() : '';
+    const normalizedPassword = typeof password === 'string' ? password : '';
+
+    if (!normalizedUsername || normalizedUsername.length < 3) {
+        return { ok: false, error: 'İstifadəçi adı ən azı 3 simvol olmalıdır.' };
+    }
+
+    if (!normalizedPassword || normalizedPassword.length < 8) {
+        return { ok: false, error: 'Şifrə ən azı 8 simvol olmalıdır.' };
+    }
+
+    return {
+        ok: true,
+        username: normalizedUsername,
+        password: normalizedPassword
+    };
+}
 
 async function ensureColumn(tableName, columnName, definition) {
     const [rows] = await pool.execute(
@@ -755,15 +795,6 @@ async function initDb() {
             )
         `);
 
-        // Seed default admin if none exists
-        const [users] = await pool.execute('SELECT * FROM admin_users LIMIT 1');
-        if (users.length === 0) {
-            await pool.execute(
-                'INSERT INTO admin_users (username, password) VALUES (?, ?)',
-                ['tural', 'rootazfinA1']
-            );
-        }
-
         const seededSmtp = normalizeSmtpSettings(readCurrentSmtpSettings() || DEFAULT_SMTP_SETTINGS);
         const smtpDefaults = JSON.stringify(seededSmtp);
         await pool.execute(
@@ -829,17 +860,132 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // --- AUTH ENDPOINT ---
+app.get('/api/admin/bootstrap', async (req, res) => {
+    try {
+        const [rows] = await pool.execute('SELECT COUNT(*) AS count FROM admin_users');
+        res.json({ hasAdmin: Number(rows[0]?.count || 0) > 0 });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/register', async (req, res) => {
+    try {
+        const validation = validateAdminCredentials(req.body?.username, req.body?.password);
+        if (!validation.ok) {
+            return res.status(400).json({ error: validation.error });
+        }
+
+        const [rows] = await pool.execute('SELECT COUNT(*) AS count FROM admin_users');
+        if (Number(rows[0]?.count || 0) > 0) {
+            return res.status(409).json({ error: 'Admin hesabı artıq mövcuddur.' });
+        }
+
+        const hashedPassword = hashPassword(validation.password);
+        await pool.execute(
+            'INSERT INTO admin_users (username, password) VALUES (?, ?)',
+            [validation.username, hashedPassword]
+        );
+
+        res.json({
+            success: true,
+            user: { username: validation.username },
+            access_token: 'custom-token'
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/admin/users', async (req, res) => {
+    try {
+        const [rows] = await pool.execute(
+            'SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC, id ASC'
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/users', async (req, res) => {
+    try {
+        const validation = validateAdminCredentials(req.body?.username, req.body?.password);
+        if (!validation.ok) {
+            return res.status(400).json({ error: validation.error });
+        }
+
+        const [existing] = await pool.execute(
+            'SELECT id FROM admin_users WHERE username = ? LIMIT 1',
+            [validation.username]
+        );
+        if (existing.length > 0) {
+            return res.status(409).json({ error: 'Bu istifadəçi adı artıq mövcuddur.' });
+        }
+
+        await pool.execute(
+            'INSERT INTO admin_users (username, password) VALUES (?, ?)',
+            [validation.username, hashPassword(validation.password)]
+        );
+
+        const [rows] = await pool.execute(
+            'SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC, id ASC'
+        );
+        res.json({ success: true, users: rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/admin/users/:id', async (req, res) => {
+    try {
+        const userId = Number(req.params.id);
+        if (!Number.isInteger(userId) || userId <= 0) {
+            return res.status(400).json({ error: 'Etibarsız istifadəçi ID-si.' });
+        }
+
+        const [countRows] = await pool.execute('SELECT COUNT(*) AS count FROM admin_users');
+        if (Number(countRows[0]?.count || 0) <= 1) {
+            return res.status(400).json({ error: 'Son admin hesabı silinə bilməz.' });
+        }
+
+        const [result] = await pool.execute('DELETE FROM admin_users WHERE id = ?', [userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Admin hesabı tapılmadı.' });
+        }
+
+        const [rows] = await pool.execute(
+            'SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC, id ASC'
+        );
+        res.json({ success: true, users: rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const username = typeof req.body?.username === 'string' ? req.body.username.trim() : '';
+        const password = typeof req.body?.password === 'string' ? req.body.password : '';
         const [rows] = await pool.execute(
-            'SELECT * FROM admin_users WHERE username = ? AND password = ?',
-            [username, password]
+            'SELECT * FROM admin_users WHERE username = ? LIMIT 1',
+            [username]
         );
-        if (rows.length === 0) {
+        const user = rows[0];
+
+        if (!user || !verifyPassword(password, user.password)) {
             return res.status(401).json({ error: 'İstifadəçi adı və ya şifrə yanlışdır.' });
         }
-        res.json({ user: { username: rows[0].username }, access_token: 'custom-token' });
+
+        // Upgrade legacy plaintext passwords to hashed storage after successful login.
+        if (typeof user.password === 'string' && !user.password.startsWith(`${PASSWORD_HASH_PREFIX}$`)) {
+            await pool.execute(
+                'UPDATE admin_users SET password = ? WHERE id = ?',
+                [hashPassword(password), user.id]
+            );
+        }
+
+        res.json({ user: { username: user.username }, access_token: 'custom-token' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -22,7 +22,7 @@ import {
 import { ICON_OPTIONS, resolveIcon } from '../utils/iconRegistry';
 import { useContent } from '../lib/ContentContext';
 import { ChevronDown, Save, RefreshCcw, Search, Lock } from 'lucide-react';
-import { BlogItem, TrainingItem } from '../types';
+import { AdminUserItem, BlogItem, TrainingItem } from '../types';
 import CDNMonacoEditor from '../components/CDNMonacoEditor';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -49,6 +49,7 @@ import SectionEditorView from './SectionEditorView';
 import ClientManagementView from './ClientManagementView';
 import FormMessagesView from './FormMessagesView';
 import SmtpSettingsView from './SmtpSettingsView';
+import AdminAccountsView from './AdminAccountsView';
 
 const TEMP_DRAFT_KEY = 'azfin-site-content-draft';
 
@@ -168,25 +169,49 @@ const Admin: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [registerUsername, setRegisterUsername] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [hasAdminAccount, setHasAdminAccount] = useState<boolean>(true);
+  const [adminUsers, setAdminUsers] = useState<AdminUserItem[]>([]);
+  const [accountUsername, setAccountUsername] = useState('');
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountsLoading, setAccountsLoading] = useState(false);
 
   useEffect(() => {
-    // Check local storage for custom admin session
-    const storedSession = localStorage.getItem('admin_session');
-    if (storedSession) {
+    const initAuth = async () => {
       try {
-        setSession(JSON.parse(storedSession));
-      } catch (e) {
-        localStorage.removeItem('admin_session');
+        const storedSession = localStorage.getItem('admin_session');
+        if (storedSession) {
+          try {
+            setSession(JSON.parse(storedSession));
+          } catch (e) {
+            localStorage.removeItem('admin_session');
+          }
+        }
+
+        const bootstrap = await apiClient.get('/admin/bootstrap');
+        setHasAdminAccount(Boolean(bootstrap?.hasAdmin));
+        if (bootstrap?.hasAdmin) {
+          const users = await apiClient.get('/admin/users');
+          setAdminUsers(Array.isArray(users) ? users : []);
+        }
+      } catch (err) {
+        console.error('Auth bootstrap failed:', err);
+        setLoginError('Admin vəziyyəti yoxlanarkən xəta baş verdi.');
+      } finally {
+        setAuthLoading(false);
       }
-    }
-    setAuthLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const { updateContent } = useContent();
 
 
-  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social'>('site');
+  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts'>('site');
   const [viewMode, setViewMode] = useState<'section' | 'full'>('section');
   const [blogMode, setBlogMode] = useState<'blog' | 'training'>('blog');
 
@@ -247,11 +272,17 @@ const Admin: React.FC = () => {
           currentDraft = mergeSiteContent(remoteContent);
           canRestoreLocalDraft = !hasContent(remoteContent);
 
-          const [bp, tr, smtp] = await Promise.all([fetchAdminBlogPosts(), fetchAdminTrainings(), fetchSmtpSettings()]);
+          const [bp, tr, smtp, users] = await Promise.all([
+            fetchAdminBlogPosts(),
+            fetchAdminTrainings(),
+            fetchSmtpSettings(),
+            apiClient.get('/admin/users')
+          ]);
           setBlogPosts(bp);
           setTrainings(tr);
           setSmtpSettings(smtp);
           setSmtpDirty(false);
+          setAdminUsers(Array.isArray(users) ? users : []);
         }
 
         const initialDraft = local && canRestoreLocalDraft ? mergeContent(currentDraft, local) : currentDraft;
@@ -670,8 +701,39 @@ const Admin: React.FC = () => {
       const adminSession = { user: data.user, access_token: data.access_token };
       localStorage.setItem('admin_session', JSON.stringify(adminSession));
       setSession(adminSession);
+      const users = await apiClient.get('/admin/users');
+      setAdminUsers(Array.isArray(users) ? users : []);
     } catch (err: any) {
       setLoginError(err.message || 'Giriş uğursuz oldu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+
+    if (registerPassword !== registerPasswordConfirm) {
+      setLoginError('Şifrələr üst-üstə düşmür.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await apiClient.post('/admin/register', {
+        username: registerUsername,
+        password: registerPassword,
+      });
+
+      const adminSession = { user: data.user, access_token: data.access_token };
+      localStorage.setItem('admin_session', JSON.stringify(adminSession));
+      setSession(adminSession);
+      setHasAdminAccount(true);
+      const users = await apiClient.get('/admin/users');
+      setAdminUsers(Array.isArray(users) ? users : []);
+    } catch (err: any) {
+      setLoginError(err.message || 'Admin qeydiyyatı uğursuz oldu.');
     } finally {
       setLoading(false);
     }
@@ -680,6 +742,41 @@ const Admin: React.FC = () => {
   const handleLogout = async () => {
     localStorage.removeItem('admin_session');
     setSession(null);
+    setAdminUsers([]);
+    setAccountUsername('');
+    setAccountPassword('');
+  };
+
+  const handleCreateAdminUser = async () => {
+    setAccountsLoading(true);
+    try {
+      const response = await apiClient.post('/admin/users', {
+        username: accountUsername,
+        password: accountPassword,
+      });
+      setAdminUsers(Array.isArray(response?.users) ? response.users : []);
+      setAccountUsername('');
+      setAccountPassword('');
+      toast.success('Admin hesabı əlavə edildi.');
+    } catch (err: any) {
+      toast.error(err.message || 'Admin hesabı əlavə edilə bilmədi.');
+    } finally {
+      setAccountsLoading(false);
+    }
+  };
+
+  const handleDeleteAdminUser = async (id: number) => {
+    if (!confirm('Bu admin hesabını silmək istədiyinizə əminsiniz?')) return;
+    setAccountsLoading(true);
+    try {
+      const response = await apiClient.delete(`/admin/users/${id}`);
+      setAdminUsers(Array.isArray(response?.users) ? response.users : []);
+      toast.info('Admin hesabı silindi.');
+    } catch (err: any) {
+      toast.error(err.message || 'Admin hesabı silinə bilmədi.');
+    } finally {
+      setAccountsLoading(false);
+    }
   };
 
   if (authLoading) {
@@ -702,19 +799,25 @@ const Admin: React.FC = () => {
               <Lock className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-2xl font-black uppercase tracking-[0.2em] text-primary">Admin Girişi</h1>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{`Xoş Gəlmisən, ${loginUsername || 'Qonaq'}`}</p>
+              <h1 className="text-2xl font-black uppercase tracking-[0.2em] text-primary">
+                {hasAdminAccount ? 'Admin Girişi' : 'İlk Admin Qeydiyyatı'}
+              </h1>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">
+                {hasAdminAccount
+                  ? `Xoş Gəlmisən, ${loginUsername || 'Qonaq'}`
+                  : 'İlk admin hesabını yaradın'}
+              </p>
             </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={hasAdminAccount ? handleLogin : handleRegister} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">İstifadəçi adı</label>
               <input
                 type="text"
                 required
-                value={loginUsername}
-                onChange={(e) => setLoginUsername(e.target.value)}
+                value={hasAdminAccount ? loginUsername : registerUsername}
+                onChange={(e) => hasAdminAccount ? setLoginUsername(e.target.value) : setRegisterUsername(e.target.value)}
                 className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-primary focus:ring-4 focus:ring-accent/10 outline-none transition-all placeholder:text-slate-300"
                 placeholder="tural"
               />
@@ -725,12 +828,26 @@ const Admin: React.FC = () => {
               <input
                 type="password"
                 required
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
+                value={hasAdminAccount ? loginPassword : registerPassword}
+                onChange={(e) => hasAdminAccount ? setLoginPassword(e.target.value) : setRegisterPassword(e.target.value)}
                 className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-primary focus:ring-4 focus:ring-accent/10 outline-none transition-all placeholder:text-slate-300"
                 placeholder="••••••••"
               />
             </div>
+
+            {!hasAdminAccount && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Şifrə təkrarı</label>
+                <input
+                  type="password"
+                  required
+                  value={registerPasswordConfirm}
+                  onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
+                  className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-primary focus:ring-4 focus:ring-accent/10 outline-none transition-all placeholder:text-slate-300"
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
 
             {loginError && (
               <div className="bg-red-50 text-red-500 text-xs font-bold px-4 py-3 rounded-xl border border-red-100">
@@ -746,10 +863,10 @@ const Admin: React.FC = () => {
               {loading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Giriş edilir...
+                  {hasAdminAccount ? 'Giriş edilir...' : 'Qeydiyyat edilir...'}
                 </>
               ) : (
-                'Daxil Ol'
+                hasAdminAccount ? 'Daxil Ol' : 'İlk Admini Yarat'
               )}
             </button>
           </form>
@@ -928,6 +1045,17 @@ const Admin: React.FC = () => {
                   setDraft((prev) => mergeContent(prev, { home: { clientsHeading: newHeading } }));
                 }}
                 handleImageUpload={handleImageUpload}
+              />
+            ) : adminMode === 'accounts' ? (
+              <AdminAccountsView
+                users={adminUsers}
+                createUsername={accountUsername}
+                createPassword={accountPassword}
+                setCreateUsername={setAccountUsername}
+                setCreatePassword={setAccountPassword}
+                onCreate={handleCreateAdminUser}
+                onDelete={handleDeleteAdminUser}
+                loading={accountsLoading}
               />
             ) : (
               <SectionEditorView
