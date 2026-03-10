@@ -94,11 +94,17 @@ export const useSiteContent = () => {
     };
   }, []);
 
+  const updateContent = (nextContent) => {
+    setContent(mergeSiteContent(nextContent || {}));
+    setLoading(false);
+  };
+
   return useMemo(
     () => ({
       content,
       loading,
       refresh,
+      updateContent,
       settingsId,
     }),
     [content, loading, settingsId]

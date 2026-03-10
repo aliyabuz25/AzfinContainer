@@ -5,6 +5,7 @@ interface ContentContextType {
     content: SiteContent;
     loading: boolean;
     refresh: () => Promise<void>;
+    updateContent: (nextContent: SiteContent) => void;
     settingsId: number | null;
 }
 
