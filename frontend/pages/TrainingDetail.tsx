@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Navigate, Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, Paperclip, ShieldCheck } from 'lucide-react';
 import { TrainingItem } from '../types';
@@ -7,6 +7,13 @@ import { parseBBCode } from '../utils/bbcode';
 import ApplicationModal from '../components/ApplicationModal';
 import ImageWithFallback from '../components/ImageWithFallback';
 import { useContent } from '../lib/ContentContext';
+
+const PdfPreview = React.lazy(() => import('../components/PdfPreview'));
+
+const isPdfFile = (url?: string, label?: string) => {
+  const value = `${url || ''} ${label || ''}`.toLowerCase();
+  return value.includes('.pdf');
+};
 
 const TrainingDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -108,21 +115,28 @@ const TrainingDetail: React.FC = () => {
                 </h2>
                 <div className="space-y-4">
                   {training.syllabus.map((topic, index) => (
-                    <div key={index} className="flex items-center gap-6 p-4 rounded-xl hover:bg-slate-50 transition-colors group">
+                    <div key={index} className="flex gap-6 p-4 rounded-xl hover:bg-slate-50 transition-colors group">
                       <div className="bg-[#EFF6FF] text-[#3B82F6] font-black h-10 w-10 rounded-full flex items-center justify-center text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
                         {index + 1}
                       </div>
                       {topic.type === 'file' ? (
-                        <a
-                          href={topic.url || '#'}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`min-w-0 flex-1 inline-flex items-center gap-2 truncate text-sm font-black tracking-tight uppercase italic leading-none ${topic.url ? 'text-accent hover:text-primary' : 'pointer-events-none text-slate-300'}`}
-                          title={topic.label || topic.url || ''}
-                        >
-                          <Paperclip className="h-4 w-4 shrink-0" />
-                          {topic.label || 'Dosya'}
-                        </a>
+                        <div className="min-w-0 flex-1 space-y-4">
+                          <a
+                            href={topic.url || '#'}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`inline-flex max-w-full items-center gap-2 truncate text-sm font-black tracking-tight uppercase italic leading-none ${topic.url ? 'text-accent hover:text-primary' : 'pointer-events-none text-slate-300'}`}
+                            title={topic.label || topic.url || ''}
+                          >
+                            <Paperclip className="h-4 w-4 shrink-0" />
+                            {topic.label || 'Dosya'}
+                          </a>
+                          {isPdfFile(topic.url, topic.label) && topic.url && (
+                            <Suspense fallback={<div className="w-full max-w-[240px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-10 text-center text-xs font-bold uppercase tracking-widest text-slate-400">PDF yüklənir...</div>}>
+                              <PdfPreview title={topic.label || 'PDF'} url={topic.url} />
+                            </Suspense>
+                          )}
+                        </div>
                       ) : (
                         <span className="min-w-0 flex-1 truncate text-primary font-black text-sm tracking-tight uppercase italic leading-none" title={topic.text || ''}>{topic.text}</span>
                       )}
