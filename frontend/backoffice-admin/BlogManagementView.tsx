@@ -44,6 +44,12 @@ class StyledImage extends ImageBlot {
 }
 Quill.register(StyledImage, true);
 
+interface BlogSectionDraft {
+    id: string;
+    title: string;
+    body: string;
+}
+
 interface BlogManagementViewProps {
     blogMode: 'blog' | 'training';
     setBlogMode: (mode: 'blog' | 'training') => void;
@@ -107,6 +113,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
     imageLoading
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [blogSectionDrafts, setBlogSectionDrafts] = useState<BlogSectionDraft[]>([]);
     const isBlogSection = blogMode === 'blog';
     const quillRef = React.useRef<any>(null);
     const blogImageInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -139,16 +146,40 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
         };
     }, []);
 
-    const insertBlogSectionBlock = React.useCallback(() => {
+    const createBlogSectionDraft = React.useCallback((): BlogSectionDraft => ({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title: '',
+        body: ''
+    }), []);
+
+    const addBlogSectionDraft = React.useCallback(() => {
         if (!isBlogSection) return;
+        setBlogSectionDrafts((prev) => [...prev, createBlogSectionDraft()]);
+    }, [createBlogSectionDraft, isBlogSection]);
+
+    const updateBlogSectionDraft = React.useCallback((id: string, field: 'title' | 'body', value: string) => {
+        setBlogSectionDrafts((prev) => prev.map((draft) => (
+            draft.id === id ? { ...draft, [field]: value } : draft
+        )));
+    }, []);
+
+    const removeBlogSectionDraft = React.useCallback((id: string) => {
+        setBlogSectionDrafts((prev) => prev.filter((draft) => draft.id !== id));
+    }, []);
+
+    const insertBlogSectionBlock = React.useCallback((draftId: string) => {
+        if (!isBlogSection) return;
+
+        const draft = blogSectionDrafts.find((item) => item.id === draftId);
+        if (!draft) return;
 
         const quill = quillRef.current?.getEditor();
         if (!quill) return;
 
         const currentRange = quill.getSelection(true);
         const index = currentRange ? currentRange.index : quill.getLength();
-        const sectionTitle = 'Yeni Bölmə Başlığı';
-        const sectionBody = 'Bölmə mətnini buraya yazın...';
+        const sectionTitle = draft.title.trim() || 'Yeni Bölmə Başlığı';
+        const sectionBody = draft.body.trim() || 'Bölmə mətnini buraya yazın...';
         const prefix = index > 0 ? '\n' : '';
         const insertAt = index + prefix.length;
         const template = `${sectionTitle}\n${sectionBody}\n\n`;
@@ -160,7 +191,8 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
         quill.insertText(insertAt, template, 'user');
         quill.formatLine(insertAt, 1, 'header', 2, 'user');
         quill.setSelection(insertAt + sectionTitle.length + 1, sectionBody.length, 'user');
-    }, [isBlogSection]);
+        setBlogSectionDrafts((prev) => prev.filter((item) => item.id !== draftId));
+    }, [blogSectionDrafts, isBlogSection]);
 
     const triggerBlogImageBlockInsert = React.useCallback(() => {
         if (!isBlogSection || !supabaseReady || imageLoading) return;
@@ -246,11 +278,13 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
         } else {
             isBlogSection ? resetBlogForm() : resetTrainingForm();
         }
+        setBlogSectionDrafts([]);
         setIsModalOpen(true);
     };
 
     const closeEditor = () => {
         setIsModalOpen(false);
+        setBlogSectionDrafts([]);
         // Explicitly clear selection on close to avoid data persistence
         isBlogSection ? resetBlogForm() : resetTrainingForm();
     };
@@ -586,31 +620,83 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 block">TAM MƏZMUN</label>
                                             {isBlogSection && (
-                                                <div className="flex flex-wrap gap-3">
-                                                    <button
-                                                        type="button"
-                                                        onClick={insertBlogSectionBlock}
-                                                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition hover:border-accent hover:bg-accent/5"
-                                                    >
-                                                        <LayoutPanelTop className="h-4 w-4 text-accent" />
-                                                        BÖLMƏ ƏLAVƏ ET
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={triggerBlogImageBlockInsert}
-                                                        disabled={!supabaseReady || imageLoading}
-                                                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition hover:border-accent hover:bg-accent/5 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    >
-                                                        <Image className="h-4 w-4 text-accent" />
-                                                        ŞƏKİL ƏLAVƏ ET
-                                                    </button>
-                                                    <input
-                                                        ref={blogImageInputRef}
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="hidden"
-                                                        onChange={handleBlogImageBlockInsert}
-                                                    />
+                                                <div className="space-y-4">
+                                                    <div className="flex flex-wrap gap-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={addBlogSectionDraft}
+                                                            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition hover:border-accent hover:bg-accent/5"
+                                                        >
+                                                            <LayoutPanelTop className="h-4 w-4 text-accent" />
+                                                            BÖLMƏ ƏLAVƏ ET
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={triggerBlogImageBlockInsert}
+                                                            disabled={!supabaseReady || imageLoading}
+                                                            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition hover:border-accent hover:bg-accent/5 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        >
+                                                            <Image className="h-4 w-4 text-accent" />
+                                                            ŞƏKİL ƏLAVƏ ET
+                                                        </button>
+                                                        <input
+                                                            ref={blogImageInputRef}
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="hidden"
+                                                            onChange={handleBlogImageBlockInsert}
+                                                        />
+                                                    </div>
+
+                                                    {blogSectionDrafts.length > 0 && (
+                                                        <div className="space-y-4">
+                                                            {blogSectionDrafts.map((draft, index) => (
+                                                                <div
+                                                                    key={draft.id}
+                                                                    className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 space-y-4"
+                                                                >
+                                                                    <div className="flex items-center justify-between gap-4">
+                                                                        <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                                                            <LayoutPanelTop className="h-4 w-4 text-accent" />
+                                                                            Bölmə {index + 1}
+                                                                        </div>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => removeBlogSectionDraft(draft.id)}
+                                                                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-400 transition hover:text-red-500"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </button>
+                                                                    </div>
+
+                                                                    <input
+                                                                        type="text"
+                                                                        value={draft.title}
+                                                                        onChange={(e) => updateBlogSectionDraft(draft.id, 'title', e.target.value)}
+                                                                        className="w-full rounded-2xl border-none bg-white p-4 text-sm font-black text-primary"
+                                                                        placeholder="Bölmə başlığı"
+                                                                    />
+
+                                                                    <textarea
+                                                                        rows={4}
+                                                                        value={draft.body}
+                                                                        onChange={(e) => updateBlogSectionDraft(draft.id, 'body', e.target.value)}
+                                                                        className="w-full rounded-[20px] border-none bg-white p-4 text-sm font-medium text-slate-600 leading-relaxed"
+                                                                        placeholder="Bölmə mətnini yazın..."
+                                                                    />
+
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => insertBlogSectionBlock(draft.id)}
+                                                                        className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-accent"
+                                                                    >
+                                                                        <Check className="h-4 w-4" />
+                                                                        İÇƏRİYƏ ƏLAVƏ ET
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                             <div className="border border-slate-100 rounded-[32px] overflow-hidden shadow-sm group focus-within:border-accent/30 transition-all">
