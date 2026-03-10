@@ -22,7 +22,7 @@ import {
 import { ICON_OPTIONS, resolveIcon } from '../utils/iconRegistry';
 import { useContent } from '../lib/ContentContext';
 import { ChevronDown, Save, RefreshCcw, Search, Lock } from 'lucide-react';
-import { AdminUserItem, BlogItem, TrainingItem } from '../types';
+import { AdminUserItem, BlogItem, TrainingItem, TrainingSyllabusItem } from '../types';
 import CDNMonacoEditor from '../components/CDNMonacoEditor';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -121,13 +121,53 @@ const normalizeTrainingList = (value: unknown, preserveEmpty = false): string[] 
   return [];
 };
 
+const normalizeTrainingSyllabus = (value: unknown, preserveEmpty = false): TrainingSyllabusItem[] => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === 'string') {
+          const text = item.trim();
+          if (!text && !preserveEmpty) return null;
+          return { type: 'text' as const, text };
+        }
+
+        if (!item || typeof item !== 'object') return null;
+
+        const type = item.type === 'file' ? 'file' : 'text';
+        const text = typeof item.text === 'string' ? item.text.trim() : '';
+        const label = typeof item.label === 'string' ? item.label.trim() : '';
+        const url = typeof item.url === 'string' ? item.url.trim() : '';
+
+        if (type === 'file') {
+          if (!preserveEmpty && !label && !url) return null;
+          return { type, label, url };
+        }
+
+        if (!preserveEmpty && !text) return null;
+        return { type, text };
+      })
+      .filter((item): item is TrainingSyllabusItem => Boolean(item));
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return normalizeTrainingSyllabus(parsed, preserveEmpty);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  return [];
+};
+
 const normalizeTrainingForm = (value?: Partial<TrainingItem> | null): Omit<TrainingItem, 'id'> => ({
   ...DEFAULT_TRAINING_FORM,
   ...value,
   title: typeof value?.title === 'string' ? value.title : DEFAULT_TRAINING_FORM.title,
   description: typeof value?.description === 'string' ? value.description : DEFAULT_TRAINING_FORM.description,
   fullContent: typeof value?.fullContent === 'string' ? value.fullContent : DEFAULT_TRAINING_FORM.fullContent,
-  syllabus: normalizeTrainingList(value?.syllabus, true),
+  syllabus: normalizeTrainingSyllabus(value?.syllabus, true),
   targetAudience: normalizeTrainingList(value?.targetAudience, true),
   startDate: typeof value?.startDate === 'string' ? value.startDate : DEFAULT_TRAINING_FORM.startDate,
   duration: typeof value?.duration === 'string' ? value.duration : DEFAULT_TRAINING_FORM.duration,

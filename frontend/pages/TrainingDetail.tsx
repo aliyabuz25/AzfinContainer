@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Clock, Paperclip, ShieldCheck } from 'lucide-react';
 import { TrainingItem } from '../types';
 import { fetchTrainingById } from '../utils/fetchData';
 import { parseBBCode } from '../utils/bbcode';
@@ -112,7 +112,20 @@ const TrainingDetail: React.FC = () => {
                       <div className="bg-[#EFF6FF] text-[#3B82F6] font-black h-10 w-10 rounded-full flex items-center justify-center text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
                         {index + 1}
                       </div>
-                      <span className="min-w-0 flex-1 truncate text-primary font-black text-sm tracking-tight uppercase italic leading-none" title={topic}>{topic}</span>
+                      {topic.type === 'file' ? (
+                        <a
+                          href={topic.url || '#'}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`min-w-0 flex-1 inline-flex items-center gap-2 truncate text-sm font-black tracking-tight uppercase italic leading-none ${topic.url ? 'text-accent hover:text-primary' : 'pointer-events-none text-slate-300'}`}
+                          title={topic.label || topic.url || ''}
+                        >
+                          <Paperclip className="h-4 w-4 shrink-0" />
+                          {topic.label || 'Dosya'}
+                        </a>
+                      ) : (
+                        <span className="min-w-0 flex-1 truncate text-primary font-black text-sm tracking-tight uppercase italic leading-none" title={topic.text || ''}>{topic.text}</span>
+                      )}
                     </div>
                   ))}
                 </div>

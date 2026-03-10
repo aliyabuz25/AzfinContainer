@@ -1,6 +1,6 @@
 import { apiClient } from '../lib/apiClient';
 import { TrainingItem } from '../types';
-import { normalizeStatus, parseStringList } from './fetchData';
+import { normalizeStatus, parseStringList, parseTrainingSyllabus } from './fetchData';
 
 export const fetchAdminTrainings = async (): Promise<TrainingItem[]> => {
     try {
@@ -10,7 +10,7 @@ export const fetchAdminTrainings = async (): Promise<TrainingItem[]> => {
             title: row.title,
             description: row.description,
             fullContent: row.fullContent,
-            syllabus: parseStringList(row.syllabus),
+            syllabus: parseTrainingSyllabus(row.syllabus),
             targetAudience: parseStringList(row.targetAudience),
             startDate: row.startDate,
             duration: row.duration,

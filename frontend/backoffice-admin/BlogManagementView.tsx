@@ -4,7 +4,7 @@ import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import BlotFormatter from '@enzedonline/quill-blot-formatter2';
 import { Settings, Upload, X, Check, RotateCcw, Bold, Italic, List, Quote, Link as LinkIcon, Image, Trash2, Plus, Edit, BookOpen, GraduationCap, LayoutPanelTop } from 'lucide-react';
-import { BlogItem, TrainingItem } from '../types';
+import { BlogItem, TrainingItem, TrainingSyllabusItem } from '../types';
 import { apiClient } from '../lib/apiClient';
 
 // Register custom sizes and fonts
@@ -114,9 +114,13 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [blogSectionDrafts, setBlogSectionDrafts] = useState<BlogSectionDraft[]>([]);
+    const [syllabusUploadTarget, setSyllabusUploadTarget] = useState<string | null>(null);
     const isBlogSection = blogMode === 'blog';
     const quillRef = React.useRef<any>(null);
     const blogImageInputRef = React.useRef<HTMLInputElement | null>(null);
+
+    const syllabusItems = Array.isArray(trainingForm.syllabus) ? trainingForm.syllabus as TrainingSyllabusItem[] : [];
+    const targetAudienceItems = Array.isArray(trainingForm.targetAudience) ? trainingForm.targetAudience as string[] : [];
 
     const imageHandler = React.useCallback(() => {
         const input = document.createElement('input');
@@ -296,21 +300,74 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
         }
     };
 
-    const updateTrainingList = (field: 'syllabus' | 'targetAudience', index: number, value: string) => {
+    const updateTrainingTextList = (field: 'targetAudience', index: number, value: string) => {
         const current = Array.isArray(trainingForm[field]) ? [...trainingForm[field]] : [];
         current[index] = value;
         handleTrainingChange(field, current);
     };
 
-    const addTrainingListItem = (field: 'syllabus' | 'targetAudience') => {
+    const addTrainingTextListItem = (field: 'targetAudience') => {
         const current = Array.isArray(trainingForm[field]) ? [...trainingForm[field]] : [];
         handleTrainingChange(field, [...current, '']);
     };
 
-    const removeTrainingListItem = (field: 'syllabus' | 'targetAudience', index: number) => {
+    const removeTrainingTextListItem = (field: 'targetAudience', index: number) => {
         const current = Array.isArray(trainingForm[field]) ? [...trainingForm[field]] : [];
         current.splice(index, 1);
         handleTrainingChange(field, current);
+    };
+
+    const addTrainingSyllabusItem = () => {
+        handleTrainingChange('syllabus', [...syllabusItems, { type: 'text', text: '' }]);
+    };
+
+    const updateTrainingSyllabusItem = (index: number, nextValue: Partial<TrainingSyllabusItem>) => {
+        const current = [...syllabusItems];
+        const existing = current[index] || { type: 'text', text: '' };
+        const nextItem = { ...existing, ...nextValue };
+        if (nextItem.type === 'text') {
+            delete nextItem.label;
+            delete nextItem.url;
+        } else {
+            delete nextItem.text;
+        }
+        current[index] = nextItem;
+        handleTrainingChange('syllabus', current);
+    };
+
+    const removeTrainingSyllabusItem = (index: number) => {
+        const current = [...syllabusItems];
+        current.splice(index, 1);
+        handleTrainingChange('syllabus', current);
+    };
+
+    const getUploadedFileName = (url?: string) => {
+        if (!url) return '';
+        const raw = url.split('/').pop() || url;
+        try {
+            return decodeURIComponent(raw);
+        } catch (_) {
+            return raw;
+        }
+    };
+
+    const handleTrainingSyllabusFileUpload = async (index: number, file?: File | null) => {
+        if (!file) return;
+
+        setSyllabusUploadTarget(`syllabus-${index}`);
+        try {
+            const data = await apiClient.upload(file);
+            const url = data.url;
+            updateTrainingSyllabusItem(index, {
+                type: 'file',
+                url,
+                label: syllabusItems[index]?.label || file.name
+            });
+        } catch (err) {
+            console.error('Training syllabus file upload failed:', err);
+        } finally {
+            setSyllabusUploadTarget(null);
+        }
     };
 
     return (
@@ -739,19 +796,61 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                                                     </div>
 
                                                     <div className="space-y-3">
-                                                        {(Array.isArray(trainingForm.syllabus) ? trainingForm.syllabus : []).map((item: string, index: number) => (
-                                                            <div key={`syllabus-${index}`} className="flex items-center gap-3">
-                                                                <input
-                                                                    type="text"
-                                                                    value={item}
-                                                                    onChange={(e) => updateTrainingList('syllabus', index, e.target.value)}
-                                                                    className="w-full bg-white border-none rounded-2xl p-4 text-sm font-bold text-primary"
-                                                                    placeholder={`Maddə ${index + 1}`}
-                                                                />
+                                                        {syllabusItems.map((item: TrainingSyllabusItem, index: number) => (
+                                                            <div key={`syllabus-${index}`} className="flex flex-col gap-3 rounded-[24px] bg-white p-4 md:flex-row md:items-center">
+                                                                <select
+                                                                    value={item.type || 'text'}
+                                                                    onChange={(e) => updateTrainingSyllabusItem(index, e.target.value === 'file'
+                                                                        ? { type: 'file', label: item.label || '', url: item.url || '' }
+                                                                        : { type: 'text', text: item.text || '' })}
+                                                                    className="rounded-2xl border-none bg-slate-50 px-4 py-4 text-[10px] font-black uppercase tracking-widest text-primary md:w-[140px]"
+                                                                >
+                                                                    <option value="text">Yazı</option>
+                                                                    <option value="file">Dosya</option>
+                                                                </select>
+
+                                                                {item.type === 'file' ? (
+                                                                    <>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={item.label || ''}
+                                                                            onChange={(e) => updateTrainingSyllabusItem(index, { label: e.target.value })}
+                                                                            className="min-w-0 flex-1 rounded-2xl border-none bg-slate-50 p-4 text-sm font-bold text-primary"
+                                                                            placeholder={`Dosya başlığı ${index + 1}`}
+                                                                        />
+                                                                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-slate-50 px-5 py-4 text-[10px] font-black uppercase tracking-widest text-primary transition hover:bg-accent/10">
+                                                                            <Upload className="h-4 w-4 text-accent" />
+                                                                            {syllabusUploadTarget === `syllabus-${index}` ? 'Yüklənir...' : 'Dosya yüklə'}
+                                                                            <input
+                                                                                type="file"
+                                                                                className="hidden"
+                                                                                onChange={(e) => handleTrainingSyllabusFileUpload(index, e.target.files?.[0])}
+                                                                            />
+                                                                        </label>
+                                                                        <a
+                                                                            href={item.url || '#'}
+                                                                            target="_blank"
+                                                                            rel="noreferrer"
+                                                                            className={`truncate rounded-2xl bg-slate-50 px-4 py-4 text-xs font-bold text-slate-500 ${item.url ? 'hover:text-accent' : 'pointer-events-none opacity-50'}`}
+                                                                            title={item.url || ''}
+                                                                        >
+                                                                            {item.label || getUploadedFileName(item.url) || 'Dosya seçilməyib'}
+                                                                        </a>
+                                                                    </>
+                                                                ) : (
+                                                                    <input
+                                                                        type="text"
+                                                                        value={item.text || ''}
+                                                                        onChange={(e) => updateTrainingSyllabusItem(index, { text: e.target.value })}
+                                                                        className="min-w-0 flex-1 rounded-2xl border-none bg-slate-50 p-4 text-sm font-bold text-primary"
+                                                                        placeholder={`Maddə ${index + 1}`}
+                                                                    />
+                                                                )}
+
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => removeTrainingListItem('syllabus', index)}
-                                                                    className="w-12 h-12 rounded-2xl bg-white text-slate-400 hover:text-red-500 transition-all flex items-center justify-center"
+                                                                    onClick={() => removeTrainingSyllabusItem(index)}
+                                                                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 transition-all hover:text-red-500"
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </button>
@@ -759,7 +858,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                                                         ))}
                                                         <button
                                                             type="button"
-                                                            onClick={() => addTrainingListItem('syllabus')}
+                                                            onClick={addTrainingSyllabusItem}
                                                             className="w-full bg-white border-2 border-dashed border-slate-200 rounded-2xl p-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-accent hover:text-accent transition-all flex items-center justify-center gap-2"
                                                         >
                                                             <Plus className="h-4 w-4" /> Maddə Əlavə Et
@@ -780,18 +879,18 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                                                     </div>
 
                                                     <div className="space-y-3">
-                                                        {(Array.isArray(trainingForm.targetAudience) ? trainingForm.targetAudience : []).map((item: string, index: number) => (
+                                                        {targetAudienceItems.map((item: string, index: number) => (
                                                             <div key={`target-audience-${index}`} className="flex items-center gap-3">
                                                                 <input
                                                                     type="text"
                                                                     value={item}
-                                                                    onChange={(e) => updateTrainingList('targetAudience', index, e.target.value)}
+                                                                    onChange={(e) => updateTrainingTextList('targetAudience', index, e.target.value)}
                                                                     className="w-full bg-white border-none rounded-2xl p-4 text-sm font-bold text-primary"
                                                                     placeholder={`Kimlər üçün ${index + 1}`}
                                                                 />
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => removeTrainingListItem('targetAudience', index)}
+                                                                    onClick={() => removeTrainingTextListItem('targetAudience', index)}
                                                                     className="w-12 h-12 rounded-2xl bg-white text-slate-400 hover:text-red-500 transition-all flex items-center justify-center"
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
@@ -800,7 +899,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                                                         ))}
                                                         <button
                                                             type="button"
-                                                            onClick={() => addTrainingListItem('targetAudience')}
+                                                            onClick={() => addTrainingTextListItem('targetAudience')}
                                                             className="w-full bg-white border-2 border-dashed border-slate-200 rounded-2xl p-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-accent hover:text-accent transition-all flex items-center justify-center gap-2"
                                                         >
                                                             <Plus className="h-4 w-4" /> Maddə Əlavə Et

@@ -43,12 +43,19 @@ export interface StatisticItem {
   icon: LucideIcon;
 }
 
+export interface TrainingSyllabusItem {
+  type: 'text' | 'file';
+  text?: string;
+  label?: string;
+  url?: string;
+}
+
 export interface TrainingItem {
   id: string;
   title: string;
   description: string;
   fullContent?: string;
-  syllabus?: string[];
+  syllabus?: TrainingSyllabusItem[];
   targetAudience?: string[];
   startDate: string;
   duration: string;

@@ -1,5 +1,5 @@
 import { apiClient } from '../lib/apiClient';
-import { BlogItem, TrainingItem } from '../types';
+import { BlogItem, TrainingItem, TrainingSyllabusItem } from '../types';
 
 const mapBlogRow = (row: any): BlogItem => ({
   id: row.id,
@@ -40,12 +40,51 @@ export const parseStringList = (value: unknown): string[] => {
   return [];
 };
 
+export const parseTrainingSyllabus = (value: unknown): TrainingSyllabusItem[] => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === 'string') {
+          const text = item.trim();
+          return text ? { type: 'text' as const, text } : null;
+        }
+
+        if (!item || typeof item !== 'object') return null;
+
+        const type = item.type === 'file' ? 'file' : 'text';
+        const text = typeof item.text === 'string' ? item.text.trim() : '';
+        const label = typeof item.label === 'string' ? item.label.trim() : '';
+        const url = typeof item.url === 'string' ? item.url.trim() : '';
+
+        if (type === 'file') {
+          if (!url && !label) return null;
+          return { type, label, url };
+        }
+
+        if (!text) return null;
+        return { type, text };
+      })
+      .filter((item): item is TrainingSyllabusItem => Boolean(item));
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return parseTrainingSyllabus(parsed);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  return [];
+};
+
 const mapTrainingRow = (row: any): TrainingItem => ({
   id: row.id,
   title: row.title || '',
   description: row.description || row.summary || '',
   fullContent: row.fullContent || row.full_content || row.content || '',
-  syllabus: parseStringList(row.syllabus),
+  syllabus: parseTrainingSyllabus(row.syllabus),
   targetAudience: parseStringList(row.targetAudience),
   startDate: row.startDate || row.start_date || row.date || '',
   duration: row.duration || '',

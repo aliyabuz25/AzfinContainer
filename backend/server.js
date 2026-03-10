@@ -127,6 +127,32 @@ function normalizeStringList(value) {
         .filter(Boolean);
 }
 
+function normalizeSyllabusEntries(value) {
+    return normalizeSyllabus(value)
+        .map((item) => {
+            if (typeof item === 'string') {
+                const text = item.trim();
+                return text ? { type: 'text', text } : null;
+            }
+
+            if (!item || typeof item !== 'object') return null;
+
+            const type = item.type === 'file' ? 'file' : 'text';
+            const text = typeof item.text === 'string' ? item.text.trim() : '';
+            const label = typeof item.label === 'string' ? item.label.trim() : '';
+            const url = typeof item.url === 'string' ? item.url.trim() : '';
+
+            if (type === 'file') {
+                if (!label && !url) return null;
+                return { type, label, url };
+            }
+
+            if (!text) return null;
+            return { type, text };
+        })
+        .filter(Boolean);
+}
+
 function toSqlValue(value) {
     return value === undefined ? null : value;
 }
@@ -445,7 +471,7 @@ function normalizeTrainingPayload(payload) {
         title: rawTitle || 'Adsız Təlim',
         description: normalizeText(t.description),
         fullContent: normalizeText(t.fullContent),
-        syllabus: normalizeStringList(t.syllabus),
+        syllabus: normalizeSyllabusEntries(t.syllabus),
         targetAudience: normalizeStringList(t.targetAudience),
         startDate: normalizeText(t.startDate),
         duration: normalizeText(t.duration),
