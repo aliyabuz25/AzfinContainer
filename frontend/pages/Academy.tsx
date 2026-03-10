@@ -11,6 +11,7 @@ import { useContent } from '../lib/ContentContext';
 const Academy: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [trainings, setTrainings] = useState<TrainingItem[]>([]);
+  const [selectedTrainingId, setSelectedTrainingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { content } = useContent();
   const academyContent = content.academy;
@@ -22,6 +23,12 @@ const Academy: React.FC = () => {
       .then((data) => {
         if (isMounted) {
           setTrainings(data);
+          setSelectedTrainingId((prev) => {
+            if (prev && data.some((training) => training.id === prev)) {
+              return prev;
+            }
+            return data[0]?.id || null;
+          });
         }
       })
       .finally(() => {
@@ -35,7 +42,7 @@ const Academy: React.FC = () => {
     };
   }, []);
 
-  const primaryTraining = trainings[0] ?? null;
+  const primaryTraining = trainings.find((training) => training.id === selectedTrainingId) ?? trainings[0] ?? null;
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -76,7 +83,43 @@ const Academy: React.FC = () => {
               {academyContent.emptyText}
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="space-y-10">
+              {trainings.length > 1 && (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {trainings.map((training, index) => {
+                    const isActive = training.id === primaryTraining.id;
+
+                    return (
+                      <button
+                        key={training.id}
+                        type="button"
+                        onClick={() => setSelectedTrainingId(training.id)}
+                        className={`rounded-2xl border p-6 text-left transition-all ${isActive
+                          ? 'border-accent bg-accent/5 shadow-lg shadow-accent/10'
+                          : 'border-slate-100 bg-white hover:border-accent/30 hover:shadow-md'
+                          }`}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-accent' : 'text-slate-400'}`}>
+                            Təlim {index + 1}
+                          </span>
+                          <span className={`h-3 w-3 rounded-full ${isActive ? 'bg-accent' : 'bg-slate-200'}`} />
+                        </div>
+                        <h3 className="mt-4 text-lg font-black uppercase italic tracking-tight text-primary">
+                          {training.title || `Təlim ${index + 1}`}
+                        </h3>
+                        {training.description && (
+                          <p className="mt-3 line-clamp-2 text-sm font-medium leading-relaxed text-slate-500">
+                            {training.description}
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               <div className="lg:col-span-2 space-y-12">
                 <div className="bg-white rounded-2xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 space-y-6">
                   <h2 className="text-3xl md:text-4xl font-black text-primary tracking-tight uppercase italic leading-tight">
@@ -190,6 +233,7 @@ const Academy: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           )}
         </div>
