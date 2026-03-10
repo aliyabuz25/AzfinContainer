@@ -214,6 +214,55 @@ function prettifyFieldKey(field) {
         .replace(/^./, (s) => s.toUpperCase());
 }
 
+const SUBMISSION_FIELD_LABELS = {
+    name: 'Ad və soyad',
+    fullName: 'Ad və soyad',
+    phone: 'Telefon',
+    email: 'E-poçt',
+    note: 'Qeyd',
+    message: 'Mesaj',
+    service: 'Xidmət',
+    company: 'Şirkət',
+    position: 'Vəzifə',
+    trainingTitle: 'Təlim adı',
+    trainingName: 'Təlim adı',
+    courseTitle: 'Təlim adı',
+    courseName: 'Təlim adı',
+    formName: 'Forma adı'
+};
+
+function getSubmissionFieldLabel(field) {
+    const key = String(field || '').trim();
+    return SUBMISSION_FIELD_LABELS[key] || prettifyFieldKey(key);
+}
+
+function normalizeSubmissionFormTitle(type, rawTitle) {
+    const fallback = getSubmissionTypeLabel(type);
+    if (typeof rawTitle !== 'string') return fallback;
+    const normalized = rawTitle.trim().toLowerCase();
+    if (!normalized) return fallback;
+
+    if (type === 'training') {
+        if (['training application', 'apply for training', 'training form'].includes(normalized)) {
+            return 'Təlim müraciəti';
+        }
+    }
+
+    if (type === 'contact') {
+        if (['contact form', 'contact application'].includes(normalized)) {
+            return 'Əlaqə forması';
+        }
+    }
+
+    if (type === 'audit') {
+        if (['audit application', 'audit form', 'audit request'].includes(normalized)) {
+            return 'Audit sorğusu';
+        }
+    }
+
+    return rawTitle.trim();
+}
+
 function formatSubmissionValue(value) {
     if (value === null || value === undefined || value === '') return '-';
     if (Array.isArray(value)) {
@@ -294,10 +343,21 @@ function getSubmissionTypeAccent(type) {
 
 function formatDateForEmail(dateValue) {
     try {
-        return new Intl.DateTimeFormat('az-AZ', {
-            dateStyle: 'full',
-            timeStyle: 'short'
-        }).format(dateValue);
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) {
+            return String(dateValue);
+        }
+
+        const weekdays = ['Bazar', 'Bazar ertəsi', 'Çərşənbə axşamı', 'Çərşənbə', 'Cümə axşamı', 'Cümə', 'Şənbə'];
+        const months = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avqust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr'];
+        const weekday = weekdays[date.getDay()];
+        const day = date.getDate();
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${weekday}, ${day} ${month} ${year} / ${hours}:${minutes}`;
     } catch (_) {
         return dateValue.toISOString();
     }
@@ -324,9 +384,7 @@ function buildSubmissionEmailBody({ type, submissionId, formData, createdAt }) {
     const { brandName, brandLogo } = getEmailBranding();
     const accentColor = getSubmissionTypeAccent(type);
     const createdAtLabel = formatDateForEmail(createdAt);
-    const formName = typeof formData?.formName === 'string' && formData.formName.trim()
-        ? formData.formName.trim()
-        : typeLabel;
+    const formName = normalizeSubmissionFormTitle(type, formData?.formName);
     const summaryName = formatSubmissionValue(formData?.name);
     const summaryEmail = formatSubmissionValue(formData?.email);
     const summaryPhone = formatSubmissionValue(formData?.phone);
@@ -342,14 +400,14 @@ function buildSubmissionEmailBody({ type, submissionId, formData, createdAt }) {
         `E-poçt: ${summaryEmail}`,
         `Telefon: ${summaryPhone}`
     ];
-    const dataLines = details.map(([key, value]) => `${prettifyFieldKey(key)}: ${formatSubmissionValue(value)}`);
+    const dataLines = details.map(([key, value]) => `${getSubmissionFieldLabel(key)}: ${formatSubmissionValue(value)}`);
 
     const text = [...metaLines, '', ...dataLines].join('\n');
     const htmlRows = details
         .map(([key, value], index) => `
             <div style="margin-top:${index === 0 ? '0' : '12px'};padding:16px 18px;border:1px solid #e2e8f0;border-radius:14px;background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
               <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">
-                ${escapeHtml(prettifyFieldKey(key))}
+                ${escapeHtml(getSubmissionFieldLabel(key))}
               </div>
               <div style="font-size:14px;color:#334155;line-height:1.65;font-weight:600;word-break:break-word;">
                 ${escapeHtml(formatSubmissionValue(value))}
@@ -490,6 +548,122 @@ function buildSmtpTestEmailBody() {
                       Admin Panelinə Keç
                     </a>
                   </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    `;
+
+    return { subject, text, html };
+}
+
+function getSubmitterEmail(formData) {
+    const value = typeof formData?.email === 'string' ? formData.email.trim() : '';
+    return value || '';
+}
+
+function getSubmitterDisplayName(formData) {
+    const candidates = [formData?.name, formData?.fullName];
+    for (const candidate of candidates) {
+        if (typeof candidate === 'string' && candidate.trim()) {
+            return candidate.trim();
+        }
+    }
+    return 'Hörmətli müraciətçi';
+}
+
+function getConfirmationMessageByType(type) {
+    switch (type) {
+        case 'contact':
+            return 'Mesajınız qəbul olundu. Komandamız ən qısa zamanda sizinlə əlaqə saxlayacaq.';
+        case 'audit':
+            return 'Audit sorğunuz qəbul olundu. Mütəxəssislərimiz sorğunuzu nəzərdən keçirib sizinlə geri dönüş edəcəklər.';
+        case 'training':
+            return 'Təlim müraciətiniz qəbul olundu. Qeydiyyat və növbəti addımlarla bağlı qısa zamanda sizinlə əlaqə saxlanılacaq.';
+        default:
+            return 'Müraciətiniz uğurla qəbul olundu. Qısa zamanda sizinlə əlaqə saxlanılacaq.';
+    }
+}
+
+function buildSubmitterConfirmationEmailBody({ type, formData, submissionId, createdAt }) {
+    const { brandName, brandLogo } = getEmailBranding();
+    const logoBlock = buildEmailLogoBlock(brandName, brandLogo);
+    const typeLabel = getSubmissionTypeLabel(type);
+    const accentColor = getSubmissionTypeAccent(type);
+    const createdAtLabel = formatDateForEmail(createdAt);
+    const displayName = getSubmitterDisplayName(formData);
+    const formName = normalizeSubmissionFormTitle(type, formData?.formName);
+    const followupMessage = getConfirmationMessageByType(type);
+    const subject = `${brandName} | ${typeLabel} təsdiqi`;
+    const text = [
+        `${displayName}, salam.`,
+        '',
+        `${formName} üzrə müraciətiniz qəbul olundu.`,
+        followupMessage,
+        `Müraciət ID: ${submissionId}`,
+        `Tarix: ${createdAtLabel}`,
+        '',
+        `${brandName}`
+    ].join('\n');
+
+    const html = `
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+        ${escapeHtml(formName)} üzrə müraciətiniz qəbul olundu.
+      </div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:20px 10px;font-family:Arial,sans-serif;">
+        <tr>
+          <td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;">
+              <tr>
+                <td style="background:#0f172a;padding:22px 20px;border-bottom:3px solid ${accentColor};">
+                  <div style="text-align:left;">${logoBlock}</div>
+                  <div style="margin-top:16px;">
+                    <span style="display:inline-block;padding:8px 12px;border-radius:999px;background:${accentColor};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;">
+                      TƏSDİQ
+                    </span>
+                  </div>
+                  <h1 style="margin:16px 0 0;color:#ffffff;font-size:24px;line-height:1.25;font-weight:900;text-transform:uppercase;">
+                    Müraciətiniz qəbul olundu
+                  </h1>
+                  <p style="margin:8px 0 0;color:#cbd5e1;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+                    ${escapeHtml(brandName)}
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:20px;">
+                  <div style="padding:18px 20px;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;">
+                    <p style="margin:0;font-size:15px;line-height:1.8;color:#334155;">
+                      ${escapeHtml(displayName)}, salam. <strong style="color:#0f172a;">${escapeHtml(formName)}</strong> üzrə müraciətiniz qeydə alındı.
+                    </p>
+                    <p style="margin:14px 0 0;font-size:14px;line-height:1.75;color:#475569;">
+                      ${escapeHtml(followupMessage)}
+                    </p>
+                  </div>
+
+                  <div style="margin-top:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:16px 18px;">
+                    <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">Müraciət ID</div>
+                    <div style="margin-top:6px;font-size:15px;font-weight:800;color:#0f172a;word-break:break-word;">#${submissionId}</div>
+                  </div>
+                  <div style="margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:16px 18px;">
+                    <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">Tarix</div>
+                    <div style="margin-top:6px;font-size:15px;font-weight:800;color:#0f172a;line-height:1.55;word-break:break-word;">${escapeHtml(createdAtLabel)}</div>
+                  </div>
+
+                  <div style="margin-top:24px;">
+                    <a href="${escapeHtml(PUBLIC_SITE_URL)}" style="display:block;padding:14px 18px;border-radius:14px;background:${accentColor};color:#ffffff;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-align:center;">
+                      Sayta Keç
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;">
+                  <p style="margin:0;font-size:11px;color:#64748b;line-height:1.6;">
+                    Bu məktub avtomatik olaraq ${escapeHtml(brandName)} saytındakı forma müraciətinizə cavab olaraq göndərildi.
+                  </p>
                 </td>
               </tr>
             </table>
@@ -782,6 +956,41 @@ async function sendSubmissionNotification({ type, formData, submissionId, create
         text,
         html,
         replyTo
+    });
+
+    return { sent: true };
+}
+
+async function sendSubmitterConfirmation({ type, formData, submissionId, createdAt }) {
+    const submitterEmail = getSubmitterEmail(formData);
+    if (!submitterEmail) {
+        return { sent: false, skipped: true, reason: 'Submitter email missing' };
+    }
+
+    const smtp = await getSmtpSettings();
+    if (!smtp.enabled) {
+        return { sent: false, skipped: true, reason: 'SMTP disabled' };
+    }
+
+    const fromAddress = smtp.from || smtp.user;
+    if (!smtp.host || !smtp.port || !fromAddress) {
+        return { sent: false, skipped: true, reason: 'SMTP config is incomplete' };
+    }
+
+    const transporter = createSmtpTransporter(smtp);
+    const { subject, text, html } = buildSubmitterConfirmationEmailBody({
+        type,
+        formData,
+        submissionId,
+        createdAt
+    });
+
+    await transporter.sendMail({
+        from: fromAddress,
+        to: submitterEmail,
+        subject,
+        text,
+        html
     });
 
     return { sent: true };
@@ -1373,6 +1582,8 @@ app.post('/api/submissions', async (req, res) => {
         const createdAt = new Date();
         let mailSent = false;
         let mailInfo = null;
+        let confirmationSent = false;
+        let confirmationInfo = null;
 
         try {
             const emailResult = await sendSubmissionNotification({
@@ -1390,7 +1601,23 @@ app.post('/api/submissions', async (req, res) => {
             mailInfo = `Email failed: ${mailErr.message}`;
         }
 
-        res.json({ success: true, id: submissionId, mailSent, mailInfo });
+        try {
+            const confirmationResult = await sendSubmitterConfirmation({
+                type: normalizedType,
+                formData: normalizedFormData,
+                submissionId,
+                createdAt
+            });
+            confirmationSent = confirmationResult.sent;
+            if (!confirmationResult.sent) {
+                confirmationInfo = confirmationResult.reason || 'Confirmation email skipped';
+            }
+        } catch (mailErr) {
+            console.error('Submitter confirmation email failed:', mailErr.message);
+            confirmationInfo = `Confirmation email failed: ${mailErr.message}`;
+        }
+
+        res.json({ success: true, id: submissionId, mailSent, mailInfo, confirmationSent, confirmationInfo });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
