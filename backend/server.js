@@ -438,12 +438,30 @@ function normalizeTrainingPayload(payload) {
     const t = payload && typeof payload === 'object' ? payload : {};
     const rawTitle = typeof t.title === 'string' ? t.title.trim() : '';
     const rawId = typeof t.id === 'string' ? t.id.trim() : '';
+    const normalizeText = (value, fallback = '') => typeof value === 'string' ? value : fallback;
 
     return {
-        ...t,
         id: rawId || randomUUID(),
         title: rawTitle || 'Adsız Təlim',
-        status: typeof t.status === 'string' && t.status.trim() ? t.status : 'upcoming'
+        description: normalizeText(t.description),
+        fullContent: normalizeText(t.fullContent),
+        syllabus: normalizeStringList(t.syllabus),
+        targetAudience: normalizeStringList(t.targetAudience),
+        startDate: normalizeText(t.startDate),
+        duration: normalizeText(t.duration),
+        level: normalizeText(t.level),
+        image: normalizeText(t.image),
+        status: typeof t.status === 'string' && t.status.trim() ? t.status : 'upcoming',
+        certLabel: normalizeText(t.certLabel),
+        infoTitle: normalizeText(t.infoTitle),
+        aboutTitle: normalizeText(t.aboutTitle, 'Təlim haqqında'),
+        syllabusTitle: normalizeText(t.syllabusTitle, 'Təlim proqramı'),
+        targetAudienceTitle: normalizeText(t.targetAudienceTitle, 'Bu kurs kimlər üçündür?'),
+        durationLabel: normalizeText(t.durationLabel),
+        startLabel: normalizeText(t.startLabel),
+        statusLabel: normalizeText(t.statusLabel),
+        sidebarNote: normalizeText(t.sidebarNote),
+        highlightWord: normalizeText(t.highlightWord)
     };
 }
 
@@ -1173,10 +1191,8 @@ app.post('/api/trainings', async (req, res) => {
     try {
         const t = normalizeTrainingPayload(req.body);
 
-        const syllabus = normalizeStringList(t.syllabus);
-        const syllabusJson = JSON.stringify(syllabus);
-        const targetAudience = normalizeStringList(t.targetAudience);
-        const targetAudienceJson = JSON.stringify(targetAudience);
+        const syllabusJson = JSON.stringify(t.syllabus);
+        const targetAudienceJson = JSON.stringify(t.targetAudience);
         const insertValues = [
             t.id, t.title, t.description, t.fullContent, syllabusJson, targetAudienceJson, t.startDate, t.duration, t.level, t.image, t.status, t.certLabel, t.infoTitle, t.aboutTitle, t.syllabusTitle, t.targetAudienceTitle, t.durationLabel, t.startLabel, t.statusLabel, t.sidebarNote, t.highlightWord
         ].map(toSqlValue);

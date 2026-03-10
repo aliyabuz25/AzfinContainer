@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Calendar, Clock, ShieldCheck } from 'lucide-react';
+import { Clock, ShieldCheck } from 'lucide-react';
 import { TrainingItem } from '../types';
 import { fetchTrainings } from '../utils/fetchData';
 import { parseBBCode } from '../utils/bbcode';
@@ -167,15 +167,6 @@ const Academy: React.FC = () => {
                       <span
                         className="font-black text-primary text-xs uppercase italic whitespace-pre-wrap text-right"
                         dangerouslySetInnerHTML={{ __html: parseBBCode(primaryTraining.duration || '') }}
-                      />
-                    </div>
-                    <div className="flex justify-between items-center border-b border-slate-50 pb-4">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-accent" /> {primaryTraining.startLabel || 'Başlanğıc'}
-                      </span>
-                      <span
-                        className="font-black text-primary text-xs uppercase italic whitespace-pre-wrap text-right"
-                        dangerouslySetInnerHTML={{ __html: parseBBCode(primaryTraining.startDate || '') }}
                       />
                     </div>
                     <div className="flex justify-between items-center">

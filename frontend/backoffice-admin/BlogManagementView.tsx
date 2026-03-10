@@ -51,8 +51,8 @@ interface BlogManagementViewProps {
     trainingForm: Omit<TrainingItem, 'id'> | any;
     handleBlogChange: (field: string, value: any) => void;
     handleTrainingChange: (field: string, value: any) => void;
-    handleBlogSave: () => void;
-    handleTrainingSave: () => void;
+    handleBlogSave: () => Promise<boolean>;
+    handleTrainingSave: () => Promise<boolean>;
     resetBlogForm: () => void;
     resetTrainingForm: () => void;
     blogPosts: BlogItem[];
@@ -192,10 +192,11 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
         isBlogSection ? resetBlogForm() : resetTrainingForm();
     };
 
-    const handleSaveAndClose = () => {
-        isBlogSection ? handleBlogSave() : handleTrainingSave();
-        // Give a short delay for the save animation/toast before closing
-        setTimeout(() => setIsModalOpen(false), 800);
+    const handleSaveAndClose = async () => {
+        const saved = await (isBlogSection ? handleBlogSave() : handleTrainingSave());
+        if (saved) {
+            setIsModalOpen(false);
+        }
     };
 
     const updateTrainingList = (field: 'syllabus' | 'targetAudience', index: number, value: string) => {

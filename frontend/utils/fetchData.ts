@@ -21,13 +21,32 @@ export const normalizeStatus = (status?: string): TrainingItem['status'] => {
   return 'upcoming';
 };
 
+export const parseStringList = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item ?? '').trim()).filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed)
+        ? parsed.map((item) => String(item ?? '').trim()).filter(Boolean)
+        : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  return [];
+};
+
 const mapTrainingRow = (row: any): TrainingItem => ({
   id: row.id,
   title: row.title || '',
   description: row.description || row.summary || '',
   fullContent: row.fullContent || row.full_content || row.content || '',
-  syllabus: typeof row.syllabus === 'string' ? JSON.parse(row.syllabus) : (Array.isArray(row.syllabus) ? row.syllabus : []),
-  targetAudience: typeof row.targetAudience === 'string' ? JSON.parse(row.targetAudience) : (Array.isArray(row.targetAudience) ? row.targetAudience : []),
+  syllabus: parseStringList(row.syllabus),
+  targetAudience: parseStringList(row.targetAudience),
   startDate: row.startDate || row.start_date || row.date || '',
   duration: row.duration || '',
   level: row.level || 'Bütün səviyyələr',

@@ -101,6 +101,52 @@ const formatStartDate = (rawValue: string) => {
   return `${digits.slice(0, 2)}.${digits.slice(2)}`;
 };
 
+const normalizeTrainingList = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item ?? '').trim()).filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed)
+        ? parsed.map((item) => String(item ?? '').trim()).filter(Boolean)
+        : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  return [];
+};
+
+const normalizeTrainingForm = (value?: Partial<TrainingItem> | null): Omit<TrainingItem, 'id'> => ({
+  ...DEFAULT_TRAINING_FORM,
+  ...value,
+  title: typeof value?.title === 'string' ? value.title : DEFAULT_TRAINING_FORM.title,
+  description: typeof value?.description === 'string' ? value.description : DEFAULT_TRAINING_FORM.description,
+  fullContent: typeof value?.fullContent === 'string' ? value.fullContent : DEFAULT_TRAINING_FORM.fullContent,
+  syllabus: normalizeTrainingList(value?.syllabus),
+  targetAudience: normalizeTrainingList(value?.targetAudience),
+  startDate: typeof value?.startDate === 'string' ? value.startDate : DEFAULT_TRAINING_FORM.startDate,
+  duration: typeof value?.duration === 'string' ? value.duration : DEFAULT_TRAINING_FORM.duration,
+  level: typeof value?.level === 'string' ? value.level : DEFAULT_TRAINING_FORM.level,
+  image: typeof value?.image === 'string' ? value.image : DEFAULT_TRAINING_FORM.image,
+  status: value?.status === 'ongoing' || value?.status === 'completed' || value?.status === 'upcoming'
+    ? value.status
+    : DEFAULT_TRAINING_FORM.status,
+  certLabel: typeof value?.certLabel === 'string' ? value.certLabel : '',
+  infoTitle: typeof value?.infoTitle === 'string' ? value.infoTitle : '',
+  aboutTitle: typeof value?.aboutTitle === 'string' ? value.aboutTitle : DEFAULT_TRAINING_FORM.aboutTitle,
+  syllabusTitle: typeof value?.syllabusTitle === 'string' ? value.syllabusTitle : DEFAULT_TRAINING_FORM.syllabusTitle,
+  targetAudienceTitle: typeof value?.targetAudienceTitle === 'string' ? value.targetAudienceTitle : DEFAULT_TRAINING_FORM.targetAudienceTitle,
+  durationLabel: typeof value?.durationLabel === 'string' ? value.durationLabel : '',
+  startLabel: typeof value?.startLabel === 'string' ? value.startLabel : '',
+  statusLabel: typeof value?.statusLabel === 'string' ? value.statusLabel : '',
+  sidebarNote: typeof value?.sidebarNote === 'string' ? value.sidebarNote : '',
+  highlightWord: typeof value?.highlightWord === 'string' ? value.highlightWord : '',
+});
+
 // Reusable IconPicker component
 const IconPicker: React.FC<{ value?: string; onChange: (value: string) => void }> = ({ value, onChange }) => {
   const [open, setOpen] = useState(false);
@@ -233,7 +279,7 @@ const Admin: React.FC = () => {
   const [selectedTrainingId, setSelectedTrainingId] = useState<string | null>(null);
 
   const [blogForm, setBlogForm] = useState<Omit<BlogItem, 'id'>>(DEFAULT_BLOG_FORM);
-  const [trainingForm, setTrainingForm] = useState<Omit<TrainingItem, 'id'>>(DEFAULT_TRAINING_FORM);
+  const [trainingForm, setTrainingForm] = useState<Omit<TrainingItem, 'id'>>(normalizeTrainingForm(DEFAULT_TRAINING_FORM));
   const [blogSaving, setBlogSaving] = useState(false);
   const [trainingSaving, setTrainingSaving] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
@@ -566,16 +612,16 @@ const Admin: React.FC = () => {
   const handleTrainingSelect = (tr: TrainingItem) => {
     setSelectedTrainingId(tr.id);
     const { id, ...rest } = tr;
-    setTrainingForm(rest);
+    setTrainingForm(normalizeTrainingForm(rest));
   };
 
   const handleBlogChange = (f: string, v: any) => setBlogForm(prev => ({ ...prev, [f]: v }));
   const handleTrainingChange = (f: string, v: any) => {
     const nextValue = f === 'startDate' ? formatStartDate(String(v ?? '')) : v;
-    setTrainingForm(prev => ({ ...prev, [f]: nextValue }));
+    setTrainingForm(prev => normalizeTrainingForm({ ...prev, [f]: nextValue }));
   };
 
-  const handleBlogSave = async () => {
+  const handleBlogSave = async (): Promise<boolean> => {
     setBlogSaving(true);
     try {
       const isNew = !selectedBlogId;
@@ -595,42 +641,49 @@ const Admin: React.FC = () => {
         setSelectedBlogId(item.id);
         toast.success('Yazı yadda saxlanıldı.');
       }
+      return true;
     } catch (err) {
       console.error('Save error:', err);
       toast.error('Xəta baş verdi.');
+      return false;
     } finally {
       setBlogSaving(false);
     }
   };
 
-  const handleTrainingSave = async () => {
+  const handleTrainingSave = async (): Promise<boolean> => {
     if (!trainingForm.title?.trim()) {
       toast.error('Təlim başlığı boş ola bilməz.');
-      return;
+      return false;
     }
 
     setTrainingSaving(true);
     try {
       const isNew = !selectedTrainingId;
-      const item = { ...trainingForm, id: selectedTrainingId || generateId() };
+      const item = { ...normalizeTrainingForm(trainingForm), id: selectedTrainingId || generateId() };
       const { data, error } = await upsertTraining(item as TrainingItem);
 
       if (error) throw error;
 
       const updated = await fetchAdminTrainings();
       setTrainings(updated);
+      const savedTraining = updated.find((training) => training.id === item.id);
 
       if (isNew) {
-        resetTrainingForm();
         toast.success('Yeni təlim əlavə edildi.');
       } else {
         setSelectedTrainingId(item.id);
         toast.success('Təlim yadda saxlanıldı.');
       }
+
+      setSelectedTrainingId(item.id);
+      setTrainingForm(normalizeTrainingForm(savedTraining ?? item));
+      return true;
     } catch (err) {
       console.error('Save error:', err);
       const message = err instanceof Error ? err.message : 'Xəta baş verdi.';
       toast.error(message);
+      return false;
     } finally {
       setTrainingSaving(false);
     }
@@ -642,7 +695,7 @@ const Admin: React.FC = () => {
   };
   const resetTrainingForm = () => {
     setSelectedTrainingId(null);
-    setTrainingForm(DEFAULT_TRAINING_FORM);
+    setTrainingForm(normalizeTrainingForm(DEFAULT_TRAINING_FORM));
   };
 
   const handleBlogDelete = async (id: string) => {
