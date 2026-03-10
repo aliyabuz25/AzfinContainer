@@ -11,7 +11,7 @@ services:
       MYSQL_USER: azfin_user
       MYSQL_PASSWORD: azfin_password
     volumes:
-      - /datastore/azfin/mysql:/var/lib/mysql
+      - ${AZFIN_DATA_ROOT:-./datastore}/mysql:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 10s
@@ -33,12 +33,17 @@ services:
     environment:
       PORT: "3001"
       UPLOADS_DIR: "/app/uploads"
+      CURRENT_SITE_CONTENT_PATH: "/app/uploads/current-site-content.json"
+      CURRENT_SITEMAP_PATH: "/app/uploads/current-sitemap.json"
+      CURRENT_SMTP_SETTINGS_PATH: "/app/uploads/current-smtp-settings.json"
+      SNAPSHOT_DIR: "/app/uploads/_snapshots"
+      CHANGE_LOG_PATH: "/app/uploads/_change-log.ndjson"
       DB_HOST: db
       DB_USER: azfin_user
       DB_PASSWORD: azfin_password
       DB_NAME: azfin_db
     volumes:
-      - /datastore/azfin/uploads:/app/uploads
+      - ${AZFIN_DATA_ROOT:-./datastore}/uploads:/app/uploads
     networks:
       - edge
     labels:

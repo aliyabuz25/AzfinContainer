@@ -66,27 +66,27 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* Main Navigation Bar */}
-      <nav className={`bg-white border-b border-slate-100 transition-all duration-300 ${isScrolled ? 'h-16 md:h-20' : 'h-20 md:h-32'}`}>
+      <nav className={`bg-white border-b border-slate-100 transition-all duration-300 ${isScrolled ? 'h-[4.5rem] md:h-24' : 'h-20 md:h-32'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="flex justify-between items-center h-full">
             <Link to="/" className="flex items-center gap-3 flex-shrink-0 group/logo">
               {loading ? (
-                <div className={`flex items-center justify-center transition-all ${isScrolled ? 'w-10 h-10' : 'w-12 h-12 md:w-16 md:h-16'}`}>
+                <div className={`flex items-center justify-center transition-all ${isScrolled ? 'w-12 h-12 md:w-14 md:h-14' : 'w-12 h-12 md:w-16 md:h-16'}`}>
                   <Loader2 className="h-5 w-5 text-accent animate-spin" />
                 </div>
               ) : navbarLogoSrc ? (
                 <img
                   src={navbarLogoSrc}
                   alt={siteContent.settings.siteTitle || 'AZFIN'}
-                  className={`object-contain transition-all ${isScrolled ? 'h-10' : 'h-12 md:h-16'}`}
+                  className={`object-contain transition-all ${isScrolled ? 'h-12 md:h-14 max-w-[180px] md:max-w-[220px]' : 'h-12 md:h-16 max-w-[200px] md:max-w-[260px]'}`}
                 />
               ) : (
                 <>
-                  <div className={`bg-primary flex items-center justify-center rounded-sm transition-all ${isScrolled ? 'w-8 h-8' : 'w-10 h-10'}`}>
-                    <BarChart3 className={`${isScrolled ? 'h-4 w-4' : 'h-5 w-5'} text-accent`} />
+                  <div className={`bg-primary flex items-center justify-center rounded-sm transition-all ${isScrolled ? 'w-9 h-9 md:w-10 md:h-10' : 'w-10 h-10'}`}>
+                    <BarChart3 className={`${isScrolled ? 'h-[1.125rem] w-[1.125rem] md:h-5 md:w-5' : 'h-5 w-5'} text-accent`} />
                   </div>
                   <div className="flex flex-col">
-                    <span className={`font-extrabold text-primary tracking-tighter leading-none transition-all ${isScrolled ? 'text-lg' : 'text-xl'}`}>AZFIN</span>
+                    <span className={`font-extrabold text-primary tracking-tighter leading-none transition-all ${isScrolled ? 'text-lg md:text-xl' : 'text-xl'}`}>AZFIN</span>
                     <span className={`text-[8px] font-bold text-slate-400 tracking-[0.25em] uppercase transition-all ${isScrolled ? 'mt-0' : 'mt-1'}`}>Audit & Consulting</span>
                   </div>
                 </>

@@ -14,6 +14,8 @@ const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, 'uploads');
 const CURRENT_SITEMAP_PATH = process.env.CURRENT_SITEMAP_PATH || path.join(UPLOADS_DIR, 'current-sitemap.json');
 const CURRENT_SITE_CONTENT_PATH = process.env.CURRENT_SITE_CONTENT_PATH || path.join(UPLOADS_DIR, 'current-site-content.json');
 const CURRENT_SMTP_SETTINGS_PATH = process.env.CURRENT_SMTP_SETTINGS_PATH || path.join(UPLOADS_DIR, 'current-smtp-settings.json');
+const SNAPSHOT_DIR = process.env.SNAPSHOT_DIR || path.join(UPLOADS_DIR, '_snapshots');
+const CHANGE_LOG_PATH = process.env.CHANGE_LOG_PATH || path.join(UPLOADS_DIR, '_change-log.ndjson');
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '25mb';
 const DB_RETRY_DELAY_MS = Number(process.env.DB_RETRY_DELAY_MS || 5000);
 const DB_MAX_RETRIES = Number(process.env.DB_MAX_RETRIES || 0); // 0 => unlimited
@@ -385,6 +387,31 @@ function normalizeTrainingPayload(payload) {
     };
 }
 
+function ensureDirectoryFor(fileOrDirPath, isDirectory = false) {
+    const dirPath = isDirectory ? fileOrDirPath : path.dirname(fileOrDirPath);
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
+}
+
+function toSnapshotFilePath(label) {
+    const safeLabel = String(label || 'snapshot')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'snapshot';
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    return path.join(SNAPSHOT_DIR, `${safeLabel}-${timestamp}.json`);
+}
+
+function appendChangeLog(entry) {
+    try {
+        ensureDirectoryFor(CHANGE_LOG_PATH);
+        fs.appendFileSync(CHANGE_LOG_PATH, `${JSON.stringify(entry)}\n`, 'utf-8');
+    } catch (err) {
+        console.warn('Failed to append change log:', err.message);
+    }
+}
+
 function readJsonObject(filePath, label) {
     if (!fs.existsSync(filePath)) return null;
     try {
@@ -400,11 +427,24 @@ function readJsonObject(filePath, label) {
 function writeJsonObject(filePath, payload, label) {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return;
     try {
-        fs.writeFileSync(
+        ensureDirectoryFor(filePath);
+        ensureDirectoryFor(SNAPSHOT_DIR, true);
+
+        const serialized = JSON.stringify(payload, null, 2);
+        const tempPath = `${filePath}.tmp`;
+        const snapshotPath = toSnapshotFilePath(label);
+
+        fs.writeFileSync(tempPath, serialized, 'utf-8');
+        fs.renameSync(tempPath, filePath);
+        fs.writeFileSync(snapshotPath, serialized, 'utf-8');
+
+        appendChangeLog({
+            type: 'json_snapshot',
+            label,
             filePath,
-            JSON.stringify(payload, null, 2),
-            'utf-8'
-        );
+            snapshotPath,
+            createdAt: new Date().toISOString()
+        });
     } catch (err) {
         console.warn(`Failed to write ${label}:`, err.message);
     }
@@ -437,18 +477,111 @@ function writeCurrentSmtpSettings(settings) {
 async function getSmtpSettings() {
     const [rows] = await pool.execute('SELECT config FROM smtp_settings WHERE id = ?', [SMTP_SETTINGS_ID]);
     const dbSettings = rows[0] ? parseDbJson(rows[0].config, {}) : {};
+    const historySettings = await getLatestSmtpSettingsHistory() || {};
     const fileSettings = readCurrentSmtpSettings() || {};
-    const merged = { ...DEFAULT_SMTP_SETTINGS, ...dbSettings, ...fileSettings };
+    const merged = { ...DEFAULT_SMTP_SETTINGS, ...historySettings, ...dbSettings, ...fileSettings };
     return normalizeSmtpSettings(merged);
+}
+
+async function getLatestSiteSettingsHistory() {
+    const [rows] = await pool.execute(
+        'SELECT content FROM site_settings_history WHERE site_settings_id = ? ORDER BY id DESC LIMIT 1',
+        [1]
+    );
+    return rows[0] ? parseDbJson(rows[0].content, {}) : null;
+}
+
+async function getLatestSitemapHistory() {
+    const [rows] = await pool.execute(
+        'SELECT content FROM sitemap_history ORDER BY id DESC LIMIT 1'
+    );
+    return rows[0] ? parseDbJson(rows[0].content, {}) : null;
+}
+
+async function getLatestSmtpSettingsHistory() {
+    const [rows] = await pool.execute(
+        'SELECT config FROM smtp_settings_history WHERE smtp_settings_id = ? ORDER BY id DESC LIMIT 1',
+        [SMTP_SETTINGS_ID]
+    );
+    return rows[0] ? parseDbJson(rows[0].config, {}) : null;
+}
+
+async function persistSiteSettings(payload) {
+    const content = JSON.stringify(payload || {});
+    const navigation = payload?.navigation || {};
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        await conn.execute(
+            'INSERT INTO site_settings (id, content) VALUES (1, ?) ON DUPLICATE KEY UPDATE content = ?',
+            [content, content]
+        );
+        await conn.execute(
+            'INSERT INTO site_settings_history (site_settings_id, content) VALUES (?, ?)',
+            [1, content]
+        );
+        await conn.execute(
+            'INSERT INTO sitemap_history (content) VALUES (?)',
+            [JSON.stringify(navigation)]
+        );
+        await conn.commit();
+    } catch (err) {
+        await conn.rollback();
+        throw err;
+    } finally {
+        conn.release();
+    }
+}
+
+async function persistSmtpSettings(normalized) {
+    const serialized = JSON.stringify(normalized || {});
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        await conn.execute(
+            'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON DUPLICATE KEY UPDATE config = ?',
+            [SMTP_SETTINGS_ID, serialized, serialized]
+        );
+        await conn.execute(
+            'INSERT INTO smtp_settings_history (smtp_settings_id, config) VALUES (?, ?)',
+            [SMTP_SETTINGS_ID, serialized]
+        );
+        await conn.commit();
+    } catch (err) {
+        await conn.rollback();
+        throw err;
+    } finally {
+        conn.release();
+    }
+}
+
+async function ensurePersistentStateRecovered() {
+    const [siteRows] = await pool.execute('SELECT content FROM site_settings WHERE id = 1');
+    if (siteRows.length === 0) {
+        const recoveredSite = await getLatestSiteSettingsHistory() || readCurrentSiteContent();
+        if (recoveredSite) {
+            const serialized = JSON.stringify(recoveredSite);
+            await pool.execute(
+                'INSERT INTO site_settings (id, content) VALUES (1, ?) ON DUPLICATE KEY UPDATE content = ?',
+                [serialized, serialized]
+            );
+        }
+    }
+
+    const [smtpRows] = await pool.execute('SELECT config FROM smtp_settings WHERE id = ?', [SMTP_SETTINGS_ID]);
+    if (smtpRows.length === 0) {
+        const recoveredSmtp = await getLatestSmtpSettingsHistory() || readCurrentSmtpSettings() || DEFAULT_SMTP_SETTINGS;
+        const serialized = JSON.stringify(normalizeSmtpSettings(recoveredSmtp));
+        await pool.execute(
+            'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON DUPLICATE KEY UPDATE config = ?',
+            [SMTP_SETTINGS_ID, serialized, serialized]
+        );
+    }
 }
 
 async function saveSmtpSettings(payload) {
     const normalized = normalizeSmtpSettings(payload);
-    const serialized = JSON.stringify(normalized);
-    await pool.execute(
-        'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON DUPLICATE KEY UPDATE config = ?',
-        [SMTP_SETTINGS_ID, serialized, serialized]
-    );
+    await persistSmtpSettings(normalized);
     writeCurrentSmtpSettings(normalized);
     return normalized;
 }
@@ -508,6 +641,17 @@ async function initDb() {
                 id INT PRIMARY KEY,
                 content JSON NOT NULL,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+
+        await pool.execute(`
+            CREATE TABLE IF NOT EXISTS site_settings_history (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                site_settings_id INT NOT NULL,
+                content JSON NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_site_settings_history_settings_id (site_settings_id),
+                INDEX idx_site_settings_history_created_at (created_at)
             )
         `);
 
@@ -583,6 +727,26 @@ async function initDb() {
         `);
 
         await pool.execute(`
+            CREATE TABLE IF NOT EXISTS smtp_settings_history (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                smtp_settings_id INT NOT NULL,
+                config JSON NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_smtp_settings_history_settings_id (smtp_settings_id),
+                INDEX idx_smtp_settings_history_created_at (created_at)
+            )
+        `);
+
+        await pool.execute(`
+            CREATE TABLE IF NOT EXISTS sitemap_history (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                content JSON NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_sitemap_history_created_at (created_at)
+            )
+        `);
+
+        await pool.execute(`
             CREATE TABLE IF NOT EXISTS admin_users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 username VARCHAR(255) UNIQUE NOT NULL,
@@ -607,6 +771,7 @@ async function initDb() {
             [SMTP_SETTINGS_ID, smtpDefaults]
         );
         writeCurrentSmtpSettings(seededSmtp);
+        await ensurePersistentStateRecovered();
 
         console.log('Database tables verified/created');
     } catch (err) {
@@ -685,9 +850,10 @@ app.get('/api/settings', async (req, res) => {
     try {
         const [rows] = await pool.execute('SELECT content FROM site_settings WHERE id = 1');
         const dbContent = rows[0] ? parseDbJson(rows[0].content, {}) : {};
+        const historyContent = await getLatestSiteSettingsHistory() || {};
         const fileContent = readCurrentSiteContent();
-        const content = fileContent || dbContent || {};
-        const currentSitemap = readCurrentSitemap();
+        const content = { ...historyContent, ...fileContent, ...dbContent };
+        const currentSitemap = readCurrentSitemap() || await getLatestSitemapHistory();
         if (currentSitemap) {
             content.navigation = currentSitemap;
         }
@@ -702,11 +868,7 @@ app.post('/api/settings', async (req, res) => {
         const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
         writeCurrentSiteContent(payload);
         writeCurrentSitemap(payload.navigation);
-        const content = JSON.stringify(payload);
-        await pool.execute(
-            'INSERT INTO site_settings (id, content) VALUES (1, ?) ON DUPLICATE KEY UPDATE content = ?',
-            [content, content]
-        );
+        await persistSiteSettings(payload);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
