@@ -77,8 +77,8 @@ export const normalizeAdminPathToFullLink = (rawPath: any): string => {
   if (typeof window === 'undefined') return value;
 
   const origin = window.location.origin.replace(/\/$/, '');
-  if (value.startsWith('#/')) return `${origin}${value}`;
-  if (value.startsWith('/')) return `${origin}#${value}`;
+  if (value.startsWith('#/')) return `${origin}${value.slice(1)}`;
+  if (value.startsWith('/')) return `${origin}${value}`;
   if (value.startsWith('#')) return `${origin}/${value}`;
-  return `${origin}#/${value.replace(/^\/+/, '')}`;
+  return `${origin}/${value.replace(/^\/+/, '')}`;
 };

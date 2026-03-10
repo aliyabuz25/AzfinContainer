@@ -209,6 +209,20 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function stripRichText(value) {
+    return String(value || '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\[[^\]]+\]/g, ' ')
+        .replace(/[*_`>#-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function buildShareDescription(post) {
+    const preferred = stripRichText(post?.excerpt || post?.content || '');
+    return preferred.slice(0, 180) || 'Azfin bloqundan faydalı məqalə.';
+}
+
 function getSubmissionTypeLabel(type) {
     switch (type) {
         case 'contact':
@@ -958,6 +972,61 @@ app.delete('/api/admin/users/:id', async (req, res) => {
             'SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC, id ASC'
         );
         res.json({ success: true, users: rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/share/blog/:id', async (req, res) => {
+    try {
+        const [rows] = await pool.execute('SELECT * FROM blog_posts WHERE id = ? LIMIT 1', [req.params.id]);
+        const post = rows[0];
+        const targetUrl = `${PUBLIC_SITE_URL.replace(/\/$/, '')}/blog/${encodeURIComponent(req.params.id)}`;
+
+        if (!post) {
+            return res.status(404).send(`<!DOCTYPE html>
+<html lang="az">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0; url=${targetUrl}" />
+    <title>Azfin Bloq</title>
+  </head>
+  <body>
+    <a href="${targetUrl}">Yönləndirilir...</a>
+  </body>
+</html>`);
+        }
+
+        const title = escapeHtml(`${post.title || 'Azfin Bloq'} | Azfin Bloq`);
+        const description = escapeHtml(buildShareDescription(post));
+        const imageUrl = escapeHtml(toPublicUrl(post.image || ''));
+        const canonicalUrl = escapeHtml(targetUrl);
+
+        res.type('html').send(`<!DOCTYPE html>
+<html lang="az">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${title}</title>
+    <meta name="description" content="${description}" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="${canonicalUrl}" />
+    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}
+    <meta name="twitter:card" content="${imageUrl ? 'summary_large_image' : 'summary'}" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+    ${imageUrl ? `<meta name="twitter:image" content="${imageUrl}" />` : ''}
+    <link rel="canonical" href="${canonicalUrl}" />
+    <meta http-equiv="refresh" content="0; url=${canonicalUrl}" />
+    <script>window.location.replace(${JSON.stringify(targetUrl)});</script>
+  </head>
+  <body style="font-family: Arial, sans-serif; padding: 24px;">
+    <p>Yönləndirilir...</p>
+    <p><a href="${canonicalUrl}">${canonicalUrl}</a></p>
+  </body>
+</html>`);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

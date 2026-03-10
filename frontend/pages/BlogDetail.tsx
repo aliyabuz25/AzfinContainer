@@ -1,16 +1,21 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { Calendar, User, ArrowLeft, Facebook, Linkedin, Twitter, Share2 } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Facebook, Linkedin, MessageCircle, Share2 } from 'lucide-react';
 import { BlogItem } from '../types';
 import { fetchBlogPostById } from '../utils/fetchData';
 import ImageWithFallback from '../components/ImageWithFallback';
 import { parseBBCode } from '../utils/bbcode';
+import { updateSeoMeta } from '../utils/seo';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 
 const BlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<BlogItem | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const actualUrl = typeof window !== 'undefined' ? `${window.location.origin}/blog/${id ?? ''}` : '';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/share/blog/${id ?? ''}` : '';
 
   useEffect(() => {
     let isMounted = true;
@@ -37,6 +42,17 @@ const BlogDetail: React.FC = () => {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (!post) return;
+    const description = (post.excerpt || post.content || '').replace(/[*_`#>\[\]\(\)!-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 180);
+    updateSeoMeta({
+      title: `${post.title} | Azfin Bloq`,
+      description,
+      image: post.image ? resolveMediaUrl(post.image) : undefined,
+      url: actualUrl,
+    });
+  }, [actualUrl, post]);
+
   if (!loading && !post) {
     return <Navigate to="/blog" replace />;
   }
@@ -48,6 +64,11 @@ const BlogDetail: React.FC = () => {
       </div>
     );
   }
+
+  const encodedShareUrl = encodeURIComponent(shareUrl);
+  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}`;
+  const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedShareUrl}`;
+  const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`${post.title} ${shareUrl}`)}`;
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -104,14 +125,14 @@ const BlogDetail: React.FC = () => {
                 <Share2 className="h-4 w-4 text-amber-500" /> Paylaş:
               </div>
               <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all">
+                <a href={facebookShareUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook-da paylaş" className="w-10 h-10 border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all">
                   <Facebook className="h-4 w-4" />
                 </a>
-                <a href="#" className="w-10 h-10 border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all">
+                <a href={linkedInShareUrl} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn-də paylaş" className="w-10 h-10 border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all">
                   <Linkedin className="h-4 w-4" />
                 </a>
-                <a href="#" className="w-10 h-10 border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all">
-                  <Twitter className="h-4 w-4" />
+                <a href={whatsappShareUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-da paylaş" className="w-10 h-10 border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all">
+                  <MessageCircle className="h-4 w-4" />
                 </a>
               </div>
             </div>

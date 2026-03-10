@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import FloatingContact from './components/FloatingContact';
@@ -21,6 +21,21 @@ const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+
+  return null;
+};
+
+const HashRouteMigrator = () => {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const { hash, pathname, search } = window.location;
+    if (!hash.startsWith('#/')) return;
+    const nextPath = hash.slice(1);
+    window.history.replaceState(null, '', `${nextPath}${search && !nextPath.includes('?') ? search : ''}`);
+    if (pathname !== nextPath) {
+      window.location.replace(nextPath);
+    }
+  }, []);
 
   return null;
 };
@@ -48,6 +63,7 @@ const App: React.FC = () => {
   return (
     <ContentProvider>
       <Router>
+        <HashRouteMigrator />
         <ScrollToTop />
         <div className="min-h-screen flex flex-col font-sans text-gray-800 antialiased selection:bg-accent selection:text-white">
           <Navbar />
