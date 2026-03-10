@@ -6,14 +6,32 @@ import { resolveIcon } from '../utils/iconRegistry';
 
 type TabType = 'about' | 'team' | 'testimonials';
 
+const toBoolean = (value: unknown, fallback = true) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'on', 'enabled', 'active'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'off', 'disabled', 'inactive'].includes(normalized)) return false;
+  }
+  if (typeof value === 'number') return value !== 0;
+  return fallback;
+};
+
 const About: React.FC = () => {
   const { content } = useContent();
   const about = content.about;
+  const teamEnabled = toBoolean((about as any).teamEnabled, true);
+  const testimonialsEnabled = toBoolean((about as any).testimonialsEnabled, true);
+  const visibleTabIds = new Set<TabType>([
+    'about',
+    ...(teamEnabled ? ['team' as const] : []),
+    ...(testimonialsEnabled ? ['testimonials' as const] : []),
+  ]);
   const fallbackTabs = [
     { id: 'about', label: 'BİZİM HAQQIMIZDA', icon: Building2 },
     { id: 'team', label: 'ƏMƏKDAŞLAR', icon: Users },
     { id: 'testimonials', label: 'MÜŞTƏRİ RƏYLƏRİ', icon: MessageSquare },
-  ];
+  ].filter((tab) => visibleTabIds.has(tab.id as TabType));
   const tabMap = new Map(
     fallbackTabs.map((tab) => [tab.id, tab])
   );
@@ -22,6 +40,9 @@ const About: React.FC = () => {
     .filter((tab) => ['about', 'overview', 'team', 'testimonials'].includes(tab.name))
     .forEach((tab) => {
       const id = tab.name === 'overview' ? 'about' : tab.name;
+      if (!visibleTabIds.has(id as TabType)) {
+        return;
+      }
       tabMap.set(id, {
         id,
         label: tab.heading || tabMap.get(id)?.label || 'BİZİM HAQQIMIZDA',
@@ -30,7 +51,11 @@ const About: React.FC = () => {
     });
 
   const tabs = fallbackTabs.map((tab) => tabMap.get(tab.id) || tab);
-  const defaultActiveTab = (about.tabs?.[0]?.name === 'overview' ? 'about' : about.tabs?.[0]?.name) ?? 'about';
+  const defaultActiveTab = (
+    (about.tabs || [])
+      .map((tab) => (tab.name === 'overview' ? 'about' : tab.name))
+      .find((tabName) => tabs.some((tab) => tab.id === tabName))
+  ) ?? tabs[0]?.id ?? 'about';
   const [activeTab, setActiveTab] = useState<string>(
     tabs.some((tab) => tab.id === defaultActiveTab) ? defaultActiveTab : 'about'
   );
@@ -38,6 +63,12 @@ const About: React.FC = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [activeTab]);
+
+  useEffect(() => {
+    if (!tabs.some((tab) => tab.id === activeTab)) {
+      setActiveTab(tabs[0]?.id ?? 'about');
+    }
+  }, [activeTab, tabs]);
 
   const activeHeading = tabs.find(t => t.id === activeTab)?.label || 'BİZİM HAQQIMIZDA';
   const [activeTitlePrefixFallback, ...activeTitleHighlightParts] = activeHeading.split(' ');

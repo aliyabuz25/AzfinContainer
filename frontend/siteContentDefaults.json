@@ -217,6 +217,8 @@
     "missionImage": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80",
     "serviceTitle": "Xidmət sahələri",
     "serviceSummary": "Mühasibatlıq, audit, vergi, tender sənədləşməsi və hüquqi dəstək üzrə geniş spektrli professional xidmətlər.",
+    "teamEnabled": true,
+    "testimonialsEnabled": true,
     "testimonialsTitle": "Müştəri rəyləri",
     "testimonialsCTA": "Bizimlə əməkdaşlıq edən 300-dən çox korporativ müştəri sırasına siz də qoşulun.",
     "team": [

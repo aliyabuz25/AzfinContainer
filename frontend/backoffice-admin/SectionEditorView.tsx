@@ -28,7 +28,6 @@ interface SectionEditorViewProps {
     jsonError: string | null;
     setJsonError: (err: string | null) => void;
     IconPickerComponent: React.FC<{ value?: string; onChange: (value: string) => void }>;
-    searchQuery?: string;
 }
 
 const safeParseArray = (val: any) => {
@@ -63,6 +62,9 @@ const inferAutoFieldType = (field: string, value: any) => {
             return 'array-object';
         }
         return 'array';
+    }
+    if (typeof value === 'boolean') {
+        return 'boolean';
     }
     if (typeof value === 'object' && value !== null) {
         return 'object';
@@ -141,8 +143,7 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
     CDNMonacoEditor,
     jsonError,
     setJsonError,
-    IconPickerComponent: IconPicker,
-    searchQuery
+    IconPickerComponent: IconPicker
 }) => {
     if (viewMode === 'full') {
         return (
@@ -196,15 +197,6 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
         });
 
     configs = [...configs, ...autoConfigs];
-
-    // Apply Search Filter inside the section
-    if (searchQuery) {
-        const lowerQuery = searchQuery.toLowerCase();
-        configs = configs.filter(c =>
-            (c.label && c.label.toLowerCase().includes(lowerQuery)) ||
-            (c.field && c.field.toLowerCase().includes(lowerQuery))
-        );
-    }
 
     const categories = [...new Set(configs.map((c) => c.category || 'Ümumi'))];
 
@@ -686,7 +678,28 @@ const SectionEditorView: React.FC<SectionEditorViewProps> = ({
                                                     {type === 'array' && <span className="text-[9px] font-black text-accent uppercase tracking-widest bg-accent/5 px-3 py-1 rounded-full">SİYAHI (MƏTN)</span>}
                                                 </div>
 
-                                                {type === 'image' ? (
+                                                {type === 'boolean' ? (
+                                                    <label className={`flex items-center justify-between gap-6 rounded-[24px] border px-6 py-5 cursor-pointer transition-all ${isAccentField ? 'bg-accent/[0.04] border-accent/20' : 'bg-slate-50 border-slate-100'}`}>
+                                                        <div className="space-y-1">
+                                                            <div className="text-sm font-black text-primary">
+                                                                {val ? 'Aktiv' : 'Passiv'}
+                                                            </div>
+                                                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                                                Saytda görünməsi bu ayardan idarə olunur
+                                                            </p>
+                                                        </div>
+                                                        <div className="relative inline-flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={Boolean(val)}
+                                                                onChange={(e) => handleSectionInputChange(key, e.target.checked)}
+                                                                className="peer sr-only"
+                                                            />
+                                                            <div className="h-7 w-14 rounded-full bg-slate-300 transition-colors peer-checked:bg-primary"></div>
+                                                            <div className="absolute left-1 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-7"></div>
+                                                        </div>
+                                                    </label>
+                                                ) : type === 'image' ? (
                                                     <div className="space-y-4">
                                                         {normalizeImageUrl(val) ? (
                                                             <div className="space-y-4 animate-in zoom-in-95 duration-300">

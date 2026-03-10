@@ -495,6 +495,8 @@ const Admin: React.FC = () => {
       if (Array.isArray(v)) {
         if (v.length > 0 && typeof v[0] === 'object') types[k] = 'array-object';
         else types[k] = 'array';
+      } else if (typeof v === 'boolean') {
+        types[k] = 'boolean';
       } else if (typeof v === 'object' && v !== null) {
         types[k] = 'object';
       } else {
@@ -1117,7 +1119,6 @@ const Admin: React.FC = () => {
                   jsonError={jsonError}
                   setJsonError={setJsonError}
                   IconPickerComponent={IconPicker}
-                  searchQuery={sectionSearch}
                 />
               </div>
             ) : adminMode === 'social' ? (
@@ -1145,7 +1146,6 @@ const Admin: React.FC = () => {
                 jsonError={jsonError}
                 setJsonError={setJsonError}
                 IconPickerComponent={IconPicker}
-                searchQuery={sectionSearch}
               />
             ) : adminMode === 'clients' ? (
               <ClientManagementView
@@ -1195,7 +1195,6 @@ const Admin: React.FC = () => {
                 jsonError={jsonError}
                 setJsonError={setJsonError}
                 IconPickerComponent={IconPicker}
-                searchQuery={sectionSearch}
               />
             )}
           </main>

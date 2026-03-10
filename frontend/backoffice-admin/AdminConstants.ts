@@ -64,6 +64,8 @@ export const FIELD_CONFIG = [
     { section: 'about', category: 'Missiya', field: 'missionImage', label: 'Missiya - Şəkil', type: 'image' },
     { section: 'about', category: 'Xidmət Sahələri', field: 'serviceTitle', label: 'Xidmət Sahələri - Başlıq' },
     { section: 'about', category: 'Xidmət Sahələri', field: 'serviceSummary', label: 'Xidmət Sahələri - Təsvir', multiline: true },
+    { section: 'about', category: 'Görünürlük', field: 'teamEnabled', label: 'Əməkdaşlar bölməsi aktivdir', type: 'boolean' },
+    { section: 'about', category: 'Görünürlük', field: 'testimonialsEnabled', label: 'Müştəri rəyləri bölməsi aktivdir', type: 'boolean' },
     { section: 'about', category: 'Komanda', field: 'team', label: 'Komanda Üzvləri', type: 'array-object' },
     { section: 'about', category: 'Digər', field: 'testimonials', label: 'Müştəri Rəyləri Siyahısı', type: 'array-object' },
     { section: 'about', category: 'Digər', field: 'testimonialsTitle', label: 'Rəylər Bölməsi - Başlıq' },
