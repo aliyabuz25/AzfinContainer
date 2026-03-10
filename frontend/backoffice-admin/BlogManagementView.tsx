@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import BlotFormatter from '@enzedonline/quill-blot-formatter2';
-import { Settings, Upload, X, Check, RotateCcw, Bold, Italic, List, Quote, Link as LinkIcon, Image, Trash2, Plus, Edit, BookOpen, GraduationCap } from 'lucide-react';
+import { Settings, Upload, X, Check, RotateCcw, Bold, Italic, List, Quote, Link as LinkIcon, Image, Trash2, Plus, Edit, BookOpen, GraduationCap, LayoutPanelTop } from 'lucide-react';
 import { BlogItem, TrainingItem } from '../types';
 import { apiClient } from '../lib/apiClient';
 
@@ -109,6 +109,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const isBlogSection = blogMode === 'blog';
     const quillRef = React.useRef<any>(null);
+    const blogImageInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const imageHandler = React.useCallback(() => {
         const input = document.createElement('input');
@@ -136,6 +137,68 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                 console.error('Editor image upload failed:', err);
             }
         };
+    }, []);
+
+    const insertBlogSectionBlock = React.useCallback(() => {
+        if (!isBlogSection) return;
+
+        const quill = quillRef.current?.getEditor();
+        if (!quill) return;
+
+        const currentRange = quill.getSelection(true);
+        const index = currentRange ? currentRange.index : quill.getLength();
+        const sectionTitle = 'Yeni Bölmə Başlığı';
+        const sectionBody = 'Bölmə mətnini buraya yazın...';
+        const prefix = index > 0 ? '\n' : '';
+        const insertAt = index + prefix.length;
+        const template = `${sectionTitle}\n${sectionBody}\n\n`;
+
+        quill.focus();
+        if (prefix) {
+            quill.insertText(index, prefix, 'user');
+        }
+        quill.insertText(insertAt, template, 'user');
+        quill.formatLine(insertAt, 1, 'header', 2, 'user');
+        quill.setSelection(insertAt + sectionTitle.length + 1, sectionBody.length, 'user');
+    }, [isBlogSection]);
+
+    const triggerBlogImageBlockInsert = React.useCallback(() => {
+        if (!isBlogSection || !supabaseReady || imageLoading) return;
+        blogImageInputRef.current?.click();
+    }, [imageLoading, isBlogSection, supabaseReady]);
+
+    const handleBlogImageBlockInsert = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const quill = quillRef.current?.getEditor();
+        if (!quill) {
+            e.target.value = '';
+            return;
+        }
+
+        const currentRange = quill.getSelection(true);
+        const index = currentRange ? currentRange.index : quill.getLength();
+
+        try {
+            const data = await apiClient.upload(file);
+            const url = data.url;
+            const prefix = index > 0 ? '\n' : '';
+            const insertAt = index + prefix.length;
+
+            if (prefix) {
+                quill.insertText(index, prefix, 'user');
+            }
+
+            quill.insertEmbed(insertAt, 'image', url, 'user');
+            quill.insertText(insertAt + 1, '\n\n', 'user');
+            quill.setSelection(insertAt + 3, 0, 'user');
+            quill.focus();
+        } catch (err) {
+            console.error('Editor block image upload failed:', err);
+        } finally {
+            e.target.value = '';
+        }
     }, []);
 
     const modules = useMemo(() => ({
@@ -522,6 +585,34 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
 
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 block">TAM MƏZMUN</label>
+                                            {isBlogSection && (
+                                                <div className="flex flex-wrap gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={insertBlogSectionBlock}
+                                                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition hover:border-accent hover:bg-accent/5"
+                                                    >
+                                                        <LayoutPanelTop className="h-4 w-4 text-accent" />
+                                                        BÖLMƏ ƏLAVƏ ET
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={triggerBlogImageBlockInsert}
+                                                        disabled={!supabaseReady || imageLoading}
+                                                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition hover:border-accent hover:bg-accent/5 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    >
+                                                        <Image className="h-4 w-4 text-accent" />
+                                                        ŞƏKİL ƏLAVƏ ET
+                                                    </button>
+                                                    <input
+                                                        ref={blogImageInputRef}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={handleBlogImageBlockInsert}
+                                                    />
+                                                </div>
+                                            )}
                                             <div className="border border-slate-100 rounded-[32px] overflow-hidden shadow-sm group focus-within:border-accent/30 transition-all">
                                                 <ReactQuill
                                                     // @ts-ignore
