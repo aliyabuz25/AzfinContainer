@@ -71,7 +71,7 @@ services:
 
   phpmyadmin:
     container_name: azfin-phpmyadmin
-    image: phpmyadmin:latest
+    image: phpmyadmin:5.2.3-apache
     restart: unless-stopped
     depends_on:
       - db
@@ -81,6 +81,8 @@ services:
       PMA_ARBITRARY: 1
       PMA_ABSOLUTE_URI: https://azfin.az/phpmyadmin/
       UPLOAD_LIMIT: 64M
+    volumes:
+      - ${AZFIN_DATA_ROOT:-./datastore}/phpmyadmin-sessions:/sessions
     networks:
       - edge
     labels:
@@ -90,7 +92,8 @@ services:
       - 'traefik.http.routers.pma.entrypoints=web'
       - 'traefik.http.routers.pma.priority=200'
       - 'traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin'
-      - 'traefik.http.routers.pma.middlewares=pma-strip'
+      - 'traefik.http.middlewares.pma-prefix.headers.customrequestheaders.X-Forwarded-Prefix=/phpmyadmin'
+      - 'traefik.http.routers.pma.middlewares=pma-strip,pma-prefix'
       - 'traefik.http.services.pma.loadbalancer.server.port=80'
 
 networks:
