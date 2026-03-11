@@ -28,6 +28,7 @@ export const FIELD_CONFIG = [
     { section: 'home', category: 'Giriş (Hero)', field: 'heroExperienceLabel', label: 'Hero - Təcrübə Etiketi' },
     { section: 'home', category: 'Giriş (Hero)', field: 'heroExperienceValue', label: 'Hero - Təcrübə Dəyəri' },
     { section: 'home', category: 'Giriş (Hero)', field: 'heroExperienceSublabel', label: 'Hero - Təcrübə Alt Etiketi' },
+    { section: 'home', category: 'Giriş (Hero)', field: 'heroLicensePdfUrl', label: 'Hero - Lisenziya PDF URL', hideInMainLoop: true },
 
     { section: 'home', category: 'Statistika', field: 'statsHeading', label: 'Statistika Bölməsi - Başlıq' },
     { section: 'home', category: 'Statistika', field: 'statsSummary', label: 'Statistika Bölməsi - Təsvir', multiline: true },
@@ -208,6 +209,7 @@ export const FIELD_CONFIG = [
     { section: 'footer', category: 'Akademiya', field: 'academyLoadingText', label: 'Akademiya yüklənmə mətni' },
     { section: 'footer', category: 'Akademiya', field: 'academyEmptyText', label: 'Akademiya boş mətni' },
     { section: 'footer', category: 'Digər', field: 'socialHint', label: 'Sosial Media İpucu (Bizi izləyin)' },
+    { section: 'footer', category: 'Digər', field: 'copyrightText', label: 'Copyright mətni ({year} istifadə edin)' },
 ];
 
 export const DEFAULT_BLOG_FORM: Omit<BlogItem, 'id'> = {

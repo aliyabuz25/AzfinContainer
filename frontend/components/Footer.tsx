@@ -100,6 +100,11 @@ const Footer: React.FC = () => {
   const academyLoadingText = toText(footer.academyLoadingText, 'Təlimlər yüklənir...');
   const academyEmptyText = toText(footer.academyEmptyText, 'Hazır təlim yoxdur.');
   const academyAllLabel = toText(footer.academyAllLabel, 'Bütün Təlimlər');
+  const copyrightTemplate = toText(
+    footer.copyrightText,
+    '\u00A9 {year} Azfin Group. Bütün hüquqlar qorunur.'
+  );
+  const copyrightText = copyrightTemplate.replace(/\{year\}/g, String(new Date().getFullYear()));
 
   const defaultNavLinks: FooterLinkItem[] = [
     { label: 'Ana Səhifə', path: '/', href: '/', isExternal: false },
@@ -239,7 +244,7 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-slate-500 text-[13px] font-medium">
-            &copy; {new Date().getFullYear()} Azfin Group. Bütün hüquqlar qorunur.
+            {copyrightText}
           </p>
 
           <div className="flex items-center gap-8">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight, ShieldCheck, Award } from 'lucide-react';
+import { ArrowRight, ChevronRight, ShieldCheck, Award, X, FileText, ExternalLink } from 'lucide-react';
 import CalculationModal from '../components/CalculationModal';
 import { useContent } from '../lib/ContentContext';
 import { resolveIcon } from '../utils/iconRegistry';
@@ -9,8 +9,10 @@ import { SERVICES } from '../constants';
 
 const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
   const { content: siteContent } = useContent();
   const hero = siteContent.home;
+  const licensePdfUrl = resolveMediaUrl(hero.heroLicensePdfUrl || '');
   const stats = siteContent.home.stats ?? [];
   const formatStatValue = (value: string | Record<string, any>) => {
     if (typeof value === 'string') return value;
@@ -37,14 +39,75 @@ const Home: React.FC = () => {
   return (
     <div className="flex flex-col bg-white">
       <CalculationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} serviceType="audit" />
+      {isLicenseModalOpen && licensePdfUrl ? (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-primary/70 px-4 py-8 backdrop-blur-sm"
+          onClick={() => setIsLicenseModalOpen(false)}
+        >
+          <div
+            className="relative flex h-[min(88vh,900px)] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-5 md:px-8">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Lisenziya PDF</div>
+                  <h3 className="text-lg font-black uppercase tracking-tight text-primary">{hero.heroBadge}</h3>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <a
+                  href={licensePdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition-all hover:bg-slate-100"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Yeni tabda aç
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setIsLicenseModalOpen(false)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 transition-all hover:bg-slate-100 hover:text-primary"
+                  aria-label="Modalı bağla"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 bg-slate-100 p-3 md:p-5">
+              <iframe
+                src={licensePdfUrl}
+                title={hero.heroBadge || 'Lisenziya PDF'}
+                className="h-full w-full rounded-[24px] border border-slate-200 bg-white"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
       <section className="relative bg-slate-50 border-b border-slate-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px] items-center gap-16 py-16">
             <div className="space-y-8 relative z-10">
-              <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                <ShieldCheck className="h-3 w-3" />
-                {hero.heroBadge}
-              </div>
+              {licensePdfUrl ? (
+                <button
+                  type="button"
+                  onClick={() => setIsLicenseModalOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-accent transition-all hover:bg-accent hover:text-white"
+                >
+                  <ShieldCheck className="h-3 w-3" />
+                  {hero.heroBadge}
+                </button>
+              ) : (
+                <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                  <ShieldCheck className="h-3 w-3" />
+                  {hero.heroBadge}
+                </div>
+              )}
               <h1 className="text-4xl md:text-6xl font-black text-primary leading-[1.1] tracking-tighter">
                 {hero.heroTitlePrefix} <br />
                 <span className="text-accent italic">

@@ -51,6 +51,7 @@ import ClientManagementView from './ClientManagementView';
 import FormMessagesView from './FormMessagesView';
 import SmtpSettingsView from './SmtpSettingsView';
 import AdminAccountsView from './AdminAccountsView';
+import LicensePdfView from './LicensePdfView';
 
 const TEMP_DRAFT_KEY = 'azfin-site-content-draft';
 
@@ -299,7 +300,7 @@ const Admin: React.FC = () => {
   const { updateContent } = useContent();
 
 
-  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts' | 'smtp'>('site');
+  const [adminMode, setAdminMode] = useState<'site' | 'blog' | 'training' | 'sitemap' | 'messages' | 'clients' | 'forms' | 'social' | 'accounts' | 'smtp' | 'licensePdf'>('site');
   const [viewMode, setViewMode] = useState<'section' | 'full'>('section');
   const [blogMode, setBlogMode] = useState<'blog' | 'training'>('blog');
 
@@ -325,6 +326,7 @@ const Admin: React.FC = () => {
   const [blogSaving, setBlogSaving] = useState(false);
   const [trainingSaving, setTrainingSaving] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+  const [licensePdfUploading, setLicensePdfUploading] = useState(false);
   const [smtpSettings, setSmtpSettings] = useState<SMTPSettings>(DEFAULT_SMTP_SETTINGS);
   const [smtpSaving, setSmtpSaving] = useState(false);
   const [smtpDirty, setSmtpDirty] = useState(false);
@@ -799,6 +801,31 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleLicensePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+
+    if (!file) return;
+
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      toast.error('Yalnız PDF faylı yükləyə bilərsiniz.');
+      return;
+    }
+
+    setLicensePdfUploading(true);
+    try {
+      const data = await apiClient.upload(file);
+      setDraft((prev) => mergeContent(prev, { home: { heroLicensePdfUrl: data.url } }));
+      toast.success('Lisans PDF yükləndi.');
+    } catch (err) {
+      console.error('License PDF upload error:', err);
+      toast.error('PDF yüklənərkən xəta baş verdi.');
+    } finally {
+      setLicensePdfUploading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
@@ -1092,6 +1119,17 @@ const Admin: React.FC = () => {
                 onChange={handleSmtpFieldChange}
                 onSave={handleSmtpSave}
                 onTest={handleSmtpTest}
+              />
+            ) : adminMode === 'licensePdf' ? (
+              <LicensePdfView
+                badgeLabel={draft.home?.heroBadge || ''}
+                pdfUrl={draft.home?.heroLicensePdfUrl || ''}
+                uploading={licensePdfUploading}
+                onUpload={handleLicensePdfUpload}
+                onRemove={() => {
+                  setDraft((prev) => mergeContent(prev, { home: { heroLicensePdfUrl: '' } }));
+                  toast.info('Lisans PDF silindi.');
+                }}
               />
             ) : adminMode === 'forms' ? (
               <div className="space-y-8">
