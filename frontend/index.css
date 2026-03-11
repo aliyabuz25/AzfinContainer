@@ -1,10 +1,24 @@
+ :root {
+  --e-global-typography-accent-font-family: "Roboto";
+  --e-global-typography-accent-font-weight: 500;
+  --e-global-typography-primary-font-family: "Roboto";
+  --e-global-typography-primary-font-weight: 600;
+  --e-global-typography-secondary-font-family: "Roboto";
+  --e-global-typography-secondary-font-weight: 400;
+  --e-global-typography-text-font-family: "Roboto";
+  --e-global-typography-text-font-weight: 400;
+  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
 /* Main Styles */
 body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   scroll-behavior: smooth;
-  font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+  font-family: var(--e-global-typography-text-font-family), var(--font-family-sans-serif);
+  font-weight: var(--e-global-typography-text-font-weight);
   font-size: 17px;
   line-height: 1.6;
   color: #1f2937;
@@ -19,7 +33,7 @@ button,
 input,
 select,
 textarea {
-  font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+  font-family: var(--e-global-typography-text-font-family), var(--font-family-sans-serif);
 }
 
 @keyframes marquee {

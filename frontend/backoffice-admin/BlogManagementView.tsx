@@ -388,7 +388,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                 .ql-container.ql-snow {
                     border: none !important;
                     flex: 1;
-                    font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif !important;
+                    font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
                 }
                 .ql-editor {
                     min-height: 500px;
@@ -419,10 +419,10 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                     text-transform: capitalize;
                 }
                 
-                .ql-font-inter { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
-                .ql-font-roboto { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
-                .ql-font-arial { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
-                .ql-font-georgia { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+                .ql-font-inter { font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+                .ql-font-roboto { font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+                .ql-font-arial { font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+                .ql-font-georgia { font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
                 
                 /* Blot Formatter UI */
                 .blot-formatter__toolbar {
