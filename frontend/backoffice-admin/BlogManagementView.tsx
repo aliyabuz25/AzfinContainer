@@ -13,7 +13,7 @@ Size.whitelist = ['8pt', '10pt', '12pt', '14pt', '18pt', '24pt', '36pt'];
 Quill.register(Size, true);
 
 const Font = Quill.import('attributors/style/font') as any;
-Font.whitelist = ['inter', 'roboto', 'serif', 'monospace', 'arial', 'georgia'];
+Font.whitelist = ['inter', 'roboto', 'serif', 'arial', 'georgia'];
 Quill.register(Font, true);
 
 Quill.register('modules/blotFormatter', BlotFormatter);
@@ -240,7 +240,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
     const modules = useMemo(() => ({
         toolbar: {
             container: [
-                [{ 'font': ['inter', 'roboto', 'serif', 'monospace', 'arial', 'georgia'] }, { 'size': ['8pt', '10pt', '12pt', '14pt', '18pt', '24pt', '36pt'] }],
+                [{ 'font': ['inter', 'roboto', 'serif', 'arial', 'georgia'] }, { 'size': ['8pt', '10pt', '12pt', '14pt', '18pt', '24pt', '36pt'] }],
                 [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
                 ['bold', 'italic', 'underline', 'strike'],
                 [{ 'color': [] }, { 'background': [] }],
@@ -388,7 +388,7 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                 .ql-container.ql-snow {
                     border: none !important;
                     flex: 1;
-                    font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+                    font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
                 }
                 .ql-editor {
                     min-height: 500px;
@@ -419,10 +419,10 @@ const BlogManagementView: React.FC<BlogManagementViewProps> = ({
                     text-transform: capitalize;
                 }
                 
-                .ql-font-inter { font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
-                .ql-font-roboto { font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
-                .ql-font-arial { font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
-                .ql-font-georgia { font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+                .ql-font-inter { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+                .ql-font-roboto { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+                .ql-font-arial { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+                .ql-font-georgia { font-family: "Segoe UI", "Segoe UI Variable", "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
                 
                 /* Blot Formatter UI */
                 .blot-formatter__toolbar {
