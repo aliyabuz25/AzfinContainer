@@ -44,12 +44,12 @@ const ServiceDetail: React.FC = () => {
 
           <div className="text-center mt-8 md:mt-0">
             <h1
-              className="text-3xl md:text-5xl font-black text-primary tracking-tighter leading-[1.1] mb-8 max-w-4xl mx-auto uppercase italic whitespace-pre-wrap"
+              className="text-[2.15rem] md:text-[3.35rem] font-black text-primary tracking-tighter leading-[1.08] mb-8 max-w-4xl mx-auto uppercase italic whitespace-pre-wrap"
               dangerouslySetInnerHTML={{ __html: parseBBCode(service.title || '') }}
             />
 
             <p
-              className="text-lg text-slate-500 font-bold italic leading-relaxed max-w-2xl mx-auto whitespace-pre-wrap"
+              className="text-[1.12rem] md:text-[1.22rem] text-slate-500 font-bold italic leading-relaxed max-w-2xl mx-auto whitespace-pre-wrap"
               dangerouslySetInnerHTML={{ __html: parseBBCode(service.description || '') }}
             />
           </div>

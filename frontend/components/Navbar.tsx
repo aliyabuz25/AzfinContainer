@@ -106,27 +106,27 @@ const Navbar: React.FC = () => {
                       <Link
                         to={item.resolvedLink.path}
                         className={`${location.pathname.startsWith(item.resolvedLink.path) ? 'text-accent' : 'text-primary hover:text-accent'
-                          } px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 text-center leading-tight`}
+                          } px-4 h-full text-[14px] font-bold uppercase tracking-[0.1em] transition-all flex items-center gap-1.5 text-center leading-tight`}
                       >
                         {item.label}
                         <ChevronDown className={`h-3 w-3 opacity-30 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} />
                       </Link>
                       {activeDropdown === item.label && (
-                        <div className="absolute top-[100%] left-1/2 -translate-x-1/2 w-[680px] bg-white border border-slate-100 shadow-2xl p-7 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-1">
+                        <div className="absolute top-[100%] left-1/2 -translate-x-1/2 w-[640px] bg-white border border-slate-100 shadow-2xl p-6 grid grid-cols-2 gap-2.5 animate-in fade-in slide-in-from-top-1">
                           {(Array.isArray(dynamicServices) ? dynamicServices : []).map((service) => {
                             const SvgIcon = resolveIcon(service.icon);
                             return (
                               <Link
                                 key={service.id}
                                 to={`/services/${service.id}`}
-                                className="flex items-start gap-4 rounded-xl p-5 hover:bg-slate-50 transition-all group"
+                                className="flex items-start gap-4 rounded-xl p-4 hover:bg-slate-50 transition-all group"
                               >
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-accent transition-colors">
                                   <SvgIcon className="h-5 w-5 text-primary group-hover:text-white" />
                                 </div>
                                 <div className="min-w-0 text-left">
-                                  <div className="mb-1.5 text-[19px] font-semibold leading-[1.2] text-primary tracking-tight">{service.title}</div>
-                                  <div className="text-[13px] font-medium leading-[1.45] text-slate-400 line-clamp-2">{service.description}</div>
+                                  <div className="mb-1 text-[15px] font-semibold leading-[1.25] text-primary tracking-tight">{service.title}</div>
+                                  <div className="text-[12px] font-medium leading-[1.4] text-slate-400 line-clamp-2">{service.description}</div>
                                 </div>
                               </Link>
                             );
@@ -140,7 +140,7 @@ const Navbar: React.FC = () => {
                         href={item.resolvedLink.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:text-accent px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center text-center leading-tight whitespace-pre-line group relative"
+                        className="text-primary hover:text-accent px-4 h-full text-[14px] font-bold uppercase tracking-[0.1em] transition-all flex items-center text-center leading-tight whitespace-pre-line group relative"
                       >
                         {item.label}
                         <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
@@ -149,7 +149,7 @@ const Navbar: React.FC = () => {
                       <Link
                         to={item.resolvedLink.path}
                         className={`${location.pathname === item.resolvedLink.path || (item.resolvedLink.path !== '/' && location.pathname.startsWith(item.resolvedLink.path)) ? 'text-accent' : 'text-primary hover:text-accent'
-                          } px-4 h-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center text-center leading-tight whitespace-pre-line group relative`}
+                          } px-4 h-full text-[14px] font-bold uppercase tracking-[0.1em] transition-all flex items-center text-center leading-tight whitespace-pre-line group relative`}
                       >
                         {item.label}
                         <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
@@ -163,7 +163,7 @@ const Navbar: React.FC = () => {
             <div className="flex items-center h-full">
               <Link
                 to="/contact"
-                className={`bg-accent text-white font-bold text-[11px] uppercase tracking-wider hover:bg-[#2d8c73] transition-all shadow-sm text-center flex items-center justify-center ${isScrolled ? 'px-6 py-2 rounded-sm h-10' : 'px-8 py-4 rounded-sm h-16'}`}
+                className={`bg-accent text-white font-bold text-[14px] uppercase tracking-[0.1em] hover:bg-[#2d8c73] transition-all shadow-sm text-center flex items-center justify-center ${isScrolled ? 'px-6 py-2 rounded-sm h-10' : 'px-8 py-4 rounded-sm h-16'}`}
               >
                 {nav.primaryCTA}
               </Link>
