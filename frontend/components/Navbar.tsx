@@ -78,7 +78,7 @@ const Navbar: React.FC = () => {
                 <img
                   src={navbarLogoSrc}
                   alt={siteContent.settings.siteTitle || 'AZFIN'}
-                  className={`object-contain transition-all ${isScrolled ? 'h-13 md:h-15 max-w-[195px] md:max-w-[235px]' : 'h-14 md:h-[4.5rem] max-w-[220px] md:max-w-[290px]'}`}
+                  className={`object-contain transition-all ${isScrolled ? 'h-[3.1rem] md:h-[3.7rem] max-w-[195px] md:max-w-[235px]' : 'h-14 md:h-[4.5rem] max-w-[220px] md:max-w-[290px]'}`}
                 />
               ) : (
                 <>
