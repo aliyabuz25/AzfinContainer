@@ -112,21 +112,21 @@ const Navbar: React.FC = () => {
                         <ChevronDown className={`h-3 w-3 opacity-30 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} />
                       </Link>
                       {activeDropdown === item.label && (
-                        <div className="absolute top-[100%] left-1/2 -translate-x-1/2 w-[550px] bg-white border border-slate-100 shadow-2xl p-6 grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1">
+                        <div className="absolute top-[100%] left-1/2 -translate-x-1/2 w-[680px] bg-white border border-slate-100 shadow-2xl p-7 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-1">
                           {(Array.isArray(dynamicServices) ? dynamicServices : []).map((service) => {
                             const SvgIcon = resolveIcon(service.icon);
                             return (
                               <Link
                                 key={service.id}
                                 to={`/services/${service.id}`}
-                                className="flex items-start gap-4 p-4 hover:bg-slate-50 rounded-sm transition-all group"
+                                className="flex items-start gap-4 rounded-xl p-5 hover:bg-slate-50 transition-all group"
                               >
-                                <div className="w-8 h-8 bg-slate-100 flex items-center justify-center rounded-sm group-hover:bg-accent transition-colors">
-                                  <SvgIcon className="h-4 w-4 text-primary group-hover:text-white" />
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-accent transition-colors">
+                                  <SvgIcon className="h-5 w-5 text-primary group-hover:text-white" />
                                 </div>
-                                <div className="text-left">
-                                  <div className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">{service.title}</div>
-                                  <div className="text-[9px] text-slate-400 font-medium leading-tight line-clamp-2">{service.description}</div>
+                                <div className="min-w-0 text-left">
+                                  <div className="mb-1.5 text-[19px] font-semibold leading-[1.2] text-primary tracking-tight">{service.title}</div>
+                                  <div className="text-[13px] font-medium leading-[1.45] text-slate-400 line-clamp-2">{service.description}</div>
                                 </div>
                               </Link>
                             );
