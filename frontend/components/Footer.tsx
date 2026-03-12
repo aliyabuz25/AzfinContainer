@@ -53,6 +53,17 @@ const normalizeLinkList = (rawList: any, fallback: FooterLinkItem[] = []): Foote
   return normalized.length > 0 ? normalized : fallback;
 };
 
+const mergeServiceLinks = (customLinks: FooterLinkItem[], defaultLinks: FooterLinkItem[]): FooterLinkItem[] => {
+  if (customLinks.length === 0) {
+    return defaultLinks;
+  }
+
+  const seenPaths = new Set(customLinks.map((item) => item.path));
+  const missingDefaults = defaultLinks.filter((item) => !seenPaths.has(item.path));
+
+  return [...customLinks, ...missingDefaults];
+};
+
 const isExternalPath = (item: FooterLinkItem) => item.isExternal;
 
 const Footer: React.FC = () => {
@@ -123,7 +134,8 @@ const Footer: React.FC = () => {
     href: `/services/${service.id}`,
     isExternal: false,
   }));
-  const serviceLinks = normalizeLinkList(footer.serviceLinks, defaultServiceLinks);
+  const customServiceLinks = normalizeLinkList(footer.serviceLinks, []);
+  const serviceLinks = mergeServiceLinks(customServiceLinks, defaultServiceLinks);
 
   const customAcademyLinks = normalizeLinkList(footer.academyLinks, []);
   const hasCustomAcademyLinks = customAcademyLinks.length > 0;
