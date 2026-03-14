@@ -44,21 +44,21 @@ const Navbar: React.FC = () => {
   return (
     <div className="flex flex-col w-full sticky top-0 z-50">
       {/* Top Utility Bar */}
-      <div className={`bg-primary text-slate-300 px-4 sm:px-6 lg:px-8 hidden md:block border-b border-white/5 transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 py-0 opacity-0' : 'h-10 py-2 opacity-100'}`}>
-        <div className="max-w-7xl mx-auto flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.15em]">
+      <div className={`bg-primary text-slate-300 px-4 sm:px-6 lg:px-8 hidden md:block border-b border-white/5 transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 py-0 opacity-0' : 'h-12 py-3 opacity-100'}`}>
+        <div className="max-w-7xl mx-auto flex justify-between items-center text-[12px] font-bold uppercase tracking-[0.18em]">
           <div className="flex gap-10">
             <div className="flex items-center gap-2">
-              <Phone className="h-3 w-3 text-accent" />
+              <Phone className="h-4 w-4 text-accent" />
               <span>{contact.phone}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Mail className="h-3 w-3 text-accent" />
+              <Mail className="h-4 w-4 text-accent" />
               <span>{contact.email}</span>
             </div>
           </div>
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
-              <Clock className="h-3 w-3 text-accent" />
+              <Clock className="h-4 w-4 text-accent" />
               <span>{contact.hours}</span>
             </div>
           </div>
@@ -71,14 +71,14 @@ const Navbar: React.FC = () => {
           <div className="flex justify-between items-center h-full">
             <Link to="/" className="flex items-center gap-3 flex-shrink-0 group/logo">
               {loading ? (
-                <div className={`flex items-center justify-center transition-all ${isScrolled ? 'w-12 h-12 md:w-14 md:h-14' : 'w-12 h-12 md:w-16 md:h-16'}`}>
+                <div className={`flex items-center justify-center transition-all ${isScrolled ? 'w-16 h-16 md:w-24 md:h-24' : 'w-20 h-20 md:w-28 md:h-28'}`}>
                   <Loader2 className="h-5 w-5 text-accent animate-spin" />
                 </div>
               ) : navbarLogoSrc ? (
                 <img
                   src={navbarLogoSrc}
                   alt={siteContent.settings.siteTitle || 'AZFIN'}
-                  className={`object-contain transition-all ${isScrolled ? 'h-[3.1rem] md:h-[3.7rem] max-w-[195px] md:max-w-[235px]' : 'h-14 md:h-[4.5rem] max-w-[220px] md:max-w-[290px]'}`}
+                  className={`object-contain transition-all ${isScrolled ? 'h-[4.25rem] md:h-[5.5rem] max-w-[270px] md:max-w-[360px]' : 'h-[4.75rem] md:h-[6.5rem] max-w-[310px] md:max-w-[420px]'}`}
                 />
               ) : (
                 <>

@@ -188,14 +188,14 @@ const Footer: React.FC = () => {
           <div className="space-y-8">
             <Link to="/" className="inline-block">
               {contentLoading ? (
-                <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20">
+                <div className="flex items-center justify-center w-20 h-20 md:w-32 md:h-32">
                   <Loader2 className="h-6 w-6 text-[#3b82f6] animate-spin" />
                 </div>
               ) : footerLogoSrc ? (
                 <img
                   src={footerLogoSrc}
                   alt={siteContent.settings.siteTitle || 'AZFIN'}
-                  className="h-12 md:h-20 object-contain"
+                  className="h-20 md:h-32 max-w-[340px] object-contain"
                 />
               ) : (
                 <span className="font-black text-4xl tracking-tighter text-white">{brandText}</span>

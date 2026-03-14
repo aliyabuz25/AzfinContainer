@@ -97,14 +97,14 @@ const Home: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsLicenseModalOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-accent transition-all hover:bg-accent hover:text-white"
+                  className="inline-flex items-center gap-2.5 rounded-full bg-accent/10 px-5 py-2 text-[12px] font-bold uppercase tracking-[0.22em] text-accent transition-all hover:bg-accent hover:text-white"
                 >
-                  <ShieldCheck className="h-3 w-3" />
+                  <ShieldCheck className="h-4 w-4" />
                   {hero.heroBadge}
                 </button>
               ) : (
-                <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                  <ShieldCheck className="h-3 w-3" />
+                <div className="inline-flex items-center gap-2.5 bg-accent/10 text-accent px-5 py-2 rounded-full text-[12px] font-bold uppercase tracking-[0.22em]">
+                  <ShieldCheck className="h-4 w-4" />
                   {hero.heroBadge}
                 </div>
               )}
@@ -181,7 +181,7 @@ const Home: React.FC = () => {
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <div className="text-accent font-black text-[10px] uppercase tracking-[0.6em] mb-4">{hero.servicesHeading}</div>
+            <div className="text-accent font-black text-[13px] uppercase tracking-[0.5em] mb-5">{hero.servicesHeading}</div>
             <h2 className="text-3xl md:text-5xl font-black text-primary tracking-tighter uppercase italic">{hero.servicesSubtitle}</h2>
           </div>
 
