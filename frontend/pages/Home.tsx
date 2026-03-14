@@ -181,7 +181,7 @@ const Home: React.FC = () => {
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <div className="text-accent font-black text-[13px] uppercase tracking-[0.5em] mb-5">{hero.servicesHeading}</div>
+            <div className="text-accent font-black text-[15px] uppercase tracking-[0.5em] mb-5">{hero.servicesHeading}</div>
             <h2 className="text-3xl md:text-5xl font-black text-primary tracking-tighter uppercase italic">{hero.servicesSubtitle}</h2>
           </div>
 
