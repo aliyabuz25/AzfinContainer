@@ -29,7 +29,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     filteredSections
 }) => {
     return (
-        <aside className="space-y-6 sticky top-8">
+        <aside className="space-y-6 lg:sticky lg:top-8">
             <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-accent transition-colors" />
                 <input
@@ -40,7 +40,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                 />
             </div>
 
-            <div className="bg-slate-50/50 rounded-[32px] border border-slate-100 p-2 max-h-[75vh] overflow-y-auto custom-scrollbar shadow-sm">
+            <div className="bg-slate-50/50 rounded-[32px] border border-slate-100 p-2 lg:max-h-[75vh] overflow-y-auto custom-scrollbar shadow-sm">
                 <div className="px-5 py-3 mb-1">
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">DAXİLİ MƏLUMATLAR</span>
                 </div>

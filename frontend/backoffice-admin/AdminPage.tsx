@@ -1036,42 +1036,48 @@ const Admin: React.FC = () => {
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2">{status}</p>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             {autoSaving && !saving && (
-              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">AUTO SAVE...</span>
+              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest text-center sm:text-left">
+                AUTO SAVE...
+              </span>
             )}
-            <button
-              onClick={handleLogout}
-              className="px-6 py-4 rounded-2xl bg-red-50 text-red-500 font-black text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all"
-            >
-              Çıxış
-            </button>
-            <button
-              disabled={saving}
-              onClick={handleSave}
-              className="group flex items-center gap-3 bg-primary text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-accent transition-all shadow-xl shadow-primary/20 active:scale-95 disabled:opacity-50"
-            >
-              {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="h-4 w-4" />}
-              {saving ? 'YADDA SAXLANILIR...' : 'QLOBAL YADDA SAXLA'}
-            </button>
+            <div className="flex flex-wrap items-center justify-end gap-3 w-full sm:w-auto">
+              <button
+                onClick={handleLogout}
+                className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-red-50 text-red-500 font-black text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all text-center"
+              >
+                Çıxış
+              </button>
+              <button
+                disabled={saving}
+                onClick={handleSave}
+                className="group flex w-full sm:w-auto items-center justify-center gap-3 bg-primary text-white px-6 sm:px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-accent transition-all shadow-xl shadow-primary/20 active:scale-95 disabled:opacity-50"
+              >
+                {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? 'YADDA SAXLANILIR...' : 'QLOBAL YADDA SAXLA'}
+              </button>
+            </div>
           </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
-          <SidebarNavigation
-            adminMode={adminMode}
-            selectedSection={selectedSection}
-            viewMode={viewMode}
-            sectionSearch={sectionSearch}
-            setSectionSearch={setSectionSearch}
-            setAdminMode={setAdminMode}
-            setSelectedSection={setSelectedSection}
-            setViewMode={setViewMode}
-            setBlogMode={setBlogMode}
-            filteredSections={filteredSections}
-          />
+          <div className="order-2 lg:order-1">
+            <SidebarNavigation
+              adminMode={adminMode}
+              selectedSection={selectedSection}
+              viewMode={viewMode}
+              sectionSearch={sectionSearch}
+              setSectionSearch={setSectionSearch}
+              setAdminMode={setAdminMode}
+              setSelectedSection={setSelectedSection}
+              setViewMode={setViewMode}
+              setBlogMode={setBlogMode}
+              filteredSections={filteredSections}
+            />
+          </div>
 
-          <main className="min-w-0">
+          <main className="min-w-0 order-1 lg:order-2">
             {adminMode === 'blog' || adminMode === 'training' ? (
               <BlogManagementView
                 blogMode={adminMode === 'blog' ? 'blog' : 'training'}
