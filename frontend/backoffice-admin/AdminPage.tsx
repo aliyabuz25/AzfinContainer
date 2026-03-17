@@ -21,7 +21,7 @@ import {
 } from '../utils/siteContent';
 import { ICON_OPTIONS, resolveIcon } from '../utils/iconRegistry';
 import { useContent } from '../lib/ContentContext';
-import { ChevronDown, Save, RefreshCcw, Search, Lock } from 'lucide-react';
+import { ChevronDown, Save, RefreshCcw, Search, Lock, Menu } from 'lucide-react';
 import { AdminUserItem, BlogItem, TrainingItem, TrainingSyllabusItem } from '../types';
 import CDNMonacoEditor from '../components/CDNMonacoEditor';
 import { toast, ToastContainer } from 'react-toastify';
@@ -312,6 +312,7 @@ const Admin: React.FC = () => {
   const [draft, setDraft] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [selectedSection, setSelectedSection] = useState('home');
   const [sectionSearch, setSectionSearch] = useState('');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [editorValue, setEditorValue] = useState('');
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -404,6 +405,10 @@ const Admin: React.FC = () => {
       setSelectedSection('social');
       setViewMode('section');
     }
+  }, [adminMode, selectedSection]);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
   }, [adminMode, selectedSection]);
 
   // Sync editor with draft
@@ -1061,8 +1066,36 @@ const Admin: React.FC = () => {
           </div>
         </header>
 
+        <div className="lg:hidden space-y-3">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen((prev) => !prev)}
+            aria-expanded={mobileNavOpen}
+            className="w-full flex items-center justify-between rounded-[32px] border border-slate-100 bg-white px-5 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-primary shadow-sm hover:border-primary/60 transition"
+          >
+            <span>{mobileNavOpen ? 'Bağla Naviqasiyanı' : 'Naviqasiyanı Gör'}</span>
+            <Menu className="h-5 w-5" />
+          </button>
+          {mobileNavOpen && (
+            <div className="bg-white rounded-[32px] border border-slate-100 p-2 shadow-sm">
+              <SidebarNavigation
+                adminMode={adminMode}
+                selectedSection={selectedSection}
+                viewMode={viewMode}
+                sectionSearch={sectionSearch}
+                setSectionSearch={setSectionSearch}
+                setAdminMode={setAdminMode}
+                setSelectedSection={setSelectedSection}
+                setViewMode={setViewMode}
+                setBlogMode={setBlogMode}
+                filteredSections={filteredSections}
+              />
+            </div>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
-          <div className="order-2 lg:order-1">
+          <div className="hidden lg:block lg:order-1">
             <SidebarNavigation
               adminMode={adminMode}
               selectedSection={selectedSection}
