@@ -9,9 +9,9 @@ services:
       MYSQL_USER: azfin_user
       MYSQL_PASSWORD: azfin_password
     volumes:
-      - ${AZFIN_DATA_ROOT:-./datastore}/mysql:/var/lib/mysql
+      - azfin-db-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -uroot -p$$MYSQL_ROOT_PASSWORD --silent || exit 1"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
       interval: 10s
       timeout: 5s
       retries: 24
@@ -41,7 +41,7 @@ services:
       DB_PASSWORD: azfin_password
       DB_NAME: azfin_db
     volumes:
-      - ${AZFIN_DATA_ROOT:-./datastore}/uploads:/app/uploads
+      - azfin-uploads:/app/uploads
     networks:
       - edge
     labels:
@@ -101,3 +101,7 @@ services:
 networks:
   edge:
     external: true
+
+volumes:
+  azfin-db-data:
+  azfin-uploads:
