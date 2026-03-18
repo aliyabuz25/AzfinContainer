@@ -100,5 +100,4 @@ services:
 
 networks:
   edge:
-    name: edge
-    driver: bridge
+    external: true
