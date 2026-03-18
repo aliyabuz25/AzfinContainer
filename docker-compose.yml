@@ -11,11 +11,11 @@ services:
     volumes:
       - ${AZFIN_DATA_ROOT:-./datastore}/mysql:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      test: ["CMD-SHELL", "mysqladmin ping -uroot -p$$MYSQL_ROOT_PASSWORD --silent || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 12
-      start_period: 20s
+      retries: 24
+      start_period: 60s
     networks:
       - edge
 

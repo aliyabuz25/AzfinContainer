@@ -19,3 +19,10 @@ backend/uploads/
 
 # OS
 .DS_Store
+
+# Data
+datastore/
+mysql-logs/
+nginx-logs/
+**/_snapshots/
+**/uploads/
