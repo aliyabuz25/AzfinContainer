@@ -1,6 +1,6 @@
 # Deployment checklist for AZFIN stack
 
-This repository is built for environments where Traefik, Portainer, and an external `edge` network already exist. Follow these steps before deploying the stack so that each service (especially `azfin-mysql`) can start healthy.
+This repository is built for environments where Traefik, Portainer, and an external `edge` network already exist. Follow these steps before deploying the stack so that each service (especially `azfin2`) can start healthy.
 
 ## 1. Preflight
 
