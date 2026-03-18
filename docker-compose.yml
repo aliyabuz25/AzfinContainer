@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     container_name: azfin-mysql
@@ -102,4 +100,5 @@ services:
 
 networks:
   edge:
-    external: true
+    name: edge
+    driver: bridge
