@@ -11,11 +11,11 @@ services:
     volumes:
       - azfin-db-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 --silent || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 24
-      start_period: 60s
+      retries: 36
+      start_period: 120s
     networks:
       - edge
 

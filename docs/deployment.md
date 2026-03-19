@@ -67,11 +67,11 @@ services:
     volumes:
       - /datastore/<app>/mysql:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 --silent || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 24
-      start_period: 60s
+      retries: 36
+      start_period: 120s
     networks:
       - edge
 
@@ -136,3 +136,4 @@ docker ps | grep azfin
 - Quote long labels with single quotes in YAML.
 - Keep API paths in the router rule in sync (`/api`, `/uploads`, and any new prefixes such as `/cdn`).
 - Remove macOS metadata directories (`__MACOSX`, `._*`) before bundling the ZIP.
+- MySQL environment variables are only applied on first initialization of the data directory. If you reuse an old `/var/lib/mysql`, changed passwords will not be rewritten into that volume.
