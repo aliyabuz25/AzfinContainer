@@ -1,10 +1,10 @@
-import { apiClient } from '../lib/apiClient';
+import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
 import { TrainingItem } from '../types';
 import { normalizeStatus, parseStringList, parseTrainingSyllabus } from './fetchData';
 
 export const fetchAdminTrainings = async (): Promise<TrainingItem[]> => {
     try {
-        const data = await apiClient.get('/trainings');
+        const data = await retryDbReady(() => apiClient.get('/trainings'));
         return (data ?? []).map((row: any) => ({
             id: row.id,
             title: row.title,
@@ -29,6 +29,7 @@ export const fetchAdminTrainings = async (): Promise<TrainingItem[]> => {
             highlightWord: row.highlightWord
         }));
     } catch (error) {
+        if (isDbNotReadyError(error)) return [];
         console.error('Failed to fetch trainings for admin', error);
         return [];
     }

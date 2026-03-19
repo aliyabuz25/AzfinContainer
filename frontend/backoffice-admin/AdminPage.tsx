@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { apiClient } from '../lib/apiClient';
+import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
 import {
   fetchAdminBlogPosts,
   upsertBlogPost,
@@ -280,15 +280,24 @@ const Admin: React.FC = () => {
           }
         }
 
-        const bootstrap = await apiClient.get('/admin/bootstrap');
+        const bootstrap = await retryDbReady(() => apiClient.get('/admin/bootstrap'), {
+          retries: 10,
+          delayMs: 2000,
+        });
         setHasAdminAccount(Boolean(bootstrap?.hasAdmin));
         if (bootstrap?.hasAdmin) {
-          const users = await apiClient.get('/admin/users');
+          const users = await retryDbReady(() => apiClient.get('/admin/users'));
           setAdminUsers(Array.isArray(users) ? users : []);
         }
       } catch (err) {
-        console.error('Auth bootstrap failed:', err);
-        setLoginError('Admin vəziyyəti yoxlanarkən xəta baş verdi.');
+        if (!isDbNotReadyError(err)) {
+          console.error('Auth bootstrap failed:', err);
+        }
+        setLoginError(
+          isDbNotReadyError(err)
+            ? 'Verilənlər bazası hələ hazır deyil. Bir neçə saniyə sonra yenidən yoxlayın.'
+            : 'Admin vəziyyəti yoxlanarkən xəta baş verdi.'
+        );
       } finally {
         setAuthLoading(false);
       }
@@ -368,7 +377,7 @@ const Admin: React.FC = () => {
             fetchAdminBlogPosts(),
             fetchAdminTrainings(),
             fetchSmtpSettings(),
-            apiClient.get('/admin/users')
+            retryDbReady(() => apiClient.get('/admin/users'))
           ]);
           setBlogPosts(bp);
           setTrainings(tr);
@@ -387,8 +396,12 @@ const Admin: React.FC = () => {
           clearTempDraft();
         }
       } catch (err) {
-        console.error('Initial load error:', err);
-        toast.error('Məlumatların yüklənməsində xəta baş verdi.');
+        if (!isDbNotReadyError(err)) {
+          console.error('Initial load error:', err);
+          toast.error('Məlumatların yüklənməsində xəta baş verdi.');
+        } else {
+          setStatus('Verilənlər bazası hələ hazır deyil. Sistem avtomatik yenidən yoxladı.');
+        }
       } finally {
         setLoading(false);
       }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { apiClient } from '../lib/apiClient';
+import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
 import siteContentDefaults from '../siteContentDefaults.json';
 
 export type SiteContent = typeof siteContentDefaults;
@@ -10,13 +10,15 @@ const FIXED_SITE_SETTINGS_ID = 1;
 
 export const fetchSiteSettings = async () => {
   try {
-    const content = await apiClient.get('/settings');
+    const content = await retryDbReady(() => apiClient.get('/settings'));
     return {
       id: FIXED_SITE_SETTINGS_ID,
       content: content || {},
     };
   } catch (err) {
-    console.error('Error in fetchSiteSettings:', err);
+    if (!isDbNotReadyError(err)) {
+      console.error('Error in fetchSiteSettings:', err);
+    }
     return {
       id: FIXED_SITE_SETTINGS_ID,
       content: {},

@@ -1,9 +1,9 @@
-import { apiClient } from '../lib/apiClient';
+import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
 import { BlogItem } from '../types';
 
 export const fetchAdminBlogPosts = async (): Promise<BlogItem[]> => {
   try {
-    const data = await apiClient.get('/blog');
+    const data = await retryDbReady(() => apiClient.get('/blog'));
     return (data ?? []).map((row: any) => ({
       id: row.id,
       title: row.title,
@@ -16,6 +16,7 @@ export const fetchAdminBlogPosts = async (): Promise<BlogItem[]> => {
       status: row.status,
     }));
   } catch (error) {
+    if (isDbNotReadyError(error)) return [];
     console.error('Failed to fetch blog posts for admin', error);
     return [];
   }

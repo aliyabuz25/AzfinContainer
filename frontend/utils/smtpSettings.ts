@@ -1,4 +1,4 @@
-import { apiClient } from '../lib/apiClient';
+import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
 
 export interface SMTPSettings {
     enabled: boolean;
@@ -47,10 +47,12 @@ const normalizeSmtpSettings = (payload: any): SMTPSettings => {
 
 export const fetchSmtpSettings = async (): Promise<SMTPSettings> => {
     try {
-        const data = await apiClient.get('/admin/smtp-settings');
+        const data = await retryDbReady(() => apiClient.get('/admin/smtp-settings'));
         return normalizeSmtpSettings(data);
     } catch (error) {
-        console.error('Error fetching SMTP settings:', error);
+        if (!isDbNotReadyError(error)) {
+            console.error('Error fetching SMTP settings:', error);
+        }
         return { ...DEFAULT_SMTP_SETTINGS };
     }
 };

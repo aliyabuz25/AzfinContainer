@@ -1,4 +1,6 @@
 const API_BASE_URL = '/api';
+const DEFAULT_DB_RETRY_DELAY_MS = 2000;
+const DEFAULT_DB_RETRIES = 6;
 
 const normalizeSnippet = (value: string, maxLength = 220): string => {
     const normalized = value.replace(/\s+/g, ' ').trim();
@@ -50,6 +52,39 @@ const handleResponse = async (response: Response) => {
         throw new Error(await parseErrorMessage(response));
     }
     return response.json();
+};
+
+const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+export const isDbNotReadyError = (error: unknown): boolean => {
+    const message = error instanceof Error ? error.message : String(error ?? '');
+    return message.includes('DB_NOT_READY') || message.includes('Database is not ready yet');
+};
+
+export const retryDbReady = async <T>(
+    operation: () => Promise<T>,
+    options?: {
+        retries?: number;
+        delayMs?: number;
+    }
+): Promise<T> => {
+    const retries = options?.retries ?? DEFAULT_DB_RETRIES;
+    const delayMs = options?.delayMs ?? DEFAULT_DB_RETRY_DELAY_MS;
+
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+        try {
+            return await operation();
+        } catch (error) {
+            lastError = error;
+            if (!isDbNotReadyError(error) || attempt === retries) {
+                throw error;
+            }
+            await wait(delayMs);
+        }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error('Request failed');
 };
 
 export const apiClient = {

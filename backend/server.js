@@ -20,6 +20,7 @@ const CHANGE_LOG_PATH = process.env.CHANGE_LOG_PATH || path.join(UPLOADS_DIR, '_
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '25mb';
 const DB_RETRY_DELAY_MS = Number(process.env.DB_RETRY_DELAY_MS || 5000);
 const DB_MAX_RETRIES = Number(process.env.DB_MAX_RETRIES || 0); // 0 => unlimited
+const DB_REQUEST_WAIT_MS = Number(process.env.DB_REQUEST_WAIT_MS || 15000);
 const PUBLIC_SITE_URL = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || 'https://azfin.az';
 const ADMIN_PANEL_URL = process.env.ADMIN_PANEL_URL || `${PUBLIC_SITE_URL.replace(/\/$/, '')}/#/admin`;
 const SMTP_SETTINGS_ID = 1;
@@ -1216,6 +1217,22 @@ function startDbInitialization() {
     return dbInitPromise;
 }
 
+async function waitForDbReady(timeoutMs = DB_REQUEST_WAIT_MS) {
+    if (isDbAvailable()) return true;
+
+    const initPromise = startDbInitialization();
+    if (!timeoutMs || timeoutMs <= 0) {
+        return isDbAvailable();
+    }
+
+    await Promise.race([
+        initPromise.then(() => true),
+        sleep(timeoutMs).then(() => false)
+    ]);
+
+    return isDbAvailable();
+}
+
 // Ensure uploads directory exists
 if (!fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -1224,7 +1241,7 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 app.use(cors());
 app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     if (req.method === 'OPTIONS') return next();
 
     const isOptionalRoute = req.path === '/api/health'
@@ -1239,6 +1256,15 @@ app.use((req, res, next) => {
 
     if (isDbAvailable()) {
         return next();
+    }
+
+    try {
+        const ready = await waitForDbReady();
+        if (ready) {
+            return next();
+        }
+    } catch (_) {
+        // noop; fallback to the structured 503 below
     }
 
     return res.status(503).json({

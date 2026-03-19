@@ -1,4 +1,4 @@
-import { apiClient } from '../lib/apiClient';
+import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
 import { BlogItem, TrainingItem, TrainingSyllabusItem } from '../types';
 
 const mapBlogRow = (row: any): BlogItem => ({
@@ -105,9 +105,10 @@ const mapTrainingRow = (row: any): TrainingItem => ({
 
 export const fetchBlogPosts = async (): Promise<BlogItem[]> => {
   try {
-    const data = await apiClient.get('/blog');
+    const data = await retryDbReady(() => apiClient.get('/blog'));
     return (data ?? []).map(mapBlogRow);
   } catch (error) {
+    if (isDbNotReadyError(error)) return [];
     console.error('Failed to fetch blog posts:', error);
     return [];
   }
@@ -125,9 +126,10 @@ export const fetchBlogPostById = async (id: string): Promise<BlogItem | null> =>
 
 export const fetchTrainings = async (): Promise<TrainingItem[]> => {
   try {
-    const data = await apiClient.get('/trainings');
+    const data = await retryDbReady(() => apiClient.get('/trainings'));
     return (data ?? []).map(mapTrainingRow);
   } catch (error) {
+    if (isDbNotReadyError(error)) return [];
     console.error('Failed to fetch trainings:', error);
     return [];
   }
