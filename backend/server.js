@@ -6,7 +6,8 @@ const cors = require('cors');
 const fs = require('fs');
 const { randomUUID } = require('crypto');
 const crypto = require('crypto');
-const mysql = require('mysql2/promise');
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
 const nodemailer = require('nodemailer');
 
 const app = express();
@@ -40,13 +41,7 @@ const DEFAULT_SMTP_SETTINGS = {
 
 // DB Config
 const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'azfin_user',
-    password: process.env.DB_PASSWORD || 'azfin_password',
-    database: process.env.DB_NAME || 'azfin_db',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    filename: process.env.DB_PATH || path.join(UPLOADS_DIR, 'azfin_db.sqlite')
 };
 
 let pool;
@@ -108,18 +103,11 @@ function validateAdminCredentials(username, password) {
 }
 
 async function ensureColumn(tableName, columnName, definition) {
-    const [rows] = await pool.execute(
-        `SELECT 1
-         FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = ?
-           AND TABLE_NAME = ?
-           AND COLUMN_NAME = ?
-         LIMIT 1`,
-        [dbConfig.database, tableName, columnName]
-    );
+    const rows = await pool.all(`PRAGMA table_info(${tableName})`);
+    const exists = rows.some((r) => r.name === columnName);
 
-    if (rows.length === 0) {
-        await pool.execute(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+    if (!exists) {
+        await pool.run(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
         console.log(`Added missing column ${tableName}.${columnName}`);
     }
 }
@@ -810,7 +798,7 @@ function writeCurrentSmtpSettings(settings) {
 }
 
 async function getSmtpSettings() {
-    const [rows] = await pool.execute('SELECT config FROM smtp_settings WHERE id = ?', [SMTP_SETTINGS_ID]);
+    const rows = await pool.all('SELECT config FROM smtp_settings WHERE id = ?', [SMTP_SETTINGS_ID]);
     const dbSettings = rows[0] ? parseDbJson(rows[0].config, {}) : {};
     const historySettings = await getLatestSmtpSettingsHistory() || {};
     const fileSettings = readCurrentSmtpSettings() || {};
@@ -819,7 +807,7 @@ async function getSmtpSettings() {
 }
 
 async function getLatestSiteSettingsHistory() {
-    const [rows] = await pool.execute(
+    const rows = await pool.all(
         'SELECT content FROM site_settings_history WHERE site_settings_id = ? ORDER BY id DESC LIMIT 1',
         [1]
     );
@@ -827,14 +815,14 @@ async function getLatestSiteSettingsHistory() {
 }
 
 async function getLatestSitemapHistory() {
-    const [rows] = await pool.execute(
+    const rows = await pool.all(
         'SELECT content FROM sitemap_history ORDER BY id DESC LIMIT 1'
     );
     return rows[0] ? parseDbJson(rows[0].content, {}) : null;
 }
 
 async function getLatestSmtpSettingsHistory() {
-    const [rows] = await pool.execute(
+    const rows = await pool.all(
         'SELECT config FROM smtp_settings_history WHERE smtp_settings_id = ? ORDER BY id DESC LIMIT 1',
         [SMTP_SETTINGS_ID]
     );
@@ -844,72 +832,66 @@ async function getLatestSmtpSettingsHistory() {
 async function persistSiteSettings(payload) {
     const content = JSON.stringify(payload || {});
     const navigation = payload?.navigation || {};
-    const conn = await pool.getConnection();
     try {
-        await conn.beginTransaction();
-        await conn.execute(
-            'INSERT INTO site_settings (id, content) VALUES (1, ?) ON DUPLICATE KEY UPDATE content = ?',
-            [content, content]
+        await pool.run('BEGIN TRANSACTION');
+        await pool.run(
+            'INSERT INTO site_settings (id, content) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET content = excluded.content',
+            [content]
         );
-        await conn.execute(
+        await pool.run(
             'INSERT INTO site_settings_history (site_settings_id, content) VALUES (?, ?)',
             [1, content]
         );
-        await conn.execute(
+        await pool.run(
             'INSERT INTO sitemap_history (content) VALUES (?)',
             [JSON.stringify(navigation)]
         );
-        await conn.commit();
+        await pool.run('COMMIT');
     } catch (err) {
-        await conn.rollback();
+        await pool.run('ROLLBACK');
         throw err;
-    } finally {
-        conn.release();
     }
 }
 
 async function persistSmtpSettings(normalized) {
     const serialized = JSON.stringify(normalized || {});
-    const conn = await pool.getConnection();
     try {
-        await conn.beginTransaction();
-        await conn.execute(
-            'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON DUPLICATE KEY UPDATE config = ?',
-            [SMTP_SETTINGS_ID, serialized, serialized]
+        await pool.run('BEGIN TRANSACTION');
+        await pool.run(
+            'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET config = excluded.config',
+            [SMTP_SETTINGS_ID, serialized]
         );
-        await conn.execute(
+        await pool.run(
             'INSERT INTO smtp_settings_history (smtp_settings_id, config) VALUES (?, ?)',
             [SMTP_SETTINGS_ID, serialized]
         );
-        await conn.commit();
+        await pool.run('COMMIT');
     } catch (err) {
-        await conn.rollback();
+        await pool.run('ROLLBACK');
         throw err;
-    } finally {
-        conn.release();
     }
 }
 
 async function ensurePersistentStateRecovered() {
-    const [siteRows] = await pool.execute('SELECT content FROM site_settings WHERE id = 1');
+    const siteRows = await pool.all('SELECT content FROM site_settings WHERE id = 1');
     if (siteRows.length === 0) {
         const recoveredSite = await getLatestSiteSettingsHistory() || readCurrentSiteContent();
         if (recoveredSite) {
             const serialized = JSON.stringify(recoveredSite);
-            await pool.execute(
-                'INSERT INTO site_settings (id, content) VALUES (1, ?) ON DUPLICATE KEY UPDATE content = ?',
-                [serialized, serialized]
+            await pool.run(
+                'INSERT INTO site_settings (id, content) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET content = excluded.content',
+                [serialized]
             );
         }
     }
 
-    const [smtpRows] = await pool.execute('SELECT config FROM smtp_settings WHERE id = ?', [SMTP_SETTINGS_ID]);
+    const smtpRows = await pool.all('SELECT config FROM smtp_settings WHERE id = ?', [SMTP_SETTINGS_ID]);
     if (smtpRows.length === 0) {
         const recoveredSmtp = await getLatestSmtpSettingsHistory() || readCurrentSmtpSettings() || DEFAULT_SMTP_SETTINGS;
         const serialized = JSON.stringify(normalizeSmtpSettings(recoveredSmtp));
-        await pool.execute(
-            'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON DUPLICATE KEY UPDATE config = ?',
-            [SMTP_SETTINGS_ID, serialized, serialized]
+        await pool.run(
+            'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET config = excluded.config',
+            [SMTP_SETTINGS_ID, serialized]
         );
     }
 }
@@ -1038,52 +1020,56 @@ async function sendSmtpTestEmail(payload) {
 async function initDb() {
     try {
         dbReady = false;
-        pool = mysql.createPool(dbConfig);
-        console.log('Connected to MySQL database');
+        ensureDirectoryFor(dbConfig.filename);
+        pool = await open({
+            filename: dbConfig.filename,
+            driver: sqlite3.Database
+        });
+        console.log('Connected to SQLite database');
 
         // Initial table creation
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS site_settings (
-                id INT PRIMARY KEY,
-                content JSON NOT NULL,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                id INTEGER PRIMARY KEY,
+                content TEXT NOT NULL,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS site_settings_history (
-                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                site_settings_id INT NOT NULL,
-                content JSON NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_site_settings_history_settings_id (site_settings_id),
-                INDEX idx_site_settings_history_created_at (created_at)
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                site_settings_id INTEGER NOT NULL,
+                content TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        await pool.run('CREATE INDEX IF NOT EXISTS idx_site_settings_history_settings_id ON site_settings_history(site_settings_id)');
+        await pool.run('CREATE INDEX IF NOT EXISTS idx_site_settings_history_created_at ON site_settings_history(created_at)');
 
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS blog_posts (
-                id VARCHAR(255) PRIMARY KEY,
+                id TEXT PRIMARY KEY,
                 title TEXT NOT NULL,
                 excerpt TEXT,
-                content LONGTEXT,
+                content TEXT,
                 date TEXT,
                 author TEXT,
                 image TEXT,
                 category TEXT,
                 status TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS trainings (
-                id VARCHAR(255) PRIMARY KEY,
+                id TEXT PRIMARY KEY,
                 title TEXT NOT NULL,
                 description TEXT,
-                fullContent LONGTEXT,
-                syllabus JSON,
-                targetAudience JSON,
+                fullContent TEXT,
+                syllabus TEXT,
+                targetAudience TEXT,
                 startDate TEXT,
                 duration TEXT,
                 level TEXT,
@@ -1099,14 +1085,14 @@ async function initDb() {
                 statusLabel TEXT,
                 sidebarNote TEXT,
                 highlightWord TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-        // Keep old production schemas in sync with the fields used by INSERT/UPDATE queries.
-        await ensureColumn('trainings', 'fullContent', 'LONGTEXT');
-        await ensureColumn('trainings', 'syllabus', 'JSON');
-        await ensureColumn('trainings', 'targetAudience', 'JSON');
+        // Sync columns
+        await ensureColumn('trainings', 'fullContent', 'TEXT');
+        await ensureColumn('trainings', 'syllabus', 'TEXT');
+        await ensureColumn('trainings', 'targetAudience', 'TEXT');
         await ensureColumn('trainings', 'certLabel', 'TEXT');
         await ensureColumn('trainings', 'infoTitle', 'TEXT');
         await ensureColumn('trainings', 'aboutTitle', 'TEXT');
@@ -1118,57 +1104,57 @@ async function initDb() {
         await ensureColumn('trainings', 'sidebarNote', 'TEXT');
         await ensureColumn('trainings', 'highlightWord', 'TEXT');
 
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS form_submissions (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 type TEXT NOT NULL,
-                form_data JSON NOT NULL,
-                status VARCHAR(50) DEFAULT 'new',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                form_data TEXT NOT NULL,
+                status TEXT DEFAULT 'new',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS smtp_settings (
-                id INT PRIMARY KEY,
-                config JSON NOT NULL,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                id INTEGER PRIMARY KEY,
+                config TEXT NOT NULL,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS smtp_settings_history (
-                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                smtp_settings_id INT NOT NULL,
-                config JSON NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_smtp_settings_history_settings_id (smtp_settings_id),
-                INDEX idx_smtp_settings_history_created_at (created_at)
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                smtp_settings_id INTEGER NOT NULL,
+                config TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        await pool.run('CREATE INDEX IF NOT EXISTS idx_smtp_settings_history_settings_id ON smtp_settings_history(smtp_settings_id)');
+        await pool.run('CREATE INDEX IF NOT EXISTS idx_smtp_settings_history_created_at ON smtp_settings_history(created_at)');
 
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS sitemap_history (
-                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                content JSON NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_sitemap_history_created_at (created_at)
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                content TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        await pool.run('CREATE INDEX IF NOT EXISTS idx_sitemap_history_created_at ON sitemap_history(created_at)');
 
-        await pool.execute(`
+        await pool.run(`
             CREATE TABLE IF NOT EXISTS admin_users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255) UNIQUE NOT NULL,
-                password VARCHAR(255) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
         const seededSmtp = normalizeSmtpSettings(readCurrentSmtpSettings() || DEFAULT_SMTP_SETTINGS);
         const smtpDefaults = JSON.stringify(seededSmtp);
-        await pool.execute(
-            'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = id',
+        await pool.run(
+            'INSERT INTO smtp_settings (id, config) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET id = id',
             [SMTP_SETTINGS_ID, smtpDefaults]
         );
         writeCurrentSmtpSettings(seededSmtp);
@@ -1182,7 +1168,7 @@ async function initDb() {
         lastDbInitError = err;
         if (pool) {
             try {
-                await pool.end();
+                await pool.close();
             } catch (_) {
                 // noop
             }
@@ -1292,7 +1278,7 @@ const upload = multer({ storage: storage });
 // --- AUTH ENDPOINT ---
 app.get('/api/admin/bootstrap', async (req, res) => {
     try {
-        const [rows] = await pool.execute('SELECT COUNT(*) AS count FROM admin_users');
+        const rows = await pool.all('SELECT COUNT(*) AS count FROM admin_users');
         res.json({ hasAdmin: Number(rows[0]?.count || 0) > 0 });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1306,13 +1292,13 @@ app.post('/api/admin/register', async (req, res) => {
             return res.status(400).json({ error: validation.error });
         }
 
-        const [rows] = await pool.execute('SELECT COUNT(*) AS count FROM admin_users');
+        const rows = await pool.all('SELECT COUNT(*) AS count FROM admin_users');
         if (Number(rows[0]?.count || 0) > 0) {
             return res.status(409).json({ error: 'Admin hesabı artıq mövcuddur.' });
         }
 
         const hashedPassword = hashPassword(validation.password);
-        await pool.execute(
+        await pool.run(
             'INSERT INTO admin_users (username, password) VALUES (?, ?)',
             [validation.username, hashedPassword]
         );
@@ -1329,7 +1315,7 @@ app.post('/api/admin/register', async (req, res) => {
 
 app.get('/api/admin/users', async (req, res) => {
     try {
-        const [rows] = await pool.execute(
+        const rows = await pool.all(
             'SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC, id ASC'
         );
         res.json(rows);
@@ -1345,7 +1331,7 @@ app.post('/api/admin/users', async (req, res) => {
             return res.status(400).json({ error: validation.error });
         }
 
-        const [existing] = await pool.execute(
+        const existing = await pool.all(
             'SELECT id FROM admin_users WHERE username = ? LIMIT 1',
             [validation.username]
         );
@@ -1353,12 +1339,12 @@ app.post('/api/admin/users', async (req, res) => {
             return res.status(409).json({ error: 'Bu istifadəçi adı artıq mövcuddur.' });
         }
 
-        await pool.execute(
+        await pool.run(
             'INSERT INTO admin_users (username, password) VALUES (?, ?)',
             [validation.username, hashPassword(validation.password)]
         );
 
-        const [rows] = await pool.execute(
+        const rows = await pool.all(
             'SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC, id ASC'
         );
         res.json({ success: true, users: rows });
@@ -1374,17 +1360,17 @@ app.delete('/api/admin/users/:id', async (req, res) => {
             return res.status(400).json({ error: 'Etibarsız istifadəçi ID-si.' });
         }
 
-        const [countRows] = await pool.execute('SELECT COUNT(*) AS count FROM admin_users');
+        const countRows = await pool.all('SELECT COUNT(*) AS count FROM admin_users');
         if (Number(countRows[0]?.count || 0) <= 1) {
             return res.status(400).json({ error: 'Son admin hesabı silinə bilməz.' });
         }
 
-        const [result] = await pool.execute('DELETE FROM admin_users WHERE id = ?', [userId]);
-        if (result.affectedRows === 0) {
+        const result = await pool.run('DELETE FROM admin_users WHERE id = ?', [userId]);
+        if (result.changes === 0) {
             return res.status(404).json({ error: 'Admin hesabı tapılmadı.' });
         }
 
-        const [rows] = await pool.execute(
+        const rows = await pool.all(
             'SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC, id ASC'
         );
         res.json({ success: true, users: rows });
@@ -1395,7 +1381,7 @@ app.delete('/api/admin/users/:id', async (req, res) => {
 
 app.get('/share/blog/:id', async (req, res) => {
     try {
-        const [rows] = await pool.execute('SELECT * FROM blog_posts WHERE id = ? LIMIT 1', [req.params.id]);
+        const rows = await pool.all('SELECT * FROM blog_posts WHERE id = ? LIMIT 1', [req.params.id]);
         const post = rows[0];
         const targetUrl = `${PUBLIC_SITE_URL.replace(/\/$/, '')}/blog/${encodeURIComponent(req.params.id)}`;
 
@@ -1452,7 +1438,7 @@ app.post('/api/login', async (req, res) => {
     try {
         const username = typeof req.body?.username === 'string' ? req.body.username.trim() : '';
         const password = typeof req.body?.password === 'string' ? req.body.password : '';
-        const [rows] = await pool.execute(
+        const rows = await pool.all(
             'SELECT * FROM admin_users WHERE username = ? LIMIT 1',
             [username]
         );
@@ -1464,7 +1450,7 @@ app.post('/api/login', async (req, res) => {
 
         // Upgrade legacy plaintext passwords to hashed storage after successful login.
         if (typeof user.password === 'string' && !user.password.startsWith(`${PASSWORD_HASH_PREFIX}$`)) {
-            await pool.execute(
+            await pool.run(
                 'UPDATE admin_users SET password = ? WHERE id = ?',
                 [hashPassword(password), user.id]
             );
@@ -1485,7 +1471,7 @@ app.get('/api/settings', async (req, res) => {
         let currentSitemap = readCurrentSitemap();
 
         if (isDbAvailable()) {
-            const [rows] = await pool.execute('SELECT content FROM site_settings WHERE id = 1');
+            const rows = await pool.all('SELECT content FROM site_settings WHERE id = 1');
             dbContent = rows[0] ? parseDbJson(rows[0].content, {}) : {};
             historyContent = await getLatestSiteSettingsHistory() || {};
             if (!currentSitemap) {
@@ -1573,7 +1559,7 @@ app.post('/api/admin/smtp-settings/test', async (req, res) => {
 // --- BLOG ENDPOINTS ---
 app.get('/api/blog', async (req, res) => {
     try {
-        const [rows] = await pool.execute('SELECT * FROM blog_posts ORDER BY created_at DESC');
+        const rows = await pool.all('SELECT * FROM blog_posts ORDER BY created_at DESC');
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1586,14 +1572,20 @@ app.post('/api/blog', async (req, res) => {
         const query = `
             INSERT INTO blog_posts (id, title, excerpt, content, date, author, image, category, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE 
-                title=?, excerpt=?, content=?, date=?, author=?, image=?, category=?, status=?
+            ON CONFLICT(id) DO UPDATE SET 
+                title=excluded.title, 
+                excerpt=excluded.excerpt, 
+                content=excluded.content, 
+                date=excluded.date, 
+                author=excluded.author, 
+                image=excluded.image, 
+                category=excluded.category, 
+                status=excluded.status
         `;
         const params = [
-            post.id, post.title, post.excerpt, post.content, post.date, post.author, post.image, post.category, post.status,
-            post.title, post.excerpt, post.content, post.date, post.author, post.image, post.category, post.status
+            post.id, post.title, post.excerpt, post.content, post.date, post.author, post.image, post.category, post.status
         ];
-        await pool.execute(query, params);
+        await pool.run(query, params);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1602,7 +1594,7 @@ app.post('/api/blog', async (req, res) => {
 
 app.delete('/api/blog/:id', async (req, res) => {
     try {
-        await pool.execute('DELETE FROM blog_posts WHERE id = ?', [req.params.id]);
+        await pool.run('DELETE FROM blog_posts WHERE id = ?', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1612,7 +1604,7 @@ app.delete('/api/blog/:id', async (req, res) => {
 // --- TRAINING ENDPOINTS ---
 app.get('/api/trainings', async (req, res) => {
     try {
-        const [rows] = await pool.execute('SELECT * FROM trainings ORDER BY created_at DESC');
+        const rows = await pool.all('SELECT * FROM trainings ORDER BY created_at DESC');
         res.json(rows);
     } catch (err) {
         console.error('GET /api/trainings failed:', err);
@@ -1635,11 +1627,11 @@ app.post('/api/trainings', async (req, res) => {
         const query = `
             INSERT INTO trainings (id, title, description, fullContent, syllabus, targetAudience, startDate, duration, level, image, status, certLabel, infoTitle, aboutTitle, syllabusTitle, targetAudienceTitle, durationLabel, startLabel, statusLabel, sidebarNote, highlightWord)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE 
-                title=?, description=?, fullContent=?, syllabus=?, targetAudience=?, startDate=?, duration=?, level=?, image=?, status=?, certLabel=?, infoTitle=?, aboutTitle=?, syllabusTitle=?, targetAudienceTitle=?, durationLabel=?, startLabel=?, statusLabel=?, sidebarNote=?, highlightWord=?
+            ON CONFLICT(id) DO UPDATE SET 
+                title=excluded.title, description=excluded.description, fullContent=excluded.fullContent, syllabus=excluded.syllabus, targetAudience=excluded.targetAudience, startDate=excluded.startDate, duration=excluded.duration, level=excluded.level, image=excluded.image, status=excluded.status, certLabel=excluded.certLabel, infoTitle=excluded.infoTitle, aboutTitle=excluded.aboutTitle, syllabusTitle=excluded.syllabusTitle, targetAudienceTitle=excluded.targetAudienceTitle, durationLabel=excluded.durationLabel, startLabel=excluded.startLabel, statusLabel=excluded.statusLabel, sidebarNote=excluded.sidebarNote, highlightWord=excluded.highlightWord
         `;
-        const params = [...insertValues, ...updateValues];
-        await pool.execute(query, params);
+        const params = insertValues;
+        await pool.run(query, params);
         res.json({ success: true });
     } catch (err) {
         console.error('POST /api/trainings failed:', err);
@@ -1649,7 +1641,7 @@ app.post('/api/trainings', async (req, res) => {
 
 app.delete('/api/trainings/:id', async (req, res) => {
     try {
-        await pool.execute('DELETE FROM trainings WHERE id = ?', [req.params.id]);
+        await pool.run('DELETE FROM trainings WHERE id = ?', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1659,7 +1651,7 @@ app.delete('/api/trainings/:id', async (req, res) => {
 // --- SUBMISSION ENDPOINTS ---
 app.get('/api/submissions', async (req, res) => {
     try {
-        const [rows] = await pool.execute('SELECT * FROM form_submissions ORDER BY created_at DESC');
+        const rows = await pool.all('SELECT * FROM form_submissions ORDER BY created_at DESC');
         const normalizedRows = rows.map((row) => ({
             ...row,
             form_data: parseDbJson(row.form_data, {})
@@ -1682,12 +1674,12 @@ app.post('/api/submissions', async (req, res) => {
             return res.status(400).json({ error: 'Form type is required.' });
         }
 
-        const [result] = await pool.execute(
+        const result = await pool.run(
             'INSERT INTO form_submissions (type, form_data) VALUES (?, ?)',
             [normalizedType, JSON.stringify(normalizedFormData)]
         );
 
-        const submissionId = result.insertId;
+        const submissionId = result.lastID;
         const createdAt = new Date();
         let mailSent = false;
         let mailInfo = null;
@@ -1734,7 +1726,7 @@ app.post('/api/submissions', async (req, res) => {
 
 app.patch('/api/submissions/:id', async (req, res) => {
     try {
-        await pool.execute('UPDATE form_submissions SET status = ? WHERE id = ?', [req.body.status, req.params.id]);
+        await pool.run('UPDATE form_submissions SET status = ? WHERE id = ?', [req.body.status, req.params.id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1743,7 +1735,7 @@ app.patch('/api/submissions/:id', async (req, res) => {
 
 app.delete('/api/submissions/:id', async (req, res) => {
     try {
-        await pool.execute('DELETE FROM form_submissions WHERE id = ?', [req.params.id]);
+        await pool.run('DELETE FROM form_submissions WHERE id = ?', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });

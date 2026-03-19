@@ -1,43 +1,10 @@
 services:
-  db:
-    container_name: azfin2
-    image: mysql:8.0
-    restart: unless-stopped
-    entrypoint:
-      - sh
-      - -lc
-      - |
-          set -e
-          if [ -d /var/lib/mysql/mysql ] || [ -f /var/lib/mysql/ibdata1 ]; then
-            exec docker-entrypoint.sh mysqld
-          fi
-          mkdir -p /var/lib/mysql/data
-          chown -R mysql:mysql /var/lib/mysql/data
-          exec docker-entrypoint.sh mysqld --datadir=/var/lib/mysql/data
-    environment:
-      MYSQL_DATABASE: azfin_db
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_USER: azfin_user
-      MYSQL_PASSWORD: azfin_password
-    volumes:
-      - azfin-db-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 --silent || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 36
-      start_period: 120s
-    networks:
-      - edge
-
   azfin-backend:
     container_name: azfin-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      - db
     environment:
       PORT: "3001"
       UPLOADS_DIR: "/app/uploads"
@@ -46,10 +13,7 @@ services:
       CURRENT_SMTP_SETTINGS_PATH: "/app/uploads/current-smtp-settings.json"
       SNAPSHOT_DIR: "/app/uploads/_snapshots"
       CHANGE_LOG_PATH: "/app/uploads/_change-log.ndjson"
-      DB_HOST: db
-      DB_USER: azfin_user
-      DB_PASSWORD: azfin_password
-      DB_NAME: azfin_db
+      DB_PATH: "/app/uploads/azfin_db.sqlite"
     volumes:
       - azfin-uploads:/app/uploads
     networks:
@@ -76,38 +40,6 @@ services:
       - 'traefik.http.routers.azfin.rule=Host(`azfin.az`) || Host(`azfin.octotech.az`)'
       - 'traefik.http.routers.azfin.entrypoints=web'
       - 'traefik.http.services.azfin.loadbalancer.server.port=901'
-
-  phpmyadmin:
-    container_name: azfin-phpmyadmin
-    image: phpmyadmin:5.2.3-apache
-    restart: unless-stopped
-    depends_on:
-      - db
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      PMA_ARBITRARY: 1
-      PMA_ABSOLUTE_URI: https://azfin.az/phpmyadmin/
-      UPLOAD_LIMIT: 64M
-    tmpfs:
-      - /sessions:uid=33,gid=33,mode=1733
-    volumes:
-      - ./phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
-      - ./phpmyadmin/apache-subpath.conf:/etc/apache2/conf-enabled/phpmyadmin-subpath.conf:ro
-      - ./phpmyadmin/servername.conf:/etc/apache2/conf-enabled/servername.conf:ro
-    networks:
-      - edge
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.docker.network=edge'
-      - 'traefik.http.routers.pma.rule=(Host(`azfin.az`) || Host(`azfin.octotech.az`)) && PathPrefix(`/phpmyadmin`)'
-      - 'traefik.http.routers.pma.entrypoints=web'
-      - 'traefik.http.routers.pma.priority=200'
-      - 'traefik.http.middlewares.pma-slash.redirectregex.regex=^https?://([^/]+)/phpmyadmin$$'
-      - 'traefik.http.middlewares.pma-slash.redirectregex.replacement=https://$${1}/phpmyadmin/'
-      - 'traefik.http.middlewares.pma-slash.redirectregex.permanent=true'
-      - 'traefik.http.routers.pma.middlewares=pma-slash'
-      - 'traefik.http.services.pma.loadbalancer.server.port=80'
 
 networks:
   edge:

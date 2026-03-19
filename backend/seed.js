@@ -1,13 +1,20 @@
-const mysql = require('mysql2/promise');
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
 const fs = require('fs');
 const path = require('path');
 
 async function seedDatabase() {
-    const pool = mysql.createPool({
-        host: 'localhost',
-        user: 'azfin_user',
-        password: 'azfin_password',
-        database: 'azfin_db'
+    const dbPath = process.env.DB_PATH || path.join(__dirname, 'uploads', 'azfin_db.sqlite');
+    
+    // Ensure directory exists
+    const dir = path.dirname(dbPath);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    const db = await open({
+        filename: dbPath,
+        driver: sqlite3.Database
     });
 
     try {
@@ -15,9 +22,19 @@ async function seedDatabase() {
         const defaults = JSON.parse(fs.readFileSync(defaultsPath, 'utf-8'));
 
         const content = JSON.stringify(defaults);
-        await pool.execute(
-            'INSERT INTO site_settings (id, content) VALUES (1, ?) ON DUPLICATE KEY UPDATE content = ?',
-            [content, content]
+        
+        // Ensure table exists (though server.js usually does this, seed might run independently)
+        await db.run(`
+            CREATE TABLE IF NOT EXISTS site_settings (
+                id INTEGER PRIMARY KEY,
+                content TEXT NOT NULL,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        await db.run(
+            'INSERT INTO site_settings (id, content) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET content = excluded.content',
+            [content]
         );
 
         console.log('✅ Database seeded successfully with default content');

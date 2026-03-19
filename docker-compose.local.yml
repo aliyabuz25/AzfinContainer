@@ -1,8 +1,4 @@
 services:
-  db:
-    volumes:
-      - ./datastore/mysql:/var/lib/mysql
-
   azfin-backend:
     volumes:
       - ./datastore/uploads:/app/uploads
@@ -12,10 +8,6 @@ services:
   azfin-frontend:
     ports:
       - "901:901"
-
-  phpmyadmin:
-    ports:
-      - "8081:80"
 
 networks:
   edge:
