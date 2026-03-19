@@ -26,8 +26,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       PORT: "3001"
       UPLOADS_DIR: "/app/uploads"

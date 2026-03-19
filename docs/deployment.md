@@ -52,7 +52,7 @@ EXPOSE 901
 
 ## 6. Portainer Stack template
 
-Use this stack template responsibly. Do not deploy the backend without a reachable MySQL service; otherwise `azfin-backend` will stay in degraded mode and DB-backed admin features will fail.
+Use this stack template responsibly. The backend is designed to start in degraded mode and keep retrying MySQL in the background, so the stack should still deploy even if the database is slow to become healthy.
 
 ```yaml
 services:
@@ -79,8 +79,7 @@ services:
     image: azfin-backend:latest
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       PORT: "3001"
       DB_HOST: db
@@ -137,3 +136,4 @@ docker ps | grep azfin
 - Keep API paths in the router rule in sync (`/api`, `/uploads`, and any new prefixes such as `/cdn`).
 - Remove macOS metadata directories (`__MACOSX`, `._*`) before bundling the ZIP.
 - MySQL environment variables are only applied on first initialization of the data directory. If you reuse an old `/var/lib/mysql`, changed passwords will not be rewritten into that volume.
+- `azfin-backend` no longer waits for `db` to become `healthy` during stack startup. This avoids Portainer aborting the whole deploy when MySQL is merely slow; the backend keeps retrying the DB connection on its own.
