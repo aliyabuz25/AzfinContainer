@@ -52,16 +52,41 @@ EXPOSE 901
 
 ## 6. Portainer Stack template
 
-Use this stack template responsibly:
+Use this stack template responsibly. Do not deploy the backend without a reachable MySQL service; otherwise `azfin-backend` will stay in degraded mode and DB-backed admin features will fail.
 
 ```yaml
 services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: azfin_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: azfin_user
+      MYSQL_PASSWORD: azfin_password
+    volumes:
+      - /datastore/<app>/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
+      start_period: 60s
+    networks:
+      - edge
+
   azfin-backend:
     image: azfin-backend:latest
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       PORT: "3001"
-      PUBLIC_BASE_URL: ""
+      DB_HOST: db
+      DB_USER: azfin_user
+      DB_PASSWORD: azfin_password
+      DB_NAME: azfin_db
     volumes:
       - /datastore/<app>/uploads:/app/uploads
     networks:

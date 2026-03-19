@@ -25,7 +25,7 @@ Bu repo, AZFIN projesinin Port 901 ve yerel backend (uploads) desteği ile reviz
 
 ## Kullanılan Teknolojiler
 - React (Vite)
-- Node.js (Express & Multer)
+- Node.js (Express, Multer, mysql2)
 - Nginx
 - Docker & Traefik
-- Supabase (Veritabanı ve Auth için)
+- MySQL 8

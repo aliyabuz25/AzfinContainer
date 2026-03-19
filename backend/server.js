@@ -49,9 +49,24 @@ const dbConfig = {
 };
 
 let pool;
+let dbReady = false;
+let dbInitStartedAt = null;
+let lastDbInitError = null;
+let dbInitPromise = null;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const PASSWORD_HASH_PREFIX = 'scrypt';
+
+function isDbAvailable() {
+    return Boolean(pool) && dbReady;
+}
+
+function getDbUnavailableMessage() {
+    if (lastDbInitError?.message) {
+        return `Database is not ready yet: ${lastDbInitError.message}`;
+    }
+    return 'Database initialization is still in progress. Please try again shortly.';
+}
 
 function hashPassword(password) {
     const salt = crypto.randomBytes(16).toString('hex');
@@ -1021,6 +1036,7 @@ async function sendSmtpTestEmail(payload) {
 
 async function initDb() {
     try {
+        dbReady = false;
         pool = mysql.createPool(dbConfig);
         console.log('Connected to MySQL database');
 
@@ -1157,8 +1173,12 @@ async function initDb() {
         writeCurrentSmtpSettings(seededSmtp);
         await ensurePersistentStateRecovered();
 
+        dbReady = true;
+        lastDbInitError = null;
         console.log('Database tables verified/created');
     } catch (err) {
+        dbReady = false;
+        lastDbInitError = err;
         if (pool) {
             try {
                 await pool.end();
@@ -1179,6 +1199,7 @@ async function initDbWithRetry() {
             await initDb();
             return;
         } catch (err) {
+            lastDbInitError = err;
             console.error(`Database initialization failed (attempt ${attempt}):`, err.message);
             if (DB_MAX_RETRIES > 0 && attempt >= DB_MAX_RETRIES) {
                 process.exit(1);
@@ -1188,6 +1209,13 @@ async function initDbWithRetry() {
     }
 }
 
+function startDbInitialization() {
+    if (dbInitPromise) return dbInitPromise;
+    dbInitStartedAt = new Date().toISOString();
+    dbInitPromise = initDbWithRetry();
+    return dbInitPromise;
+}
+
 // Ensure uploads directory exists
 if (!fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -1195,6 +1223,29 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 
 app.use(cors());
 app.use(express.json({ limit: JSON_BODY_LIMIT }));
+
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') return next();
+
+    const isOptionalRoute = req.path === '/api/health'
+        || req.path === '/api/upload'
+        || req.path === '/api/settings'
+        || req.path === '/api/admin/smtp-settings'
+        || req.path === '/api/admin/smtp-settings/test';
+
+    if (isOptionalRoute || !req.path.startsWith('/api/')) {
+        return next();
+    }
+
+    if (isDbAvailable()) {
+        return next();
+    }
+
+    return res.status(503).json({
+        error: getDbUnavailableMessage(),
+        code: 'DB_NOT_READY'
+    });
+});
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static(UPLOADS_DIR));
@@ -1402,12 +1453,21 @@ app.post('/api/login', async (req, res) => {
 // --- SETTINGS ENDPOINTS ---
 app.get('/api/settings', async (req, res) => {
     try {
-        const [rows] = await pool.execute('SELECT content FROM site_settings WHERE id = 1');
-        const dbContent = rows[0] ? parseDbJson(rows[0].content, {}) : {};
-        const historyContent = await getLatestSiteSettingsHistory() || {};
+        let dbContent = {};
+        let historyContent = {};
         const fileContent = readCurrentSiteContent();
+        let currentSitemap = readCurrentSitemap();
+
+        if (isDbAvailable()) {
+            const [rows] = await pool.execute('SELECT content FROM site_settings WHERE id = 1');
+            dbContent = rows[0] ? parseDbJson(rows[0].content, {}) : {};
+            historyContent = await getLatestSiteSettingsHistory() || {};
+            if (!currentSitemap) {
+                currentSitemap = await getLatestSitemapHistory();
+            }
+        }
+
         const content = { ...historyContent, ...fileContent, ...dbContent };
-        const currentSitemap = readCurrentSitemap() || await getLatestSitemapHistory();
         if (currentSitemap) {
             content.navigation = currentSitemap;
         }
@@ -1422,8 +1482,17 @@ app.post('/api/settings', async (req, res) => {
         const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
         writeCurrentSiteContent(payload);
         writeCurrentSitemap(payload.navigation);
+
+        if (!isDbAvailable()) {
+            return res.json({
+                success: true,
+                persisted: 'file',
+                warning: getDbUnavailableMessage()
+            });
+        }
+
         await persistSiteSettings(payload);
-        res.json({ success: true });
+        res.json({ success: true, persisted: 'database' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -1431,7 +1500,9 @@ app.post('/api/settings', async (req, res) => {
 
 app.get('/api/admin/smtp-settings', async (req, res) => {
     try {
-        const settings = await getSmtpSettings();
+        const settings = isDbAvailable()
+            ? await getSmtpSettings()
+            : normalizeSmtpSettings(readCurrentSmtpSettings() || DEFAULT_SMTP_SETTINGS);
         res.json(settings);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1441,8 +1512,20 @@ app.get('/api/admin/smtp-settings', async (req, res) => {
 app.post('/api/admin/smtp-settings', async (req, res) => {
     try {
         const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
+        const normalized = normalizeSmtpSettings(payload);
+
+        if (!isDbAvailable()) {
+            writeCurrentSmtpSettings(normalized);
+            return res.json({
+                success: true,
+                settings: normalized,
+                persisted: 'file',
+                warning: getDbUnavailableMessage()
+            });
+        }
+
         const settings = await saveSmtpSettings(payload);
-        res.json({ success: true, settings });
+        res.json({ success: true, settings, persisted: 'database' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -1657,14 +1740,21 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 
 // Basic health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok' });
+    res.status(isDbAvailable() ? 200 : 503).json({
+        status: isDbAvailable() ? 'ok' : 'degraded',
+        dbReady: isDbAvailable(),
+        dbInitStartedAt,
+        dbError: lastDbInitError?.message || null
+    });
 });
 
 async function startServer() {
-    await initDbWithRetry();
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`Backend server running on port ${PORT}`);
         console.log(`Uploads directory: ${UPLOADS_DIR}`);
+        startDbInitialization().catch((err) => {
+            console.error('Background database initialization failed:', err.message);
+        });
     });
 }
 

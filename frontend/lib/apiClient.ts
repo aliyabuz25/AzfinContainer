@@ -1,5 +1,26 @@
 const API_BASE_URL = '/api';
 
+const normalizeSnippet = (value: string, maxLength = 220): string => {
+    const normalized = value.replace(/\s+/g, ' ').trim();
+    if (!normalized) return '';
+    if (normalized.length <= maxLength) return normalized;
+    return `${normalized.slice(0, maxLength - 3)}...`;
+};
+
+const extractHtmlErrorMessage = (html: string): string | null => {
+    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    if (titleMatch?.[1]) {
+        return normalizeSnippet(titleMatch[1].replace(/\s*\|\s*/g, ' - '), 140);
+    }
+
+    const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    if (h1Match?.[1]) {
+        return normalizeSnippet(h1Match[1].replace(/<[^>]+>/g, ' '), 140);
+    }
+
+    return null;
+};
+
 const parseErrorMessage = async (response: Response): Promise<string> => {
     const fallback = `API error (${response.status})`;
     let payload: any = null;
@@ -9,7 +30,11 @@ const parseErrorMessage = async (response: Response): Promise<string> => {
     } catch (_) {
         try {
             const text = (await response.clone().text()).trim();
-            if (text) return `${fallback}: ${text}`;
+            if (text) {
+                const htmlMessage = extractHtmlErrorMessage(text);
+                if (htmlMessage) return `${fallback}: ${htmlMessage}`;
+                return `${fallback}: ${normalizeSnippet(text)}`;
+            }
         } catch (_) {
             // noop
         }
