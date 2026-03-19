@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
+import { apiClient, isDbNotReadyError, isRecoverableApiError, retryDbReady } from '../lib/apiClient';
 import {
   fetchAdminBlogPosts,
   upsertBlogPost,
@@ -290,13 +290,15 @@ const Admin: React.FC = () => {
           setAdminUsers(Array.isArray(users) ? users : []);
         }
       } catch (err) {
-        if (!isDbNotReadyError(err)) {
+        if (!isRecoverableApiError(err)) {
           console.error('Auth bootstrap failed:', err);
         }
         setLoginError(
           isDbNotReadyError(err)
             ? 'Verilənlər bazası hələ hazır deyil. Bir neçə saniyə sonra yenidən yoxlayın.'
-            : 'Admin vəziyyəti yoxlanarkən xəta baş verdi.'
+            : isRecoverableApiError(err)
+              ? 'Serverə bağlantı qurulmadı. Bir neçə saniyə sonra yenidən yoxlayın.'
+              : 'Admin vəziyyəti yoxlanarkən xəta baş verdi.'
         );
       } finally {
         setAuthLoading(false);
@@ -396,11 +398,15 @@ const Admin: React.FC = () => {
           clearTempDraft();
         }
       } catch (err) {
-        if (!isDbNotReadyError(err)) {
+        if (!isRecoverableApiError(err)) {
           console.error('Initial load error:', err);
           toast.error('Məlumatların yüklənməsində xəta baş verdi.');
         } else {
-          setStatus('Verilənlər bazası hələ hazır deyil. Sistem avtomatik yenidən yoxladı.');
+          setStatus(
+            isDbNotReadyError(err)
+              ? 'Verilənlər bazası hələ hazır deyil. Sistem avtomatik yenidən yoxladı.'
+              : 'Server müvəqqəti əlçatmazdır. Sistem avtomatik yenidən yoxladı.'
+          );
         }
       } finally {
         setLoading(false);

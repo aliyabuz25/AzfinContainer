@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
+import { apiClient, isRecoverableApiError, retryDbReady } from '../lib/apiClient';
 import siteContentDefaults from '../siteContentDefaults.json';
 
 export type SiteContent = typeof siteContentDefaults;
@@ -16,7 +16,7 @@ export const fetchSiteSettings = async () => {
       content: content || {},
     };
   } catch (err) {
-    if (!isDbNotReadyError(err)) {
+    if (!isRecoverableApiError(err)) {
       console.error('Error in fetchSiteSettings:', err);
     }
     return {

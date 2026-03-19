@@ -1,4 +1,4 @@
-import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
+import { apiClient, isRecoverableApiError, retryDbReady } from '../lib/apiClient';
 import { TrainingItem } from '../types';
 import { normalizeStatus, parseStringList, parseTrainingSyllabus } from './fetchData';
 
@@ -29,7 +29,7 @@ export const fetchAdminTrainings = async (): Promise<TrainingItem[]> => {
             highlightWord: row.highlightWord
         }));
     } catch (error) {
-        if (isDbNotReadyError(error)) return [];
+        if (isRecoverableApiError(error)) return [];
         console.error('Failed to fetch trainings for admin', error);
         return [];
     }

@@ -1,6 +1,13 @@
 const API_BASE_URL = '/api';
 const DEFAULT_DB_RETRY_DELAY_MS = 2000;
 const DEFAULT_DB_RETRIES = 6;
+const TRANSIENT_NETWORK_PATTERNS = [
+    'load failed',
+    'failed to fetch',
+    'networkerror',
+    'network request failed',
+    'fetch failed',
+];
 
 const normalizeSnippet = (value: string, maxLength = 220): string => {
     const normalized = value.replace(/\s+/g, ' ').trim();
@@ -61,6 +68,37 @@ export const isDbNotReadyError = (error: unknown): boolean => {
     return message.includes('DB_NOT_READY') || message.includes('Database is not ready yet');
 };
 
+export const isTransientNetworkError = (error: unknown): boolean => {
+    if (!(error instanceof Error)) return false;
+    const message = error.message.toLowerCase();
+    return (
+        error instanceof TypeError ||
+        TRANSIENT_NETWORK_PATTERNS.some((pattern) => message.includes(pattern))
+    );
+};
+
+export const isRecoverableApiError = (error: unknown): boolean => {
+    return isDbNotReadyError(error) || isTransientNetworkError(error);
+};
+
+const normalizeRequestError = (error: unknown): Error => {
+    if (isTransientNetworkError(error)) {
+        const message = error instanceof Error ? error.message : 'Server is temporarily unreachable';
+        return new Error(`Network request failed: ${normalizeSnippet(message, 140)}`);
+    }
+
+    if (error instanceof Error) return error;
+    return new Error(String(error ?? 'Request failed'));
+};
+
+const request = async (endpoint: string, init?: RequestInit): Promise<Response> => {
+    try {
+        return await fetch(`${API_BASE_URL}${endpoint}`, init);
+    } catch (error) {
+        throw normalizeRequestError(error);
+    }
+};
+
 export const retryDbReady = async <T>(
     operation: () => Promise<T>,
     options?: {
@@ -77,7 +115,7 @@ export const retryDbReady = async <T>(
             return await operation();
         } catch (error) {
             lastError = error;
-            if (!isDbNotReadyError(error) || attempt === retries) {
+            if (!isRecoverableApiError(error) || attempt === retries) {
                 throw error;
             }
             await wait(delayMs);
@@ -89,11 +127,11 @@ export const retryDbReady = async <T>(
 
 export const apiClient = {
     async get(endpoint: string) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`);
+        const response = await request(endpoint);
         return handleResponse(response);
     },
     async post(endpoint: string, body: any) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const response = await request(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -101,7 +139,7 @@ export const apiClient = {
         return handleResponse(response);
     },
     async patch(endpoint: string, body: any) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const response = await request(endpoint, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -109,7 +147,7 @@ export const apiClient = {
         return handleResponse(response);
     },
     async delete(endpoint: string) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const response = await request(endpoint, {
             method: 'DELETE'
         });
         return handleResponse(response);
@@ -117,7 +155,7 @@ export const apiClient = {
     async upload(file: File) {
         const formData = new FormData();
         formData.append('file', file);
-        const response = await fetch(`${API_BASE_URL}/upload`, {
+        const response = await request('/upload', {
             method: 'POST',
             body: formData
         });

@@ -1,4 +1,4 @@
-import { apiClient, isDbNotReadyError, retryDbReady } from '../lib/apiClient';
+import { apiClient, isRecoverableApiError, retryDbReady } from '../lib/apiClient';
 import { BlogItem, TrainingItem, TrainingSyllabusItem } from '../types';
 
 const mapBlogRow = (row: any): BlogItem => ({
@@ -108,7 +108,7 @@ export const fetchBlogPosts = async (): Promise<BlogItem[]> => {
     const data = await retryDbReady(() => apiClient.get('/blog'));
     return (data ?? []).map(mapBlogRow);
   } catch (error) {
-    if (isDbNotReadyError(error)) return [];
+    if (isRecoverableApiError(error)) return [];
     console.error('Failed to fetch blog posts:', error);
     return [];
   }
@@ -129,7 +129,7 @@ export const fetchTrainings = async (): Promise<TrainingItem[]> => {
     const data = await retryDbReady(() => apiClient.get('/trainings'));
     return (data ?? []).map(mapTrainingRow);
   } catch (error) {
-    if (isDbNotReadyError(error)) return [];
+    if (isRecoverableApiError(error)) return [];
     console.error('Failed to fetch trainings:', error);
     return [];
   }
