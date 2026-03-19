@@ -22,7 +22,7 @@ if [ ! -d "$DATASTORE_PATH" ]; then
   mkdir -p "$DATASTORE_PATH"
 fi
 
-for sub in mysql uploads nginx-logs; do
+for sub in mysql mysql/data uploads nginx-logs; do
   TARGET="$DATASTORE_PATH/$sub"
   if [ ! -d "$TARGET" ]; then
     info "Ensuring $TARGET exists"

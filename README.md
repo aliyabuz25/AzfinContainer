@@ -13,7 +13,7 @@ Bu repo, AZFIN projesinin Port 901 ve yerel backend (uploads) desteği ile reviz
 1. Portainer üzerinde yeni bir **Stack** oluşturun.
 2. Aşağıdaki servisleri ayağa kaldıracak olan `docker-compose.yml` dosyasını kullanın.
 3. Kalıcı veri için `AZFIN_DATA_ROOT` tanımlayın. Tanımlamazsanız varsayılan olarak proje içindeki `./datastore` klasörü kullanılır.
-4. Bu klasör altında en az `mysql/` ve `uploads/` dizinlerinin kalıcı olarak tutulduğundan emin olun.
+4. Bu klasör altında en az `mysql/data/` ve `uploads/` dizinlerinin kalıcı olarak tutulduğundan emin olun.
 
 ### Önemli Notlar
 - Uygulama **901** portunda çalışacak şekilde yapılandırılmıştır.

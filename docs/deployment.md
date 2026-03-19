@@ -59,6 +59,17 @@ services:
   db:
     image: mysql:8.0
     restart: unless-stopped
+    entrypoint:
+      - sh
+      - -lc
+      - |
+          set -e
+          if [ -d /var/lib/mysql/mysql ] || [ -f /var/lib/mysql/ibdata1 ]; then
+            exec docker-entrypoint.sh mysqld
+          fi
+          mkdir -p /var/lib/mysql/data
+          chown -R mysql:mysql /var/lib/mysql/data
+          exec docker-entrypoint.sh mysqld --datadir=/var/lib/mysql/data
     environment:
       MYSQL_DATABASE: azfin_db
       MYSQL_ROOT_PASSWORD: root_password
@@ -137,3 +148,4 @@ docker ps | grep azfin
 - Remove macOS metadata directories (`__MACOSX`, `._*`) before bundling the ZIP.
 - MySQL environment variables are only applied on first initialization of the data directory. If you reuse an old `/var/lib/mysql`, changed passwords will not be rewritten into that volume.
 - `azfin-backend` no longer waits for `db` to become `healthy` during stack startup. This avoids Portainer aborting the whole deploy when MySQL is merely slow; the backend keeps retrying the DB connection on its own.
+- The MySQL container now auto-falls back to `/var/lib/mysql/data` when the mount root contains stray files but not a valid MySQL datadir. This avoids the repeated `--initialize specified but the data directory has files in it` crash loop.

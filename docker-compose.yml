@@ -3,6 +3,17 @@ services:
     container_name: azfin2
     image: mysql:8.0
     restart: unless-stopped
+    entrypoint:
+      - sh
+      - -lc
+      - |
+          set -e
+          if [ -d /var/lib/mysql/mysql ] || [ -f /var/lib/mysql/ibdata1 ]; then
+            exec docker-entrypoint.sh mysqld
+          fi
+          mkdir -p /var/lib/mysql/data
+          chown -R mysql:mysql /var/lib/mysql/data
+          exec docker-entrypoint.sh mysqld --datadir=/var/lib/mysql/data
     environment:
       MYSQL_DATABASE: azfin_db
       MYSQL_ROOT_PASSWORD: root_password
@@ -81,8 +92,9 @@ services:
     tmpfs:
       - /sessions:uid=33,gid=33,mode=1733
     volumes:
-      - ./phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
+      - ./phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
       - ./phpmyadmin/apache-subpath.conf:/etc/apache2/conf-enabled/phpmyadmin-subpath.conf:ro
+      - ./phpmyadmin/servername.conf:/etc/apache2/conf-enabled/servername.conf:ro
     networks:
       - edge
     labels:
