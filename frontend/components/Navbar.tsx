@@ -68,17 +68,17 @@ const Navbar: React.FC = () => {
       {/* Main Navigation Bar */}
       <nav className={`bg-white border-b border-slate-100 transition-all duration-300 ${isScrolled ? 'h-[4.5rem] md:h-24' : 'h-20 md:h-32'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-          <div className="flex justify-between items-center h-full">
-            <Link to="/" className="flex items-center gap-3 flex-shrink-0 group/logo">
+          <div className="flex justify-between items-center gap-3 h-full">
+            <Link to="/" className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink group/logo">
               {loading ? (
-                <div className={`flex items-center justify-center transition-all ${isScrolled ? 'w-16 h-16 md:w-24 md:h-24' : 'w-20 h-20 md:w-28 md:h-28'}`}>
+                <div className={`flex items-center justify-center transition-all ${isScrolled ? 'w-14 h-14 md:w-24 md:h-24' : 'w-16 h-16 md:w-28 md:h-28'}`}>
                   <Loader2 className="h-5 w-5 text-accent animate-spin" />
                 </div>
               ) : navbarLogoSrc ? (
                 <img
                   src={navbarLogoSrc}
                   alt={siteContent.settings.siteTitle || 'AZFIN'}
-                  className={`object-contain transition-all ${isScrolled ? 'h-[4.25rem] md:h-[5.5rem] max-w-[270px] md:max-w-[360px]' : 'h-[4.75rem] md:h-[6.5rem] max-w-[310px] md:max-w-[420px]'}`}
+                  className={`object-contain transition-all max-w-full ${isScrolled ? 'h-[3.5rem] sm:h-[4.25rem] md:h-[5.5rem] max-w-[150px] sm:max-w-[220px] md:max-w-[360px]' : 'h-[4rem] sm:h-[4.75rem] md:h-[6.5rem] max-w-[170px] sm:max-w-[240px] md:max-w-[420px]'}`}
                 />
               ) : (
                 <>
@@ -160,7 +160,7 @@ const Navbar: React.FC = () => {
               ))}
             </div>
 
-            <div className="flex items-center h-full">
+            <div className="hidden md:flex items-center h-full">
               <Link
                 to="/contact"
                 className={`bg-accent text-white font-bold text-[14px] uppercase tracking-[0.1em] hover:bg-[#2d8c73] transition-all shadow-sm text-center flex items-center justify-center ${isScrolled ? 'px-6 py-2 rounded-sm h-10' : 'px-8 py-4 rounded-sm h-16'}`}
@@ -169,7 +169,7 @@ const Navbar: React.FC = () => {
               </Link>
             </div>
 
-            <button onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2 text-primary ml-4">
+            <button onClick={() => setIsOpen(!isOpen)} className="md:hidden shrink-0 rounded-sm p-2 text-primary hover:bg-slate-50 transition-colors">
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
@@ -177,7 +177,7 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 fixed inset-0 top-20 z-50 p-6 overflow-y-auto">
+          <div className={`md:hidden bg-white border-t border-slate-100 fixed inset-x-0 bottom-0 ${isScrolled ? 'top-[4.5rem]' : 'top-20'} z-50 p-6 overflow-y-auto`}>
             <div className="flex flex-col gap-5">
               {resolvedNavItems.map((item) => (
                 <div key={item.label} className="border-b border-slate-50 pb-4">

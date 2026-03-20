@@ -89,51 +89,51 @@ const Home: React.FC = () => {
           </div>
         </div>
       ) : null}
-      <section className="relative bg-slate-50 border-b border-slate-100 overflow-hidden">
+      <section className="relative overflow-hidden border-b border-slate-100 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px] items-center gap-16 py-16">
-            <div className="space-y-8 relative z-10">
+          <div className="grid min-h-[auto] grid-cols-1 items-center gap-10 py-12 sm:gap-12 sm:py-14 lg:min-h-[600px] lg:grid-cols-2 lg:gap-16 lg:py-16">
+            <div className="relative z-10 space-y-6 sm:space-y-8">
               {licensePdfUrl ? (
                 <button
                   type="button"
                   onClick={() => setIsLicenseModalOpen(true)}
-                  className="inline-flex items-center gap-2.5 rounded-full bg-accent/10 px-5 py-2 text-[12px] font-bold uppercase tracking-[0.22em] text-accent transition-all hover:bg-accent hover:text-white"
+                  className="inline-flex max-w-full items-center justify-center gap-2.5 rounded-full bg-accent/10 px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-accent transition-all hover:bg-accent hover:text-white sm:px-5 sm:text-[12px] sm:tracking-[0.22em]"
                 >
                   <ShieldCheck className="h-4 w-4" />
                   {hero.heroBadge}
                 </button>
               ) : (
-                <div className="inline-flex items-center gap-2.5 bg-accent/10 text-accent px-5 py-2 rounded-full text-[12px] font-bold uppercase tracking-[0.22em]">
+                <div className="inline-flex max-w-full items-center justify-center gap-2.5 rounded-full bg-accent/10 px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-accent sm:px-5 sm:text-[12px] sm:tracking-[0.22em]">
                   <ShieldCheck className="h-4 w-4" />
                   {hero.heroBadge}
                 </div>
               )}
-              <h1 className="text-4xl md:text-6xl font-black text-primary leading-[1.1] tracking-tighter">
+              <h1 className="text-3xl font-black leading-[1.05] tracking-tighter text-primary sm:text-4xl md:text-6xl">
                 {hero.heroTitlePrefix} <br />
                 <span className="text-accent italic">
                   {hero.heroTitleHighlight} {hero.heroTitleSuffix}
                 </span>
               </h1>
-              <p className="text-base text-slate-500 font-medium leading-relaxed max-w-lg">
+              <p className="max-w-xl text-base font-medium leading-relaxed text-slate-500">
                 {hero.heroSummary}
               </p>
-              <div className="flex flex-wrap gap-4 pt-4">
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap sm:gap-4 sm:pt-4">
                 {hero.heroPrimaryActionUrl === '#modal' ? (
-                  <button onClick={() => setIsModalOpen(true)} className="bg-accent text-white px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all flex items-center gap-3 shadow-xl">
+                  <button onClick={() => setIsModalOpen(true)} className="flex w-full items-center justify-center gap-3 rounded-sm bg-accent px-6 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-xl transition-all hover:bg-primary-medium sm:w-auto sm:px-10 sm:py-5 sm:text-[11px] sm:tracking-[0.2em]">
                     {hero.heroPrimaryAction} <ArrowRight className="h-4 w-4" />
                   </button>
                 ) : (
-                  <Link to={hero.heroPrimaryActionUrl || '/services'} className="bg-accent text-white px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-medium transition-all flex items-center gap-3 shadow-xl">
+                  <Link to={hero.heroPrimaryActionUrl || '/services'} className="flex w-full items-center justify-center gap-3 rounded-sm bg-accent px-6 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-xl transition-all hover:bg-primary-medium sm:w-auto sm:px-10 sm:py-5 sm:text-[11px] sm:tracking-[0.2em]">
                     {hero.heroPrimaryAction} <ArrowRight className="h-4 w-4" />
                   </Link>
                 )}
 
                 {hero.heroSecondaryActionUrl === '#modal' ? (
-                  <button onClick={() => setIsModalOpen(true)} className="bg-white border border-slate-200 text-primary px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 transition-all shadow-sm">
+                  <button onClick={() => setIsModalOpen(true)} className="w-full rounded-sm border border-slate-200 bg-white px-6 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-primary shadow-sm transition-all hover:bg-slate-50 sm:w-auto sm:px-10 sm:py-5 sm:text-[11px] sm:tracking-[0.2em]">
                     {hero.heroSecondaryAction}
                   </button>
                 ) : (
-                  <Link to={hero.heroSecondaryActionUrl || '/about'} className="bg-white border border-slate-200 text-primary px-10 py-5 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 transition-all shadow-sm">
+                  <Link to={hero.heroSecondaryActionUrl || '/about'} className="w-full rounded-sm border border-slate-200 bg-white px-6 py-4 text-center text-[10px] font-black uppercase tracking-[0.16em] text-primary shadow-sm transition-all hover:bg-slate-50 sm:w-auto sm:px-10 sm:py-5 sm:text-[11px] sm:tracking-[0.2em]">
                     {hero.heroSecondaryAction}
                   </Link>
                 )}
@@ -158,18 +158,18 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      <section className="py-20 bg-white">
+      <section className="bg-white py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-24">
+          <div className="grid grid-cols-2 gap-8 sm:gap-12 md:grid-cols-4 md:gap-24">
             {(Array.isArray(stats) ? stats : []).map((stat, idx) => {
               return (
                 <div key={`${stat.label}-${idx}`} className="flex flex-col items-start group">
-                  <span className="text-4xl md:text-[2.75rem] font-black text-primary tracking-tighter italic uppercase mb-2 group-hover:text-accent transition-colors duration-500">
+                  <span className="mb-2 text-3xl font-black uppercase tracking-tighter text-primary transition-colors duration-500 group-hover:text-accent sm:text-4xl md:text-[2.75rem]">
                     {formatStatValue(stat.value)}
                   </span>
                   <div className="w-full h-[2px] bg-accent/30 group-hover:bg-accent transition-colors duration-500 mb-3"></div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
+                  <span className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400 sm:tracking-[0.4em]">
                     {stat.label}
                   </span>
                 </div>
@@ -261,11 +261,11 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center">
           <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400">{hero.clientsHeading}</span>
         </div>
-        <div className="relative">
+        <div className="relative overflow-hidden">
           {normalizedClients.length > 0 && (
-            <div className="flex animate-marquee whitespace-nowrap gap-12 items-center">
+            <div className="flex animate-marquee items-center gap-8 whitespace-nowrap sm:gap-12">
               {[...normalizedClients, ...normalizedClients].map((client, idx) => (
-                <div key={idx} className="min-w-[170px] min-h-[120px] flex flex-col items-center justify-center gap-3 bg-slate-50 px-6 py-5 rounded-sm text-primary/40 font-bold uppercase tracking-tighter grayscale hover:grayscale-0 transition-all cursor-default text-center">
+                <div key={idx} className="flex min-h-[110px] min-w-[140px] cursor-default flex-col items-center justify-center gap-3 rounded-sm bg-slate-50 px-4 py-5 text-center font-bold uppercase tracking-tighter text-primary/40 grayscale transition-all hover:grayscale-0 sm:min-h-[120px] sm:min-w-[170px] sm:px-6">
                   {client.logo ? (
                     <img src={client.logo} alt={client.name} className="h-12 w-auto max-w-[120px] object-contain mix-blend-multiply opacity-60 hover:opacity-100 transition-all" />
                   ) : null}
@@ -278,23 +278,23 @@ const Home: React.FC = () => {
           )}
         </div>
       </section>
-      <section className="bg-primary py-16 relative overflow-hidden">
+      <section className="relative overflow-hidden bg-primary py-16">
         <div className="absolute inset-0 bg-accent/5 blur-[120px] -z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center gap-8 relative z-10">
-          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
+          <h2 className="text-3xl font-black leading-none tracking-tighter text-white uppercase italic md:text-5xl">
             {hero.ctaHeading}
           </h2>
           {hero.ctaButtonUrl === '#modal' ? (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-accent text-white px-16 py-5 rounded-sm font-black text-[13px] uppercase tracking-[0.3em] hover:bg-[#2d8c73] transition-all shadow-2xl whitespace-nowrap"
+              className="w-full max-w-full rounded-sm bg-accent px-6 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-2xl transition-all hover:bg-[#2d8c73] sm:w-auto sm:px-16 sm:py-5 sm:text-[13px] sm:tracking-[0.3em]"
             >
               {hero.ctaButtonText}
             </button>
           ) : (
             <Link
               to={hero.ctaButtonUrl || '#'}
-              className="bg-accent text-white px-16 py-5 rounded-sm font-black text-[13px] uppercase tracking-[0.3em] hover:bg-[#2d8c73] transition-all shadow-2xl whitespace-nowrap"
+              className="w-full max-w-full rounded-sm bg-accent px-6 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-2xl transition-all hover:bg-[#2d8c73] sm:w-auto sm:px-16 sm:py-5 sm:text-[13px] sm:tracking-[0.3em]"
             >
               {hero.ctaButtonText}
             </Link>

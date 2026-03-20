@@ -195,7 +195,7 @@ const Footer: React.FC = () => {
                 <img
                   src={footerLogoSrc}
                   alt={siteContent.settings.siteTitle || 'AZFIN'}
-                  className="h-20 md:h-32 max-w-[340px] object-contain"
+                  className="h-20 max-w-[220px] object-contain md:h-32 md:max-w-[340px]"
                 />
               ) : (
                 <span className="font-black text-4xl tracking-tighter text-white">{brandText}</span>
