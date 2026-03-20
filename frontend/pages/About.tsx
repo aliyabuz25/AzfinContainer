@@ -83,19 +83,19 @@ const About: React.FC = () => {
   return (
     <div className="flex flex-col bg-white min-h-screen">
       {/* Header - Consistent with Services/Academy */}
-      <div className="bg-slate-50 border-b border-slate-100 py-24">
+      <div className="bg-slate-50 border-b border-slate-100 py-16 sm:py-20 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-end justify-between gap-10">
+          <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-end md:gap-10">
             <div className="max-w-2xl">
-              <div className="flex items-center gap-2 text-accent mb-6 text-[10px] font-bold uppercase tracking-[0.4em]">
-                <span className="w-8 h-[1px] bg-accent"></span>
+              <div className="mb-5 flex flex-wrap items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em] text-accent sm:mb-6 sm:text-[10px] sm:tracking-[0.4em]">
+                <span className="h-[1px] w-8 shrink-0 bg-accent"></span>
                 {about.introBadge || 'AZFİN GROUP MMC'}
               </div>
-              <h1 className="text-4xl md:text-5xl font-black text-primary tracking-tight leading-tight uppercase italic">
+              <h1 className="max-w-full break-words text-3xl font-black uppercase italic leading-[1.05] tracking-tight text-primary [overflow-wrap:anywhere] sm:text-4xl md:text-5xl">
                 {headerTitlePrefix} <span className="text-accent">{headerTitleHighlight}</span>
               </h1>
             </div>
-            <p className="text-slate-500 font-bold text-xs max-w-xs border-l-2 border-accent pl-6 pb-2 uppercase tracking-widest leading-relaxed">
+            <p className="w-full max-w-full border-l-2 border-accent pb-2 pl-4 text-[11px] font-bold uppercase leading-relaxed tracking-[0.22em] text-slate-500 sm:max-w-xs sm:pl-6 sm:text-xs sm:tracking-widest">
               {about.introSummary || about.overviewSummary}
             </p>
           </div>
