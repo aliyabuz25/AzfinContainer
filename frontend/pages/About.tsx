@@ -83,11 +83,11 @@ const About: React.FC = () => {
   return (
     <div className="flex flex-col bg-white min-h-screen">
       {/* Header - Consistent with Services/Academy */}
-      <div className="bg-slate-50 border-b border-slate-100 py-16 sm:py-20 md:py-24">
+      <div className="bg-slate-50 border-b border-slate-100 py-10 sm:py-12 md:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-end md:gap-10">
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end md:gap-8">
             <div className="max-w-2xl">
-              <div className="mb-5 flex flex-wrap items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em] text-accent sm:mb-6 sm:text-[10px] sm:tracking-[0.4em]">
+              <div className="mb-4 flex flex-wrap items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em] text-accent sm:mb-5 sm:text-[10px] sm:tracking-[0.4em]">
                 <span className="h-[1px] w-8 shrink-0 bg-accent"></span>
                 {about.introBadge || 'AZFİN GROUP MMC'}
               </div>
@@ -103,7 +103,7 @@ const About: React.FC = () => {
       </div>
 
       {/* Main Content Area with Sidebar */}
-      <section className="py-24">
+      <section className="pt-10 pb-24 sm:pt-12 md:pt-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
 
