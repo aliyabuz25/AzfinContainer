@@ -8,11 +8,13 @@ import ImageWithFallback from '../components/ImageWithFallback';
 import { parseBBCode } from '../utils/bbcode';
 import { updateSeoMeta } from '../utils/seo';
 import { resolveMediaUrl } from '../utils/mediaUrl';
+import { useContent } from '../lib/ContentContext';
 
 const BlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<BlogItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const { content } = useContent();
 
   const actualUrl = typeof window !== 'undefined' ? `${window.location.origin}/blog/${id ?? ''}` : '';
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/share/blog/${id ?? ''}` : '';
@@ -43,15 +45,32 @@ const BlogDetail: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!post) return;
+    const settings = content.settings || {};
+    const defaultSeoTitle = settings.seoTitle || settings.siteTitle || 'Azfin - Audit, Mühasibatlıq və Hüquq';
+    const defaultDescription = content.blog?.heroSummary || settings.siteDescription || 'Azfin Group audit, maliyyə, vergi və hüquq xidmətləri.';
+    const defaultKeywords = settings.seoKeywords || 'audit, vergi, muhasibat, bakı, azerbaycan, konsaltinq';
+
+    if (!post) {
+      updateSeoMeta({
+        title: `Bloq Yazısı | ${defaultSeoTitle}`,
+        description: defaultDescription,
+        keywords: defaultKeywords,
+        url: actualUrl,
+        type: 'website',
+      });
+      return;
+    }
+
     const description = (post.excerpt || post.content || '').replace(/[*_`#>\[\]\(\)!-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 180);
     updateSeoMeta({
       title: `${post.title} | Azfin Bloq`,
       description,
       image: post.image ? resolveMediaUrl(post.image) : undefined,
+      keywords: defaultKeywords,
       url: actualUrl,
+      type: 'article',
     });
-  }, [actualUrl, post]);
+  }, [actualUrl, content, post]);
 
   if (!loading && !post) {
     return <Navigate to="/blog" replace />;

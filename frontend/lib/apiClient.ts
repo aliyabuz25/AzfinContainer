@@ -8,6 +8,11 @@ const TRANSIENT_NETWORK_PATTERNS = [
     'network request failed',
     'fetch failed',
 ];
+let adminAccessToken: string | null = null;
+
+export const setAdminAccessToken = (token: string | null) => {
+    adminAccessToken = token;
+};
 
 const normalizeSnippet = (value: string, maxLength = 220): string => {
     const normalized = value.replace(/\s+/g, ' ').trim();
@@ -92,8 +97,16 @@ const normalizeRequestError = (error: unknown): Error => {
 };
 
 const request = async (endpoint: string, init?: RequestInit): Promise<Response> => {
+    const headers = new Headers(init?.headers);
+    if (adminAccessToken) {
+        headers.set('Authorization', `Bearer ${adminAccessToken}`);
+    }
+
     try {
-        return await fetch(`${API_BASE_URL}${endpoint}`, init);
+        return await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...init,
+            headers,
+        });
     } catch (error) {
         throw normalizeRequestError(error);
     }

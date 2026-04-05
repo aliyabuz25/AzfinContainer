@@ -9,6 +9,7 @@ export const FIELD_CONFIG = [
     { section: 'settings', category: 'Brendinq', field: 'navbarLogo', label: 'Top Navbar Logosu', type: 'image' },
     { section: 'settings', category: 'Brendinq', field: 'footerLogo', label: 'Footer Logosu', type: 'image' },
     { section: 'settings', category: 'Brendinq', field: 'siteTitle', label: 'Saytın Adı (Title)' },
+    { section: 'settings', category: 'SEO və Meta', field: 'seoTitle', label: 'Brauzer / SEO Title' },
     { section: 'settings', category: 'SEO və Meta', field: 'siteDescription', label: 'Sayt Təsviri (Description)', multiline: true },
     { section: 'settings', category: 'SEO və Meta', field: 'seoKeywords', label: 'Açar Sözlər (Keywords)' },
     { section: 'settings', category: 'Əlaqə Məlumatları', field: 'contactEmail', label: 'Əsas E-poçt' },

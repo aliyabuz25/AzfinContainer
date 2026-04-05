@@ -173,7 +173,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ isOpen, onClose, se
                     <input
                       required
                       type="text"
-                      placeholder={forms.auditNamePlaceholder || 'Nümunə: Elvin Məmmədov'}
+                      placeholder={forms.auditNamePlaceholder || 'Nümunə: Ad Soyad'}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"

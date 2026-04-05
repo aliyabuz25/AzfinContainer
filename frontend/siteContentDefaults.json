@@ -1,6 +1,7 @@
 {
   "settings": {
     "siteTitle": "AZFİN GROUP MMC",
+    "seoTitle": "Azfin - Audit, Mühasibatlıq və Hüquq",
     "siteDescription": "Professional Maliyyə, Muhasibatlıq və Audit Xidmətləri",
     "navbarLogo": "",
     "footerLogo": "",
@@ -503,7 +504,7 @@
       "Hüquqi Şəxs",
       "Fiziki Şəxs (Sahibkar)"
     ],
-    "auditNamePlaceholder": "Nümunə: Elvin Məmmədov",
+    "auditNamePlaceholder": "Nümunə: Ad Soyad",
     "auditPhonePlaceholder": "+994 50 000 00 00",
     "auditEmailPlaceholder": "email@shirkat.az",
     "auditSubmitButton": "Sorğunu Göndər",
@@ -518,7 +519,7 @@
     "trainingPhoneLabel": "Telefon nömrəsi *",
     "trainingEmailLabel": "E-poçt ünvanı *",
     "trainingNoteLabel": "Qeyd",
-    "trainingNamePlaceholder": "Nümunə: Elvin Məmmədov",
+    "trainingNamePlaceholder": "Nümunə: Ad Soyad",
     "trainingPhonePlaceholder": "+994 50 000 00 00",
     "trainingEmailPlaceholder": "email@shirkat.az",
     "trainingNotePlaceholder": "Suallarınız varsa qeyd edə bilərsiniz...",

@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { apiClient, isDbNotReadyError, isRecoverableApiError, retryDbReady } from '../lib/apiClient';
+import { apiClient, isDbNotReadyError, isRecoverableApiError, retryDbReady, setAdminAccessToken } from '../lib/apiClient';
 import {
   fetchAdminBlogPosts,
   upsertBlogPost,
@@ -269,26 +269,15 @@ const Admin: React.FC = () => {
   const [accountsLoading, setAccountsLoading] = useState(false);
 
   useEffect(() => {
+    setAdminAccessToken(null);
+
     const initAuth = async () => {
       try {
-        const storedSession = localStorage.getItem('admin_session');
-        if (storedSession) {
-          try {
-            setSession(JSON.parse(storedSession));
-          } catch (e) {
-            localStorage.removeItem('admin_session');
-          }
-        }
-
         const bootstrap = await retryDbReady(() => apiClient.get('/admin/bootstrap'), {
           retries: 10,
           delayMs: 2000,
         });
         setHasAdminAccount(Boolean(bootstrap?.hasAdmin));
-        if (bootstrap?.hasAdmin) {
-          const users = await retryDbReady(() => apiClient.get('/admin/users'));
-          setAdminUsers(Array.isArray(users) ? users : []);
-        }
       } catch (err) {
         if (!isRecoverableApiError(err)) {
           console.error('Auth bootstrap failed:', err);
@@ -306,6 +295,10 @@ const Admin: React.FC = () => {
     };
 
     initAuth();
+
+    return () => {
+      setAdminAccessToken(null);
+    };
   }, []);
 
   const { updateContent } = useContent();
@@ -862,7 +855,7 @@ const Admin: React.FC = () => {
       });
 
       const adminSession = { user: data.user, access_token: data.access_token };
-      localStorage.setItem('admin_session', JSON.stringify(adminSession));
+      setAdminAccessToken(data.access_token);
       setSession(adminSession);
       const users = await apiClient.get('/admin/users');
       setAdminUsers(Array.isArray(users) ? users : []);
@@ -890,7 +883,7 @@ const Admin: React.FC = () => {
       });
 
       const adminSession = { user: data.user, access_token: data.access_token };
-      localStorage.setItem('admin_session', JSON.stringify(adminSession));
+      setAdminAccessToken(data.access_token);
       setSession(adminSession);
       setHasAdminAccount(true);
       const users = await apiClient.get('/admin/users');
@@ -903,7 +896,7 @@ const Admin: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('admin_session');
+    setAdminAccessToken(null);
     setSession(null);
     setAdminUsers([]);
     setAccountUsername('');
@@ -967,7 +960,7 @@ const Admin: React.FC = () => {
               </h1>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">
                 {hasAdminAccount
-                  ? `Xoş Gəlmisən, ${loginUsername || 'Qonaq'}`
+                  ? 'Davam etmək üçün hesabınıza daxil olun'
                   : 'İlk admin hesabını yaradın'}
               </p>
             </div>
@@ -982,7 +975,7 @@ const Admin: React.FC = () => {
                 value={hasAdminAccount ? loginUsername : registerUsername}
                 onChange={(e) => hasAdminAccount ? setLoginUsername(e.target.value) : setRegisterUsername(e.target.value)}
                 className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-primary focus:ring-4 focus:ring-accent/10 outline-none transition-all placeholder:text-slate-300"
-                placeholder="tural"
+                placeholder="İstifadəçi adınızı daxil edin"
               />
             </div>
 

@@ -21,11 +21,15 @@ export const updateSeoMeta = ({
   description,
   image,
   url,
+  keywords,
+  type = 'website',
 }: {
   title: string;
   description: string;
   image?: string;
   url?: string;
+  keywords?: string;
+  type?: string;
 }) => {
   if (typeof document === 'undefined') return;
 
@@ -34,10 +38,13 @@ export const updateSeoMeta = ({
   setMetaContent('meta[name="description"]', { name: 'description' }, description);
   setMetaContent('meta[property="og:title"]', { property: 'og:title' }, title);
   setMetaContent('meta[property="og:description"]', { property: 'og:description' }, description);
-  setMetaContent('meta[property="og:type"]', { property: 'og:type' }, 'article');
+  setMetaContent('meta[property="og:type"]', { property: 'og:type' }, type);
   setMetaContent('meta[name="twitter:card"]', { name: 'twitter:card' }, image ? 'summary_large_image' : 'summary');
   setMetaContent('meta[name="twitter:title"]', { name: 'twitter:title' }, title);
   setMetaContent('meta[name="twitter:description"]', { name: 'twitter:description' }, description);
+  if (keywords) {
+    setMetaContent('meta[name="keywords"]', { name: 'keywords' }, keywords);
+  }
 
   if (url) {
     setMetaContent('meta[property="og:url"]', { property: 'og:url' }, url);

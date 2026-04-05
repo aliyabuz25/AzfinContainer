@@ -22,6 +22,8 @@ const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '25mb';
 const DB_RETRY_DELAY_MS = Number(process.env.DB_RETRY_DELAY_MS || 5000);
 const DB_MAX_RETRIES = Number(process.env.DB_MAX_RETRIES || 0); // 0 => unlimited
 const DB_REQUEST_WAIT_MS = Number(process.env.DB_REQUEST_WAIT_MS || 15000);
+const ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
+const ADMIN_TOKEN_TTL_MS = Number(process.env.ADMIN_TOKEN_TTL_MS || (8 * 60 * 60 * 1000));
 const PUBLIC_SITE_URL = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || 'https://azfin.az';
 const ADMIN_PANEL_URL = process.env.ADMIN_PANEL_URL || `${PUBLIC_SITE_URL.replace(/\/$/, '')}/#/admin`;
 const SMTP_SETTINGS_ID = 1;
@@ -100,6 +102,92 @@ function validateAdminCredentials(username, password) {
         username: normalizedUsername,
         password: normalizedPassword
     };
+}
+
+function signAdminTokenPayload(encodedPayload) {
+    return crypto
+        .createHmac('sha256', ADMIN_TOKEN_SECRET)
+        .update(encodedPayload)
+        .digest('base64url');
+}
+
+function createAdminAccessToken(user) {
+    const now = Date.now();
+    const payload = {
+        sub: Number(user.id),
+        username: String(user.username || '').trim(),
+        iat: now,
+        exp: now + ADMIN_TOKEN_TTL_MS
+    };
+    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    return `${encodedPayload}.${signAdminTokenPayload(encodedPayload)}`;
+}
+
+function verifyAdminAccessToken(token) {
+    if (typeof token !== 'string' || !token.includes('.')) return null;
+
+    const [encodedPayload, providedSignature] = token.split('.', 2);
+    if (!encodedPayload || !providedSignature) return null;
+
+    const expectedSignature = signAdminTokenPayload(encodedPayload);
+    if (expectedSignature.length !== providedSignature.length) {
+        return null;
+    }
+
+    const expectedBuffer = Buffer.from(expectedSignature);
+    const providedBuffer = Buffer.from(providedSignature);
+    if (!crypto.timingSafeEqual(expectedBuffer, providedBuffer)) {
+        return null;
+    }
+
+    try {
+        const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8'));
+        if (!payload || typeof payload !== 'object') return null;
+
+        const userId = Number(payload.sub);
+        const expiresAt = Number(payload.exp);
+        if (!Number.isInteger(userId) || userId <= 0) return null;
+        if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) return null;
+
+        return payload;
+    } catch (_) {
+        return null;
+    }
+}
+
+function extractBearerToken(req) {
+    const authHeader = typeof req.headers.authorization === 'string' ? req.headers.authorization : '';
+    if (!authHeader.startsWith('Bearer ')) return null;
+    return authHeader.slice('Bearer '.length).trim() || null;
+}
+
+async function requireAdminAuth(req, res, next) {
+    try {
+        const token = extractBearerToken(req);
+        if (!token) {
+            return res.status(401).json({ error: 'Admin girişi tələb olunur.' });
+        }
+
+        const payload = verifyAdminAccessToken(token);
+        if (!payload) {
+            return res.status(401).json({ error: 'Admin oturumu etibarsızdır və ya vaxtı bitib.' });
+        }
+
+        const rows = await pool.all(
+            'SELECT id, username FROM admin_users WHERE id = ? LIMIT 1',
+            [payload.sub]
+        );
+        const adminUser = rows[0];
+
+        if (!adminUser) {
+            return res.status(401).json({ error: 'Admin hesabı tapılmadı.' });
+        }
+
+        req.adminUser = adminUser;
+        return next();
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 }
 
 async function ensureColumn(tableName, columnName, definition) {
@@ -1231,10 +1319,7 @@ app.use(async (req, res, next) => {
     if (req.method === 'OPTIONS') return next();
 
     const isOptionalRoute = req.path === '/api/health'
-        || req.path === '/api/upload'
-        || req.path === '/api/settings'
-        || req.path === '/api/admin/smtp-settings'
-        || req.path === '/api/admin/smtp-settings/test';
+        || (req.path === '/api/settings' && req.method === 'GET');
 
     if (isOptionalRoute || !req.path.startsWith('/api/')) {
         return next();
@@ -1298,22 +1383,26 @@ app.post('/api/admin/register', async (req, res) => {
         }
 
         const hashedPassword = hashPassword(validation.password);
-        await pool.run(
+        const result = await pool.run(
             'INSERT INTO admin_users (username, password) VALUES (?, ?)',
             [validation.username, hashedPassword]
         );
+        const adminUser = {
+            id: result.lastID,
+            username: validation.username
+        };
 
         res.json({
             success: true,
-            user: { username: validation.username },
-            access_token: 'custom-token'
+            user: adminUser,
+            access_token: createAdminAccessToken(adminUser)
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-app.get('/api/admin/users', async (req, res) => {
+app.get('/api/admin/users', requireAdminAuth, async (req, res) => {
     try {
         const rows = await pool.all(
             'SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC, id ASC'
@@ -1324,7 +1413,7 @@ app.get('/api/admin/users', async (req, res) => {
     }
 });
 
-app.post('/api/admin/users', async (req, res) => {
+app.post('/api/admin/users', requireAdminAuth, async (req, res) => {
     try {
         const validation = validateAdminCredentials(req.body?.username, req.body?.password);
         if (!validation.ok) {
@@ -1353,7 +1442,7 @@ app.post('/api/admin/users', async (req, res) => {
     }
 });
 
-app.delete('/api/admin/users/:id', async (req, res) => {
+app.delete('/api/admin/users/:id', requireAdminAuth, async (req, res) => {
     try {
         const userId = Number(req.params.id);
         if (!Number.isInteger(userId) || userId <= 0) {
@@ -1456,7 +1545,8 @@ app.post('/api/login', async (req, res) => {
             );
         }
 
-        res.json({ user: { username: user.username }, access_token: 'custom-token' });
+        const adminUser = { id: user.id, username: user.username };
+        res.json({ user: adminUser, access_token: createAdminAccessToken(adminUser) });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -1489,7 +1579,7 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-app.post('/api/settings', async (req, res) => {
+app.post('/api/settings', requireAdminAuth, async (req, res) => {
     try {
         const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
         writeCurrentSiteContent(payload);
@@ -1510,7 +1600,7 @@ app.post('/api/settings', async (req, res) => {
     }
 });
 
-app.get('/api/admin/smtp-settings', async (req, res) => {
+app.get('/api/admin/smtp-settings', requireAdminAuth, async (req, res) => {
     try {
         const settings = isDbAvailable()
             ? await getSmtpSettings()
@@ -1521,7 +1611,7 @@ app.get('/api/admin/smtp-settings', async (req, res) => {
     }
 });
 
-app.post('/api/admin/smtp-settings', async (req, res) => {
+app.post('/api/admin/smtp-settings', requireAdminAuth, async (req, res) => {
     try {
         const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
         const normalized = normalizeSmtpSettings(payload);
@@ -1543,7 +1633,7 @@ app.post('/api/admin/smtp-settings', async (req, res) => {
     }
 });
 
-app.post('/api/admin/smtp-settings/test', async (req, res) => {
+app.post('/api/admin/smtp-settings/test', requireAdminAuth, async (req, res) => {
     try {
         const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
         const result = await sendSmtpTestEmail(payload);
@@ -1566,7 +1656,7 @@ app.get('/api/blog', async (req, res) => {
     }
 });
 
-app.post('/api/blog', async (req, res) => {
+app.post('/api/blog', requireAdminAuth, async (req, res) => {
     try {
         const post = req.body;
         const query = `
@@ -1592,7 +1682,7 @@ app.post('/api/blog', async (req, res) => {
     }
 });
 
-app.delete('/api/blog/:id', async (req, res) => {
+app.delete('/api/blog/:id', requireAdminAuth, async (req, res) => {
     try {
         await pool.run('DELETE FROM blog_posts WHERE id = ?', [req.params.id]);
         res.json({ success: true });
@@ -1612,7 +1702,7 @@ app.get('/api/trainings', async (req, res) => {
     }
 });
 
-app.post('/api/trainings', async (req, res) => {
+app.post('/api/trainings', requireAdminAuth, async (req, res) => {
     try {
         const t = normalizeTrainingPayload(req.body);
 
@@ -1639,7 +1729,7 @@ app.post('/api/trainings', async (req, res) => {
     }
 });
 
-app.delete('/api/trainings/:id', async (req, res) => {
+app.delete('/api/trainings/:id', requireAdminAuth, async (req, res) => {
     try {
         await pool.run('DELETE FROM trainings WHERE id = ?', [req.params.id]);
         res.json({ success: true });
@@ -1649,7 +1739,7 @@ app.delete('/api/trainings/:id', async (req, res) => {
 });
 
 // --- SUBMISSION ENDPOINTS ---
-app.get('/api/submissions', async (req, res) => {
+app.get('/api/submissions', requireAdminAuth, async (req, res) => {
     try {
         const rows = await pool.all('SELECT * FROM form_submissions ORDER BY created_at DESC');
         const normalizedRows = rows.map((row) => ({
@@ -1724,7 +1814,7 @@ app.post('/api/submissions', async (req, res) => {
     }
 });
 
-app.patch('/api/submissions/:id', async (req, res) => {
+app.patch('/api/submissions/:id', requireAdminAuth, async (req, res) => {
     try {
         await pool.run('UPDATE form_submissions SET status = ? WHERE id = ?', [req.body.status, req.params.id]);
         res.json({ success: true });
@@ -1733,7 +1823,7 @@ app.patch('/api/submissions/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/submissions/:id', async (req, res) => {
+app.delete('/api/submissions/:id', requireAdminAuth, async (req, res) => {
     try {
         await pool.run('DELETE FROM form_submissions WHERE id = ?', [req.params.id]);
         res.json({ success: true });
@@ -1744,7 +1834,7 @@ app.delete('/api/submissions/:id', async (req, res) => {
 
 
 // --- UPLOAD ENDPOINT ---
-app.post('/api/upload', upload.single('file'), (req, res) => {
+app.post('/api/upload', requireAdminAuth, upload.single('file'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }

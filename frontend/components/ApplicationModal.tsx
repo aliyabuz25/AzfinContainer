@@ -144,7 +144,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, tr
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-accent font-bold text-xs rounded-sm"
-                                        placeholder={forms.trainingNamePlaceholder || 'Nümunə: Elvin Məmmədov'}
+                                        placeholder={forms.trainingNamePlaceholder || 'Nümunə: Ad Soyad'}
                                     />
                                 </div>
                                 <div className="space-y-2">

@@ -5,8 +5,28 @@ import siteContentDefaults from '../siteContentDefaults.json';
 export type SiteContent = typeof siteContentDefaults;
 
 export const DEFAULT_SITE_CONTENT: SiteContent = siteContentDefaults;
+const GENERIC_FULL_NAME_PLACEHOLDER = 'Nümunə: Ad Soyad';
+const LEGACY_NAME_PLACEHOLDER_PATTERN = /elvin məmmədov/i;
 
 const FIXED_SITE_SETTINGS_ID = 1;
+
+const sanitizePlaceholderValue = (value: unknown, fallback: string) => {
+  if (typeof value !== 'string') return fallback;
+  const trimmed = value.trim();
+  if (!trimmed) return fallback;
+  return LEGACY_NAME_PLACEHOLDER_PATTERN.test(trimmed) ? fallback : value;
+};
+
+const sanitizeSiteContent = (content: SiteContent): SiteContent => {
+  const forms = content?.forms && typeof content.forms === 'object' ? content.forms : {};
+
+  return mergeContent(content, {
+    forms: {
+      auditNamePlaceholder: sanitizePlaceholderValue(forms.auditNamePlaceholder, GENERIC_FULL_NAME_PLACEHOLDER),
+      trainingNamePlaceholder: sanitizePlaceholderValue(forms.trainingNamePlaceholder, GENERIC_FULL_NAME_PLACEHOLDER),
+    },
+  });
+};
 
 export const fetchSiteSettings = async () => {
   try {
@@ -74,7 +94,7 @@ export const useSiteContent = () => {
   const refresh = async () => {
     const { id, content: remote } = await fetchSiteSettings();
     setSettingsId(id);
-    setContent(mergeContent(DEFAULT_SITE_CONTENT, remote));
+    setContent(sanitizeSiteContent(mergeContent(DEFAULT_SITE_CONTENT, remote)));
     setLoading(false);
   };
 
@@ -85,7 +105,7 @@ export const useSiteContent = () => {
       const { id, content: remote } = await fetchSiteSettings();
       if (!isMounted) return;
       setSettingsId(id);
-      setContent(mergeContent(DEFAULT_SITE_CONTENT, remote));
+      setContent(sanitizeSiteContent(mergeContent(DEFAULT_SITE_CONTENT, remote)));
       setLoading(false);
     };
 
@@ -113,4 +133,4 @@ export const useSiteContent = () => {
   );
 };
 
-export const mergeSiteContent = (override) => mergeContent(DEFAULT_SITE_CONTENT, override);
+export const mergeSiteContent = (override) => sanitizeSiteContent(mergeContent(DEFAULT_SITE_CONTENT, override));
