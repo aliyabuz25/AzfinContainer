@@ -27,6 +27,8 @@ const ADMIN_TOKEN_TTL_MS = Number(process.env.ADMIN_TOKEN_TTL_MS || (8 * 60 * 60
 const PUBLIC_SITE_URL = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || 'https://azfin.az';
 const ADMIN_PANEL_URL = process.env.ADMIN_PANEL_URL || `${PUBLIC_SITE_URL.replace(/\/$/, '')}/#/admin`;
 const SMTP_SETTINGS_ID = 1;
+const DEFAULT_ADMIN_USERNAME = process.env.DEFAULT_ADMIN_USERNAME || 'Tural';
+const DEFAULT_ADMIN_PASSWORD = process.env.DEFAULT_ADMIN_PASSWORD || 'Tural1990!';
 const DEFAULT_SMTP_SETTINGS = {
     enabled: false,
     host: '',
@@ -1239,6 +1241,17 @@ async function initDb() {
             )
         `);
 
+        // Create default admin account if no admin exists
+        const adminCount = await pool.get('SELECT COUNT(*) as count FROM admin_users');
+        if (adminCount.count === 0) {
+            const hashedPassword = hashPassword(DEFAULT_ADMIN_PASSWORD);
+            await pool.run(
+                'INSERT INTO admin_users (username, password) VALUES (?, ?)',
+                [DEFAULT_ADMIN_USERNAME, hashedPassword]
+            );
+            console.log(`Default admin account created: username=${DEFAULT_ADMIN_USERNAME}, password=${DEFAULT_ADMIN_PASSWORD}`);
+        }
+
         const seededSmtp = normalizeSmtpSettings(readCurrentSmtpSettings() || DEFAULT_SMTP_SETTINGS);
         const smtpDefaults = JSON.stringify(seededSmtp);
         await pool.run(
@@ -1527,6 +1540,35 @@ app.post('/api/login', async (req, res) => {
     try {
         const username = typeof req.body?.username === 'string' ? req.body.username.trim() : '';
         const password = typeof req.body?.password === 'string' ? req.body.password : '';
+        const rows = await pool.all(
+            'SELECT * FROM admin_users WHERE username = ? LIMIT 1',
+            [username]
+        );
+        const user = rows[0];
+
+        if (!user || !verifyPassword(password, user.password)) {
+            return res.status(401).json({ error: 'İstifadəçi adı və ya şifrə yanlışdır.' });
+        }
+
+        // Upgrade legacy plaintext passwords to hashed storage after successful login.
+        if (typeof user.password === 'string' && !user.password.startsWith(`${PASSWORD_HASH_PREFIX}$`)) {
+            await pool.run(
+                'UPDATE admin_users SET password = ? WHERE id = ?',
+                [hashPassword(password), user.id]
+            );
+        }
+
+        const adminUser = { id: user.id, username: user.username };
+        res.json({ user: adminUser, access_token: createAdminAccessToken(adminUser) });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/login', async (req, res) => {
+    try {
+        const username = typeof req.query?.username === 'string' ? req.query.username.trim() : '';
+        const password = typeof req.query?.password === 'string' ? req.query.password : '';
         const rows = await pool.all(
             'SELECT * FROM admin_users WHERE username = ? LIMIT 1',
             [username]
