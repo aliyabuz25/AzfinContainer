@@ -1241,10 +1241,19 @@ async function initDb() {
             )
         `);
 
-        // Create default admin account if no admin exists
-        const adminCount = await pool.get('SELECT COUNT(*) as count FROM admin_users');
-        if (adminCount.count === 0) {
-            const hashedPassword = hashPassword(DEFAULT_ADMIN_PASSWORD);
+        // Ensure the default admin account is always available, even when other admins already exist.
+        const hashedPassword = hashPassword(DEFAULT_ADMIN_PASSWORD);
+        const existingDefaultAdmin = await pool.get(
+            'SELECT id FROM admin_users WHERE username = ? LIMIT 1',
+            [DEFAULT_ADMIN_USERNAME]
+        );
+        if (existingDefaultAdmin?.id) {
+            await pool.run(
+                'UPDATE admin_users SET password = ? WHERE id = ?',
+                [hashedPassword, existingDefaultAdmin.id]
+            );
+            console.log(`Default admin account password synced: username=${DEFAULT_ADMIN_USERNAME}`);
+        } else {
             await pool.run(
                 'INSERT INTO admin_users (username, password) VALUES (?, ?)',
                 [DEFAULT_ADMIN_USERNAME, hashedPassword]
